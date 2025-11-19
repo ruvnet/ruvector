@@ -1,0 +1,39 @@
+{
+  "name": "ruvector",
+  "version": "0.1.0",
+  "description": "High-performance Rust-native vector database with AgenticDB compatibility",
+  "private": true,
+  "workspaces": [
+    "crates/ruvector-node",
+    "crates/ruvector-wasm"
+  ],
+  "scripts": {
+    "build": "cargo build --release",
+    "build:node": "cd crates/ruvector-node && npm run build",
+    "build:wasm": "cd crates/ruvector-wasm && npm run build",
+    "test": "cargo test --workspace",
+    "bench": "cargo bench -p ruvector-bench",
+    "cli": "cargo run -p ruvector-cli --",
+    "mcp": "cargo run -p ruvector-cli --bin ruvector-mcp",
+    "lint": "cargo clippy --workspace -- -D warnings",
+    "format": "cargo fmt --all",
+    "check": "cargo check --workspace"
+  },
+  "keywords": [
+    "vector",
+    "database",
+    "embeddings",
+    "rust",
+    "hnsw",
+    "agentic",
+    "ai"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruvnet/ruvector.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

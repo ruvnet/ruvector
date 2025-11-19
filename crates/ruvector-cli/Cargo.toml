@@ -1,0 +1,50 @@
+[package]
+name = "ruvector-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "CLI and MCP server for Ruvector"
+
+[[bin]]
+name = "ruvector"
+path = "src/main.rs"
+
+[[bin]]
+name = "ruvector-mcp"
+path = "src/mcp_server.rs"
+
+[dependencies]
+ruvector-core = { path = "../ruvector-core" }
+
+# CLI
+clap = { workspace = true }
+indicatif = { workspace = true }
+console = { workspace = true }
+
+# Async
+tokio = { workspace = true }
+futures = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# MCP support
+async-trait = "0.1"
+tower = "0.5"
+axum = { version = "0.7", features = ["ws"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.1"
+tempfile = "3.13"

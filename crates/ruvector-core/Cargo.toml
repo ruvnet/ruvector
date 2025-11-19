@@ -1,0 +1,61 @@
+[package]
+name = "ruvector-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "High-performance Rust vector database core with HNSW indexing"
+
+[dependencies]
+# Core functionality
+redb = { workspace = true }
+memmap2 = { workspace = true }
+hnsw_rs = { workspace = true }
+simsimd = { workspace = true }
+rayon = { workspace = true }
+crossbeam = { workspace = true }
+
+# Serialization
+rkyv = { workspace = true }
+bincode = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+
+# Math and numerics
+ndarray = { workspace = true }
+rand = { workspace = true }
+rand_distr = { workspace = true }
+
+# Performance
+dashmap = { workspace = true }
+parking_lot = { workspace = true }
+once_cell = { workspace = true }
+
+# UUID generation
+uuid = { version = "1.11", features = ["v4", "serde"] }
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+mockall = { workspace = true }
+tempfile = "3.13"
+tracing-subscriber = { workspace = true }
+
+[[bench]]
+name = "distance_metrics"
+harness = false
+
+[[bench]]
+name = "hnsw_search"
+harness = false
+
+[lib]
+crate-type = ["rlib"]
+bench = false

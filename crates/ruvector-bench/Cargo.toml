@@ -1,0 +1,43 @@
+[package]
+name = "ruvector-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Comprehensive benchmarking suite for Ruvector"
+publish = false
+
+[[bin]]
+name = "ann-benchmark"
+path = "src/bin/ann_benchmark.rs"
+
+[[bin]]
+name = "agenticdb-benchmark"
+path = "src/bin/agenticdb_benchmark.rs"
+
+[dependencies]
+ruvector-core = { path = "../ruvector-core" }
+
+# Benchmarking
+criterion = { workspace = true }
+
+# CLI
+clap = { workspace = true }
+indicatif = { workspace = true }
+console = { workspace = true }
+
+# Data
+rand = { workspace = true }
+rand_distr = { workspace = true }
+
+# Performance
+rayon = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }

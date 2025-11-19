@@ -1,0 +1,29 @@
+{
+  "name": "@ruvector/wasm",
+  "version": "0.1.0",
+  "description": "High-performance Rust vector database for browsers via WASM",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "wasm-pack build --target web --out-dir pkg",
+    "build:node": "wasm-pack build --target nodejs --out-dir pkg-node",
+    "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler",
+    "test": "wasm-pack test --headless --chrome"
+  },
+  "keywords": [
+    "vector",
+    "database",
+    "embeddings",
+    "wasm",
+    "browser",
+    "rust"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruvnet/ruvector.git"
+  }
+}
