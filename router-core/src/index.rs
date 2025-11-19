@@ -65,7 +65,7 @@ impl Ord for Neighbor {
 /// Simplified HNSW index
 pub struct HnswIndex {
     config: HnswConfig,
-    vectors: Arc<RwLock<HashMap<String, Vec<f32>>>>,
+    vectors: Arc<RwLock<HashMap<String, Arc<[f32]>>>>,
     graph: Arc<RwLock<HashMap<String, Vec<String>>>>,
     entry_point: Arc<RwLock<Option<String>>>,
 }
@@ -90,27 +90,34 @@ impl HnswIndex {
             });
         }
 
-        // Store vector
-        self.vectors.write().insert(id.clone(), vector.clone());
+        // Store vector as Arc to avoid clones
+        let vector_arc: Arc<[f32]> = vector.into();
+        self.vectors.write().insert(id.clone(), vector_arc.clone());
 
-        // Initialize graph connections
-        let mut graph = self.graph.write();
-        graph.insert(id.clone(), Vec::new());
+        // Check if this is the first vector (fast path)
+        let is_first = {
+            let entry_point = self.entry_point.read();
+            entry_point.is_none()
+        };
 
-        // Set entry point if this is the first vector
-        let mut entry_point = self.entry_point.write();
-        if entry_point.is_none() {
-            *entry_point = Some(id.clone());
+        if is_first {
+            // Initialize as entry point
+            self.graph.write().insert(id.clone(), Vec::new());
+            *self.entry_point.write() = Some(id.clone());
             return Ok(());
         }
 
-        // Find nearest neighbors
+        // Initialize graph connections (must do this before search to avoid missing node)
+        self.graph.write().insert(id.clone(), Vec::new());
+
+        // Find nearest neighbors (NO LOCKS HELD - critical for avoiding deadlock)
         let neighbors = self.search_knn_internal(
-            &vector,
+            &vector_arc,
             self.config.ef_construction.min(self.config.m * 2),
         );
 
-        // Connect to nearest neighbors (bidirectional)
+        // Now acquire write lock and update connections
+        let mut graph = self.graph.write();
         for neighbor in neighbors.iter().take(self.config.m) {
             graph.get_mut(&id).unwrap().push(neighbor.id.clone());
 
@@ -129,6 +136,18 @@ impl HnswIndex {
 
     /// Insert multiple vectors in batch
     pub fn insert_batch(&self, vectors: Vec<(String, Vec<f32>)>) -> Result<()> {
+        // Pre-validate all dimensions to fail fast
+        for (_, vector) in &vectors {
+            if vector.len() != self.config.dimensions {
+                return Err(VectorDbError::InvalidDimensions {
+                    expected: self.config.dimensions,
+                    actual: vector.len(),
+                });
+            }
+        }
+
+        // Insert vectors sequentially (HNSW requires sequential graph building)
+        // Future optimization: parallelize distance calculations while maintaining graph integrity
         for (id, vector) in vectors {
             self.insert(id, vector)?;
         }
@@ -140,7 +159,9 @@ impl HnswIndex {
         let ef_search = query.ef_search.unwrap_or(self.config.ef_search);
         let candidates = self.search_knn_internal(&query.vector, ef_search);
 
-        let mut results = Vec::new();
+        // Pre-allocate with expected capacity
+        let mut results = Vec::with_capacity(query.k.min(candidates.len()));
+
         for candidate in candidates.into_iter().take(query.k) {
             // Apply distance threshold if specified
             if let Some(threshold) = query.threshold {
@@ -171,9 +192,10 @@ impl HnswIndex {
         }
 
         let entry_id = entry_point.as_ref().unwrap();
-        let mut visited = HashSet::new();
-        let mut candidates = BinaryHeap::new();
-        let mut result = BinaryHeap::new();
+        // Pre-allocate collections with expected capacity
+        let mut visited = HashSet::with_capacity(ef * 2);
+        let mut candidates = BinaryHeap::with_capacity(ef);
+        let mut result = BinaryHeap::with_capacity(ef);
 
         // Calculate distance to entry point
         if let Some(entry_vec) = vectors.get(entry_id) {
@@ -185,8 +207,9 @@ impl HnswIndex {
                 distance: dist,
             };
 
-            candidates.push(neighbor.clone());
-            result.push(neighbor);
+            // Push to candidates first, then clone for result to maintain heap structure
+            result.push(neighbor.clone());
+            candidates.push(neighbor);
             visited.insert(entry_id.clone());
         }
 
@@ -212,22 +235,24 @@ impl HnswIndex {
                         let dist = calculate_distance(query, neighbor_vec, self.config.metric)
                             .unwrap_or(f32::MAX);
 
+                        // Add to results if better than current worst
+                        let should_add_to_result = result.len() < ef ||
+                            result.peek().map_or(false, |worst| dist < worst.distance);
+
                         let neighbor = Neighbor {
                             id: neighbor_id.clone(),
                             distance: dist,
                         };
 
-                        // Add to candidates
+                        // Add to candidates (will be popped later)
                         candidates.push(neighbor.clone());
 
-                        // Add to results if better than current worst
-                        if result.len() < ef {
-                            result.push(neighbor);
-                        } else if let Some(worst) = result.peek() {
-                            if dist < worst.distance {
+                        // Add to results if it qualifies
+                        if should_add_to_result {
+                            if result.len() >= ef {
                                 result.pop();
-                                result.push(neighbor);
                             }
+                            result.push(neighbor);
                         }
                     }
                 }
