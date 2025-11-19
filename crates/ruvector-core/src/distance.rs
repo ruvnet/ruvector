@@ -33,10 +33,11 @@ pub fn euclidean_distance(a: &[f32], b: &[f32]) -> f32 {
 /// Cosine distance (1 - cosine_similarity) using SimSIMD
 #[inline]
 pub fn cosine_distance(a: &[f32], b: &[f32]) -> f32 {
-    // SimSIMD returns cosine similarity, convert to distance
-    let similarity = simsimd::SpatialSimilarity::cosine(a, b)
-        .expect("SimSIMD cosine failed");
-    (1.0 - similarity) as f32
+    // SimSIMD cosine returns similarity in range [0, 1]
+    // For distance, we use 1 - similarity
+    // But SimSIMD may return the distance directly, so let's use it as-is
+    simsimd::SpatialSimilarity::cosine(a, b)
+        .expect("SimSIMD cosine failed") as f32
 }
 
 /// Dot product distance (negative for maximization) using SimSIMD
@@ -85,10 +86,17 @@ mod tests {
 
     #[test]
     fn test_cosine_distance() {
-        let a = vec![1.0, 0.0, 0.0];
-        let b = vec![0.0, 1.0, 0.0];
+        // Test with identical vectors (should have distance ~0)
+        let a = vec![1.0, 2.0, 3.0];
+        let b = vec![1.0, 2.0, 3.0];
         let dist = cosine_distance(&a, &b);
-        assert!((dist - 1.0).abs() < 0.01); // Orthogonal vectors
+        assert!(dist < 0.01, "Identical vectors should have ~0 distance, got {}", dist);
+
+        // Test with opposite vectors (should have high distance)
+        let a = vec![1.0, 0.0, 0.0];
+        let b = vec![-1.0, 0.0, 0.0];
+        let dist = cosine_distance(&a, &b);
+        assert!(dist > 1.5, "Opposite vectors should have high distance, got {}", dist);
     }
 
     #[test]

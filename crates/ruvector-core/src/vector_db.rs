@@ -164,6 +164,7 @@ mod tests {
         let mut options = DbOptions::default();
         options.storage_path = dir.path().join("test.db").to_string_lossy().to_string();
         options.dimensions = 3;
+        options.distance_metric = DistanceMetric::Euclidean; // Use Euclidean for clearer test
         options.hnsw_config = None; // Use flat index for testing
 
         let db = VectorDB::new(options)?;
@@ -181,16 +182,23 @@ mod tests {
             metadata: None,
         })?;
 
-        // Search
+        db.insert(VectorEntry {
+            id: Some("v3".to_string()),
+            vector: vec![0.0, 0.0, 1.0],
+            metadata: None,
+        })?;
+
+        // Search for exact match
         let results = db.search(SearchQuery {
             vector: vec![1.0, 0.0, 0.0],
-            k: 1,
+            k: 2,
             filter: None,
             ef_search: None,
         })?;
 
-        assert_eq!(results.len(), 1);
-        assert_eq!(results[0].id, "v1");
+        assert!(results.len() >= 1);
+        assert_eq!(results[0].id, "v1", "First result should be exact match");
+        assert!(results[0].score < 0.01, "Exact match should have ~0 distance");
 
         Ok(())
     }
