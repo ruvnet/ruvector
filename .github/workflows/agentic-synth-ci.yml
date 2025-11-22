@@ -46,8 +46,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: packages/agentic-synth/package-lock.json
 
       - name: Install dependencies
         working-directory: ${{ env.PACKAGE_PATH }}
@@ -153,8 +151,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: packages/agentic-synth/package-lock.json
 
       - name: Install dependencies
         working-directory: ${{ env.PACKAGE_PATH }}
@@ -197,8 +193,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: packages/agentic-synth/package-lock.json
 
       - name: Install dependencies
         working-directory: ${{ env.PACKAGE_PATH }}
@@ -258,8 +252,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: packages/agentic-synth/package-lock.json
 
       - name: Install dependencies
         working-directory: ${{ env.PACKAGE_PATH }}
