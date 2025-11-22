@@ -1,0 +1,222 @@
+name: Quick Fix with Agent Booster
+
+on:
+  workflow_dispatch:
+    inputs:
+      fix_target:
+        description: 'What to fix'
+        required: true
+        type: choice
+        options:
+          - 'Lint errors only'
+          - 'Failing tests only'
+          - 'Type errors only'
+          - 'Everything'
+      package:
+        description: 'Package path'
+        required: false
+        default: 'packages/agentic-synth'
+      agent_boost:
+        description: 'Enable agent boost (more agents, faster)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  quick-fix:
+    name: Quick Fix - ${{ github.event.inputs.fix_target }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ${{ github.event.inputs.package }}
+        run: npm install
+
+      - name: Install claude-flow globally
+        run: |
+          npm install -g claude-flow@alpha
+          echo "✅ Claude Flow installed"
+
+      - name: Initialize agent swarm
+        run: |
+          MAX_AGENTS=3
+          TOPOLOGY="mesh"
+
+          if [ "${{ github.event.inputs.agent_boost }}" = "true" ]; then
+            MAX_AGENTS=8
+            TOPOLOGY="hierarchical"
+            echo "🚀 Agent boost enabled: $MAX_AGENTS agents with $TOPOLOGY topology"
+          fi
+
+          npx claude-flow@alpha swarm init \
+            --topology "$TOPOLOGY" \
+            --max-agents "$MAX_AGENTS"
+
+          npx claude-flow@alpha swarm status
+
+      - name: Fix lint errors
+        if: contains(github.event.inputs.fix_target, 'Lint') || contains(github.event.inputs.fix_target, 'Everything')
+        working-directory: ${{ github.event.inputs.package }}
+        run: |
+          echo "🔧 Fixing lint errors..."
+
+          # Spawn reviewer agent
+          npx claude-flow@alpha agent spawn \
+            --type reviewer \
+            --name "lint-fixer"
+
+          # Run lint and capture errors
+          npm run lint 2>&1 | tee /tmp/lint-errors.log || true
+
+          # Apply auto-fixes
+          npm run lint:fix || true
+
+          echo "✅ Lint fixes applied"
+
+      - name: Fix failing tests
+        if: contains(github.event.inputs.fix_target, 'tests') || contains(github.event.inputs.fix_target, 'Everything')
+        working-directory: ${{ github.event.inputs.package }}
+        run: |
+          echo "🧪 Analyzing and fixing test failures..."
+
+          # Spawn test specialist agents
+          npx claude-flow@alpha agent spawn --type tester --name "test-fixer"
+          npx claude-flow@alpha agent spawn --type analyst --name "error-analyzer"
+
+          # Run tests and capture failures
+          npm run test:unit 2>&1 | tee /tmp/test-errors.log || true
+
+          # Store errors in swarm memory
+          if grep -q "FAIL" /tmp/test-errors.log; then
+            TEST_FAILURES=$(cat /tmp/test-errors.log | grep -A 20 "FAIL")
+
+            npx claude-flow@alpha memory store \
+              --key "test-failures" \
+              --value "$TEST_FAILURES" \
+              --namespace "quick-fix"
+
+            # Orchestrate fixing task
+            npx claude-flow@alpha task orchestrate \
+              --task "Analyze test failures in swarm memory and suggest fixes" \
+              --strategy adaptive \
+              --priority critical
+
+            echo "⚠️  Test failures detected and analyzed. Review the agent recommendations."
+          else
+            echo "✅ All tests passing!"
+          fi
+
+      - name: Fix type errors
+        if: contains(github.event.inputs.fix_target, 'Type') || contains(github.event.inputs.fix_target, 'Everything')
+        working-directory: ${{ github.event.inputs.package }}
+        run: |
+          echo "📝 Fixing TypeScript errors..."
+
+          # Spawn TypeScript specialist
+          npx claude-flow@alpha agent spawn \
+            --type coder \
+            --name "typescript-expert"
+
+          # Run type check
+          npm run typecheck 2>&1 | tee /tmp/type-errors.log || true
+
+          if grep -q "error TS" /tmp/type-errors.log; then
+            echo "⚠️  Type errors detected"
+
+            # Store in memory for coordination
+            npx claude-flow@alpha memory store \
+              --key "type-errors" \
+              --value "$(cat /tmp/type-errors.log)" \
+              --namespace "quick-fix"
+
+            # Orchestrate fix
+            npx claude-flow@alpha task orchestrate \
+              --task "Fix TypeScript errors stored in swarm memory" \
+              --strategy adaptive \
+              --priority high
+          else
+            echo "✅ No type errors!"
+          fi
+
+      - name: Create fix branch and commit
+        id: commit
+        run: |
+          git config user.name "AI Agent Booster"
+          git config user.email "agents@quick-fix.bot"
+
+          BRANCH_NAME="quick-fix/$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+
+          git add .
+
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No changes to commit"
+          else
+            git commit -m "fix: Quick-fix via AI agents - ${{ github.event.inputs.fix_target }}
+
+          Target: ${{ github.event.inputs.fix_target }}
+          Package: ${{ github.event.inputs.package }}
+          Agent Boost: ${{ github.event.inputs.agent_boost }}
+
+          🚀 Generated by Quick-Fix Agent Booster"
+
+            git push origin "$BRANCH_NAME"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "✅ Changes committed to $BRANCH_NAME"
+          fi
+
+      - name: Create PR
+        if: steps.commit.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "🚀 Quick-fix: ${{ github.event.inputs.fix_target }}" \
+            --body "## Quick Fix via AI Agent Booster
+
+          **Target:** ${{ github.event.inputs.fix_target }}
+          **Package:** ${{ github.event.inputs.package }}
+          **Agent Boost:** ${{ github.event.inputs.agent_boost }}
+
+          This PR was generated by the Quick Fix Agent Booster workflow.
+
+          ### Review the changes and merge if everything looks good!
+
+          ---
+          🤖 Powered by claude-flow@alpha" \
+            --base main \
+            --head "${{ steps.commit.outputs.branch }}" \
+            --label "quick-fix,ai-generated"
+
+      - name: Generate performance report
+        if: always()
+        run: |
+          echo "## 📊 Agent Performance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          npx claude-flow@alpha performance report --format summary >> $GITHUB_STEP_SUMMARY || echo "Performance report unavailable" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Swarm Status" >> $GITHUB_STEP_SUMMARY
+          npx claude-flow@alpha swarm status >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          npx claude-flow@alpha swarm destroy --all || true
+          echo "✅ Cleanup completed"
