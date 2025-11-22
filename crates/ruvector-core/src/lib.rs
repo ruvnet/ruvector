@@ -37,6 +37,10 @@ pub use storage_memory as storage;
 pub mod types;
 pub mod vector_db;
 
+// Initialization and configuration
+pub mod config;
+pub mod init;
+
 // Performance optimization modules
 pub mod arena;
 pub mod cache_optimized;
@@ -58,6 +62,16 @@ pub use agenticdb::AgenticDB;
 pub use error::{Result, RuvectorError};
 pub use types::{DistanceMetric, VectorEntry, VectorId, SearchQuery, SearchResult};
 pub use vector_db::VectorDB;
+
+// Configuration and initialization exports
+pub use config::{
+    RuvectorConfig, ConfigBuilder, Environment, DatabaseConfig,
+    LoggingConfig, PerformanceConfig, FeatureFlags,
+};
+pub use init::{
+    init, init_with_config, runtime, database, database_named,
+    on_shutdown, shutdown, health_check, HealthStatus,
+};
 
 #[cfg(test)]
 mod tests {

@@ -84,6 +84,19 @@ export type {
   CoordinationStrategy
 } from './swarm/index.js';
 
+// Advanced examples
+export {
+  StreamingOptimization,
+  runStreamingOptimizationExample
+} from './advanced/streaming-optimization.js';
+export type {
+  StreamingModelConfig,
+  StreamingBenchmarkResult,
+  StreamingQualityMetrics,
+  StreamingOptimizationResult,
+  StreamingPerformanceHistory
+} from './advanced/streaming-optimization.js';
+
 /**
  * Factory functions for quick initialization
  */
@@ -111,7 +124,12 @@ export const Examples = {
   /**
    * Create a swarm coordinator
    */
-  createSwarm: (config?: any) => new SwarmCoordinator(config)
+  createSwarm: (config?: any) => new SwarmCoordinator(config),
+
+  /**
+   * Create a streaming optimization engine
+   */
+  createStreamingOptimization: (customModels?: any) => new StreamingOptimization(customModels)
 };
 
 // Import all generators
@@ -120,3 +138,4 @@ import { StockMarketSimulator } from './stock-market/index.js';
 import { SecurityTestingGenerator } from './security/index.js';
 import { CICDDataGenerator } from './cicd/index.js';
 import { SwarmCoordinator } from './swarm/index.js';
+import { StreamingOptimization } from './advanced/streaming-optimization.js';

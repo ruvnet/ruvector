@@ -1,42 +1,14 @@
-# Results
-results/
-*.json
-*.csv
-!package*.json
+# Benchmark results (too large for git)
+results/*.json
 
-# Environment
-.env
-.env.local
-.env.*.local
+# But keep the directory
+!results/.gitkeep
 
-# Node modules
+# Node modules if any
 node_modules/
-npm-debug.log
-yarn-error.log
-
-# Build outputs
-dist/
-build/
-*.js
-*.js.map
-*.d.ts
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Logs
-logs/
 *.log
 
-# Temporary files
-tmp/
-temp/
-.cache/
+# OS files
+.DS_Store

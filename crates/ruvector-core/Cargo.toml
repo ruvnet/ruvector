@@ -27,6 +27,10 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+# Unix signal handling
+signal-hook = { version = "0.3", optional = true }
 
 # Math and numerics
 ndarray = { workspace = true, features = ["serde"] }
@@ -70,12 +74,13 @@ name = "comprehensive_bench"
 harness = false
 
 [features]
-default = ["simd", "uuid-support", "storage", "hnsw"]
+default = ["simd", "uuid-support", "storage", "hnsw", "init"]
 uuid-support = ["uuid"]
 simd = []
 storage = ["redb", "memmap2"]  # File-based storage (not available in WASM)
 hnsw = ["hnsw_rs"]  # HNSW indexing (not available in WASM due to mmap dependency)
 memory-only = []  # Pure in-memory storage for WASM
+init = ["tracing-subscriber", "signal-hook"]  # Initialization system with signal handling
 
 [lib]
 crate-type = ["rlib"]

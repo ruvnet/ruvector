@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "type": "stock-market",
+    "count": 3,
+    "generated": "2025-11-22T19:19:04.160Z",
+    "version": "0.1.2",
+    "generator": "@ruvector/agentic-synth-examples",
+    "provider": "gemini",
+    "model": "gemini-2.0-flash-exp",
+    "generation_time_seconds": 2.93,
+    "real_ai_generated": true
+  },
+  "data": [
+    {
+      "timestamp": "2024-02-29T14:30:00Z",
+      "symbol": "AAPL",
+      "open": 179.5,
+      "high": 180.25,
+      "low": 178.9,
+      "close": 179.85,
+      "volume": 52345678,
+      "news": "Apple unveils new AI initiatives, stock price slightly up",
+      "sentiment": "bullish"
+    },
+    {
+      "timestamp": "2024-02-29T15:00:00Z",
+      "symbol": "GOOGL",
+      "open": 140.1,
+      "high": 140.5,
+      "low": 139.75,
+      "close": 140,
+      "volume": 38765432,
+      "news": "Google faces antitrust scrutiny over search dominance",
+      "sentiment": "bearish"
+    },
+    {
+      "timestamp": "2024-02-29T15:30:00Z",
+      "symbol": "MSFT",
+      "open": 400,
+      "high": 401.5,
+      "low": 399.25,
+      "close": 400.75,
+      "volume": 45678901,
+      "news": "Microsoft cloud revenue meets expectations, stock stable",
+      "sentiment": "neutral"
+    }
+  ]
+}

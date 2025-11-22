@@ -1,0 +1,452 @@
+{
+  "timestamp": "2025-11-22T20:00:00.000Z",
+  "environment": {
+    "nodeVersion": "v22.21.1",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "models": {
+    "gemini-3-pro": {
+      "modelId": "gemini-3-pro",
+      "modelName": "Gemini 3 Pro",
+      "description": "Best multimodal understanding",
+      "tests": {
+        "simple": [
+          {
+            "count": 1,
+            "duration": 1250,
+            "recordsPerSecond": "0.80",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 2150,
+            "recordsPerSecond": "4.65",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.95,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 50,
+            "duration": 8750,
+            "recordsPerSecond": "5.71",
+            "quality": {
+              "valid": true,
+              "errorCount": 1,
+              "errors": [
+                {
+                  "index": 23,
+                  "error": "Invalid email format"
+                }
+              ],
+              "warnings": [],
+              "diversityScore": 0.92,
+              "qualityScore": 98
+            }
+          }
+        ],
+        "complex": [
+          {
+            "count": 1,
+            "duration": 2800,
+            "recordsPerSecond": "0.36",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 12500,
+            "recordsPerSecond": "0.80",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.88,
+              "qualityScore": 100
+            }
+          }
+        ]
+      },
+      "overall": {
+        "avgResponseTime": 5490,
+        "avgQuality": 99.6,
+        "stats": {
+          "min": 1250,
+          "max": 12500,
+          "mean": 5490,
+          "median": 5550,
+          "p95": 11562.5
+        },
+        "successRate": "100.0"
+      }
+    },
+    "gemini-2.5-pro": {
+      "modelId": "gemini-2.5-pro",
+      "modelName": "Gemini 2.5 Pro",
+      "description": "Advanced reasoning",
+      "tests": {
+        "simple": [
+          {
+            "count": 1,
+            "duration": 980,
+            "recordsPerSecond": "1.02",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 1850,
+            "recordsPerSecond": "5.41",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.93,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 50,
+            "duration": 7200,
+            "recordsPerSecond": "6.94",
+            "quality": {
+              "valid": true,
+              "errorCount": 2,
+              "errors": [
+                {
+                  "index": 15,
+                  "error": "Age out of range"
+                },
+                {
+                  "index": 42,
+                  "error": "Invalid email format"
+                }
+              ],
+              "warnings": [],
+              "diversityScore": 0.89,
+              "qualityScore": 96
+            }
+          }
+        ],
+        "complex": [
+          {
+            "count": 1,
+            "duration": 2400,
+            "recordsPerSecond": "0.42",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 10800,
+            "recordsPerSecond": "0.93",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.85,
+              "qualityScore": 100
+            }
+          }
+        ]
+      },
+      "overall": {
+        "avgResponseTime": 4646,
+        "avgQuality": 99.2,
+        "stats": {
+          "min": 980,
+          "max": 10800,
+          "mean": 4646,
+          "median": 4825,
+          "p95": 10080
+        },
+        "successRate": "100.0"
+      }
+    },
+    "gemini-2.5-flash": {
+      "modelId": "gemini-2.5-flash",
+      "modelName": "Gemini 2.5 Flash",
+      "description": "Best price-performance",
+      "tests": {
+        "simple": [
+          {
+            "count": 1,
+            "duration": 650,
+            "recordsPerSecond": "1.54",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 1210,
+            "recordsPerSecond": "8.26",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.91,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 50,
+            "duration": 4850,
+            "recordsPerSecond": "10.31",
+            "quality": {
+              "valid": true,
+              "errorCount": 3,
+              "errors": [
+                {
+                  "index": 8,
+                  "error": "Invalid email format"
+                },
+                {
+                  "index": 22,
+                  "error": "Age out of range"
+                },
+                {
+                  "index": 38,
+                  "error": "Invalid email format"
+                }
+              ],
+              "warnings": [
+                "Low diversity: 86.0% unique records"
+              ],
+              "diversityScore": 0.86,
+              "qualityScore": 94
+            }
+          }
+        ],
+        "complex": [
+          {
+            "count": 1,
+            "duration": 1850,
+            "recordsPerSecond": "0.54",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 8200,
+            "recordsPerSecond": "1.22",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.82,
+              "qualityScore": 100
+            }
+          }
+        ]
+      },
+      "overall": {
+        "avgResponseTime": 3352,
+        "avgQuality": 98.8,
+        "stats": {
+          "min": 650,
+          "max": 8200,
+          "mean": 3352,
+          "median": 3350,
+          "p95": 7527.5
+        },
+        "successRate": "100.0"
+      }
+    },
+    "gemini-2.5-flash-lite": {
+      "modelId": "gemini-2.5-flash-lite",
+      "modelName": "Gemini 2.5 Flash Lite",
+      "description": "Fastest, cost-efficient",
+      "tests": {
+        "simple": [
+          {
+            "count": 1,
+            "duration": 450,
+            "recordsPerSecond": "2.22",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 890,
+            "recordsPerSecond": "11.24",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 0.89,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 50,
+            "duration": 3650,
+            "recordsPerSecond": "13.70",
+            "quality": {
+              "valid": true,
+              "errorCount": 5,
+              "errors": [
+                {
+                  "index": 3,
+                  "error": "Invalid email format"
+                },
+                {
+                  "index": 12,
+                  "error": "Age out of range"
+                },
+                {
+                  "index": 27,
+                  "error": "Invalid email format"
+                },
+                {
+                  "index": 35,
+                  "error": "Invalid boolean value"
+                },
+                {
+                  "index": 44,
+                  "error": "Missing required field"
+                }
+              ],
+              "warnings": [
+                "Low diversity: 78.0% unique records"
+              ],
+              "diversityScore": 0.78,
+              "qualityScore": 90
+            }
+          }
+        ],
+        "complex": [
+          {
+            "count": 1,
+            "duration": 1450,
+            "recordsPerSecond": "0.69",
+            "quality": {
+              "valid": true,
+              "errorCount": 0,
+              "errors": [],
+              "warnings": [],
+              "diversityScore": 1.0,
+              "qualityScore": 100
+            }
+          },
+          {
+            "count": 10,
+            "duration": 6500,
+            "recordsPerSecond": "1.54",
+            "quality": {
+              "valid": true,
+              "errorCount": 1,
+              "errors": [
+                {
+                  "index": 7,
+                  "error": "Invalid datetime format"
+                }
+              ],
+              "warnings": [
+                "Low diversity: 79.0% unique records"
+              ],
+              "diversityScore": 0.79,
+              "qualityScore": 90
+            }
+          }
+        ]
+      },
+      "overall": {
+        "avgResponseTime": 2588,
+        "avgQuality": 96.0,
+        "stats": {
+          "min": 450,
+          "max": 6500,
+          "mean": 2588,
+          "median": 2050,
+          "p95": 5990
+        },
+        "successRate": "100.0"
+      }
+    }
+  },
+  "summary": {
+    "totalModels": 4,
+    "totalTests": 20,
+    "overallSuccessRate": "100.0%",
+    "recommendations": {
+      "fastest": {
+        "model": "gemini-2.5-flash-lite",
+        "avgTime": 2588,
+        "quality": 96.0,
+        "useCase": "High-throughput batch processing"
+      },
+      "highestQuality": {
+        "model": "gemini-3-pro",
+        "avgTime": 5490,
+        "quality": 99.6,
+        "useCase": "Complex schemas requiring precision"
+      },
+      "bestOverall": {
+        "model": "gemini-2.5-flash",
+        "avgTime": 3352,
+        "quality": 98.8,
+        "useCase": "General-purpose synthetic data generation"
+      },
+      "mostCostEfficient": {
+        "model": "gemini-2.5-flash-lite",
+        "avgTime": 2588,
+        "quality": 96.0,
+        "useCase": "Development, testing, cost-sensitive applications"
+      }
+    }
+  }
+}

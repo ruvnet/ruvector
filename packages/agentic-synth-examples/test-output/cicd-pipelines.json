@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "type": "cicd",
+    "count": 2,
+    "generated": "2025-11-22T19:19:23.440Z",
+    "version": "0.1.2",
+    "generator": "@ruvector/agentic-synth-examples",
+    "provider": "gemini",
+    "model": "gemini-2.0-flash-exp",
+    "generation_time_seconds": 2.39,
+    "real_ai_generated": true
+  },
+  "data": [
+    {
+      "pipeline_id": "pipe-20240126-001",
+      "timestamp": "2024-01-26T10:30:00Z",
+      "status": "success",
+      "duration_seconds": 125.5,
+      "repository": "my-project",
+      "branch": "main",
+      "commit_sha": "a1b2c3d",
+      "tests_passed": 150,
+      "tests_failed": 0,
+      "coverage_percent": 95.2
+    },
+    {
+      "pipeline_id": "pipe-20240126-002",
+      "timestamp": "2024-01-26T11:15:00Z",
+      "status": "failure",
+      "duration_seconds": 35.8,
+      "repository": "my-project",
+      "branch": "feature/new-feature",
+      "commit_sha": "e4f5g6h",
+      "tests_passed": 25,
+      "tests_failed": 5,
+      "coverage_percent": 80.1
+    }
+  ]
+}

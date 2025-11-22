@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "type": "security",
+    "count": 2,
+    "generated": "2025-11-22T19:19:39.844Z",
+    "version": "0.1.2",
+    "generator": "@ruvector/agentic-synth-examples",
+    "provider": "gemini",
+    "model": "gemini-2.0-flash-exp",
+    "generation_time_seconds": 2.48,
+    "real_ai_generated": true
+  },
+  "data": [
+    {
+      "vulnerability_id": "CVE-2023-45678",
+      "type": "SQL Injection",
+      "severity": "high",
+      "endpoint": "/api/v1/products",
+      "method": "GET",
+      "payload": "productId=1' OR '1'='1",
+      "exploitable": true,
+      "cvss_score": 8.8,
+      "remediation": "Implement parameterized queries or prepared statements to prevent SQL injection attacks. Sanitize and validate user input before incorporating it into SQL queries. Consider using an ORM to handle database interactions securely."
+    },
+    {
+      "vulnerability_id": "XSS-2023-0023",
+      "type": "Cross-Site Scripting (XSS)",
+      "severity": "medium",
+      "endpoint": "/search",
+      "method": "GET",
+      "payload": "<script>alert('XSS')</script>",
+      "exploitable": true,
+      "cvss_score": 6.1,
+      "remediation": "Encode output data appropriately based on the context (HTML, URL, JavaScript). Utilize a Content Security Policy (CSP) to restrict the sources from which scripts can be loaded. Sanitize user input by removing or escaping potentially malicious characters."
+    }
+  ]
+}

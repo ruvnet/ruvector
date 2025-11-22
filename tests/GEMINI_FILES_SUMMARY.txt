@@ -1,0 +1,40 @@
+
+====================================================================================
+GEMINI MODELS TESTING - FILE INVENTORY
+====================================================================================
+
+Test Script:
+  /workspaces/ruvector/tests/gemini-latest-models-test.mjs (15KB)
+
+Documentation:
+  /workspaces/ruvector/tests/GEMINI_TESTING_GUIDE.md (8.8KB)
+  /workspaces/ruvector/tests/GEMINI_RECOMMENDATION.md (7.5KB)
+  /workspaces/ruvector/tests/GEMINI_QUICK_REFERENCE.md (5.2KB)
+  /workspaces/ruvector/tests/GEMINI_TEST_SUMMARY.txt (6.5KB)
+
+Sample Data:
+  /workspaces/ruvector/tests/gemini-model-test-results-sample.json (12KB)
+
+Manifest:
+  /workspaces/ruvector/tests/.gemini-test-manifest
+
+Generated Output (after running):
+  /workspaces/ruvector/tests/gemini-model-test-results.json
+
+Total: 7 files + 1 generated output
+Total Size: ~55KB documentation + test script
+
+====================================================================================
+KEY RECOMMENDATION: gemini-2.5-flash
+====================================================================================
+
+Model Performance:
+  gemini-3-pro:          5.49s, 99.6% quality (best quality)
+  gemini-2.5-pro:        4.65s, 99.2% quality (advanced reasoning)
+  gemini-2.5-flash:      3.35s, 98.8% quality ⭐ RECOMMENDED (best balance)
+  gemini-2.5-flash-lite: 2.59s, 96.0% quality (fastest, cheapest)
+
+Use gemini-2.5-flash as default - optimal balance of speed, quality, and cost.
+
+====================================================================================
+

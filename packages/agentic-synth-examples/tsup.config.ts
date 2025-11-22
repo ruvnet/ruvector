@@ -13,5 +13,15 @@ export default defineConfig({
   minify: false,
   target: 'es2022',
   outDir: 'dist',
-  tsconfig: './tsconfig.json'
+  tsconfig: './tsconfig.json',
+  // Mark all dependencies as external to avoid bundling issues
+  external: [
+    '@ruvector/agentic-synth',
+    'dspy.ts',
+    'zod',
+    'commander',
+    'dotenv'
+  ],
+  // Don't bundle node_modules
+  noExternal: []
 });

@@ -35,5 +35,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@ruvector/agentic-synth-examples": "file:packages/agentic-synth-examples"
   }
 }
