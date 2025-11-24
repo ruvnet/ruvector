@@ -23,7 +23,8 @@ import * as path from 'path';
 
 // Import real dspy.ts components from dist/src
 // Note: dspy.ts package main entry needs dist/src prefix
-const dspy = require('dspy.ts/dist/src/index');
+import * as dspyModule from 'dspy.ts/dist/src/index';
+const dspy = dspyModule;
 const {
   configureLM,
   getLM,

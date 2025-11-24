@@ -1,0 +1,356 @@
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    RUVECTOR INITIALIZATION ARCHITECTURE                      │
+│                         C4 Component Diagram                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           LAYER 1: USER INTERFACES                           │
+├──────────────┬──────────────┬──────────────┬──────────────┬────────────────┤
+│              │              │              │              │                │
+│  ┌────────┐  │  ┌────────┐  │  ┌────────┐  │  ┌────────┐  │  ┌──────────┐ │
+│  │  Rust  │  │  │Node.js │  │  │  WASM  │  │  │  CLI   │  │  │   MCP    │ │
+│  │  API   │  │  │Binding │  │  │Binding │  │  │        │  │  │  Server  │ │
+│  └────┬───┘  │  └────┬───┘  │  └────┬───┘  │  └────┬───┘  │  └────┬─────┘ │
+│       │      │       │      │       │      │       │      │       │       │
+└───────┼──────┴───────┼──────┴───────┼──────┴───────┼──────┴───────┼───────┘
+        │              │              │              │              │
+        └──────────────┴──────────────┴──────────────┴──────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      LAYER 2: INITIALIZATION MANAGER                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                       CONFIGURATION BUILDER                             │ │
+│  │                                                                         │ │
+│  │  Input Sources          Process              Output                    │ │
+│  │  ┌──────────┐          ┌────────┐          ┌─────────────┐            │ │
+│  │  │CLI Args  │─────────▶│ Merge  │─────────▶│  DbOptions  │            │ │
+│  │  │Env Vars  │─────────▶│ & Val- │─────────▶│  Validated  │            │ │
+│  │  │TOML File │─────────▶│ idate  │─────────▶│             │            │ │
+│  │  │Defaults  │─────────▶│        │          └─────────────┘            │ │
+│  │  └──────────┘          └────────┘                                      │ │
+│  │                                                                         │ │
+│  │  Precedence: Explicit > Environment > File > Defaults                  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                      │                                       │
+│                                      ▼                                       │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                        RESOURCE ALLOCATOR                               │ │
+│  │                                                                         │ │
+│  │  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐     │ │
+│  │  │     Storage     │   │      Index      │   │      Cache      │     │ │
+│  │  │  Initialization │   │  Initialization │   │  Initialization │     │ │
+│  │  ├─────────────────┤   ├─────────────────┤   ├─────────────────┤     │ │
+│  │  │ • Disk/Memory   │   │ • HNSW/Flat     │   │ • Optional      │     │ │
+│  │  │ • Validate path │   │ • Feature detect│   │ • Size config   │     │ │
+│  │  │ • Create/open   │   │ • Build graph   │   │ • LRU policy    │     │ │
+│  │  └─────────────────┘   └─────────────────┘   └─────────────────┘     │ │
+│  │         │                       │                       │              │ │
+│  │         └───────────────────────┴───────────────────────┘              │ │
+│  │                                 │                                       │ │
+│  └─────────────────────────────────┼───────────────────────────────────────┘ │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                        LIFECYCLE MANAGER                                │ │
+│  │                                                                         │ │
+│  │  State Machine:                                                        │ │
+│  │  ┌──────────────┐   init    ┌──────────────┐  ready  ┌─────────────┐ │ │
+│  │  │Uninitialized │─────────▶ │Initializing  │────────▶│    Ready    │ │ │
+│  │  └──────────────┘           └──────────────┘         └──────┬──────┘ │ │
+│  │        ▲                            │                        │        │ │
+│  │        │                            │ error                  │ ops    │ │
+│  │        │                            ▼                        │        │ │
+│  │  ┌──────────────┐           ┌──────────────┐               │        │ │
+│  │  │   Shutdown   │◀──────────│   Degraded   │               │        │ │
+│  │  └──────────────┘           └──────────────┘               │        │ │
+│  │        ▲                                                     │        │ │
+│  │        └─────────────────────────────────────────────────────┘        │ │
+│  │                                                                        │ │
+│  │  Responsibilities:                                                     │ │
+│  │  • Track initialization state                                         │ │
+│  │  • Register cleanup handlers                                          │ │
+│  │  • Coordinate shutdown                                                │ │
+│  │  • Health monitoring                                                  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+└──────────────────────────────────────────────┬───────────────────────────────┘
+                                               │
+                                               ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      LAYER 3: CORE COMPONENTS                                │
+├──────────────────────┬──────────────────────┬───────────────────────────────┤
+│                      │                      │                               │
+│  ┌────────────────┐  │  ┌────────────────┐  │  ┌─────────────────────────┐ │
+│  │    Storage     │  │  │     Index      │  │  │      Cache System       │ │
+│  │    Backend     │  │  │     Engine     │  │  │                         │ │
+│  ├────────────────┤  │  ├────────────────┤  │  ├─────────────────────────┤ │
+│  │                │  │  │                │  │  │                         │ │
+│  │ • VectorStorage│  │  │ • HnswIndex    │  │  │ • LRU Cache             │ │
+│  │   (disk-based) │  │  │ • FlatIndex    │  │  │ • Configurable size     │ │
+│  │                │  │  │                │  │  │ • Optional feature      │ │
+│  │ • MemoryStorage│  │  │ • Auto-select  │  │  │                         │ │
+│  │   (WASM)       │  │  │   by features  │  │  │                         │ │
+│  │                │  │  │                │  │  │                         │ │
+│  │ • Memory-mapped│  │  │ • SIMD-optimzd │  │  │                         │ │
+│  │ • Batch insert │  │  │ • Quantization │  │  │                         │ │
+│  │                │  │  │                │  │  │                         │ │
+│  └────────────────┘  │  └────────────────┘  │  └─────────────────────────┘ │
+│                      │                      │                               │
+└──────────────────────┴──────────────────────┴───────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         INITIALIZATION FLOW SEQUENCE                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+   User Request
+        │
+        ▼
+   ┌─────────────────────────┐
+   │ 1. Parse Configuration  │
+   │                         │
+   │ Sources:                │
+   │ • CLI arguments         │──► Highest priority
+   │ • Environment vars      │──► Medium priority
+   │ • Config file (TOML)    │──► Low priority
+   │ • Built-in defaults     │──► Fallback
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 2. Validate & Merge     │
+   │                         │
+   │ Checks:                 │
+   │ • dimensions > 0        │
+   │ • valid metric          │
+   │ • HNSW params in range  │
+   │ • path writable         │
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 3. Build DbOptions      │
+   │                         │
+   │ Output:                 │
+   │ • dimensions: usize     │
+   │ • distance_metric       │
+   │ • storage_path: String  │
+   │ • hnsw_config: Option   │
+   │ • quantization: Option  │
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 4. Feature Detection    │
+   │                         │
+   │ Detect:                 │
+   │ • HNSW available?       │──► WASM: No → Use FlatIndex
+   │ • Storage available?    │──► WASM: No → Use MemoryStorage
+   │ • SIMD available?       │──► Enable optimizations
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 5. Allocate Resources   │
+   │                         │
+   │ Parallel initialization:│
+   │ ┌────────────┐          │
+   │ │ Storage    │◀─┐       │
+   │ └────────────┘  │       │
+   │ ┌────────────┐  │       │
+   │ │   Index    │◀─┤       │
+   │ └────────────┘  │       │
+   │ ┌────────────┐  │       │
+   │ │   Cache    │◀─┘       │
+   │ └────────────┘          │
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 6. Validate State       │
+   │                         │
+   │ Verify:                 │
+   │ • Storage accessible    │
+   │ • Index initialized     │
+   │ • No conflicts          │
+   │ • Resources within limit│
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 7. Register Cleanup     │
+   │                         │
+   │ Handlers:               │
+   │ • Flush buffers         │
+   │ • Close files           │
+   │ • Free memory           │
+   │ • Update metadata       │
+   └────────┬────────────────┘
+            │
+            ▼
+   ┌─────────────────────────┐
+   │ 8. Return VectorDB      │
+   │                         │
+   │ State: Ready            │
+   │ Operations: Enabled     │
+   │                         │
+   └─────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        ERROR RECOVERY DECISION TREE                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                          Error Detected
+                                │
+                ┌───────────────┼───────────────┐
+                │               │               │
+                ▼               ▼               ▼
+        ┌──────────────┐ ┌──────────────┐ ┌─────────────┐
+        │Configuration │ │   Feature    │ │  Resource   │
+        │    Error     │ │ Unavailable  │ │    Error    │
+        └──────┬───────┘ └──────┬───────┘ └──────┬──────┘
+               │                │                 │
+               ▼                ▼                 ▼
+        ┌──────────────┐ ┌──────────────┐ ┌─────────────┐
+        │ Fail Fast    │ │ Auto Fallback│ │  Degrade    │
+        │ Return Err   │ │ • HNSW→Flat  │ │ • Reduce    │
+        │              │ │ • Disk→Mem   │ │   capacity  │
+        └──────────────┘ └──────┬───────┘ │ • Retry     │
+                                │         └──────┬──────┘
+                                │                │
+                                ▼                ▼
+                         ┌─────────────────────────┐
+                         │   Log Warning & Continue│
+                         └─────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     MULTI-ENVIRONMENT INITIALIZATION                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  RUST CORE API                                                             ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Pattern 1: Zero-Config
+┌────────────────────────────────────┐
+│ VectorDB::with_dimensions(384)?    │──► Default everything
+└────────────────────────────────────┘
+
+Pattern 2: Builder
+┌────────────────────────────────────┐
+│ VectorDB::builder()                │
+│   .dimensions(768)                 │──► Fluent API
+│   .distance_metric(Cosine)         │──► Type-safe
+│   .storage_path("./db")            │──► Incremental
+│   .enable_hnsw(config)             │
+│   .build()?                        │
+└────────────────────────────────────┘
+
+Pattern 3: Config Object
+┌────────────────────────────────────┐
+│ let opts = DbOptions { ... };      │──► Full control
+│ VectorDB::new(opts)?               │──► Serializable
+└────────────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  NODE.JS BINDING                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Pattern 1: Simple
+┌────────────────────────────────────┐
+│ const db = new VectorDB({          │──► Quick start
+│   dimensions: 384                  │──► Minimal config
+│ });                                │
+└────────────────────────────────────┘
+
+Pattern 2: Async
+┌────────────────────────────────────┐
+│ const db = await VectorDB.create({ │──► Promise-based
+│   dimensions: 768,                 │──► Non-blocking
+│   storagePath: './db'              │
+│ });                                │
+└────────────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  WASM BINDING                                                              ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Pattern 1: Browser
+┌────────────────────────────────────┐
+│ await VectorDB.init();             │──► Load WASM
+│ const db = new VectorDB({          │──► In-memory only
+│   dimensions: 384                  │──► No file system
+│ });                                │
+└────────────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  CLI                                                                       ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Pattern 1: Direct
+┌────────────────────────────────────┐
+│ ruvector create \                  │──► Simple CLI
+│   --dimensions 384 \               │──► Flag-based
+│   --path ./db                      │
+└────────────────────────────────────┘
+
+Pattern 2: Config File
+┌────────────────────────────────────┐
+│ ruvector --config ruvector.toml \  │──► Reusable
+│   create                           │──► Version control
+└────────────────────────────────────┘
+
+Pattern 3: Environment
+┌────────────────────────────────────┐
+│ RUVECTOR_DIMENSIONS=768 \          │──► 12-factor app
+│ ruvector create                    │──► Container-friendly
+└────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      KEY ARCHITECTURAL DECISIONS (ADRs)                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+ADR-001: Builder Pattern
+    Rationale: Improve ergonomics while maintaining backward compatibility
+    Impact: Additional API surface, better DX
+
+ADR-002: Automatic Feature Detection
+    Rationale: Reduce configuration burden, handle WASM limitations gracefully
+    Impact: Slightly more complex logic, much better UX
+
+ADR-003: Configuration Precedence (Explicit > Env > File > Default)
+    Rationale: Match industry standards, enable deployment flexibility
+    Impact: Must document clearly, predictable behavior
+
+ADR-004: Fail-Fast Validation
+    Rationale: Catch errors early, provide clear error messages
+    Impact: Longer initialization, better reliability
+
+ADR-005: Resource Cleanup Registration
+    Rationale: Ensure proper shutdown, prevent resource leaks
+    Impact: More complex lifecycle management, production-ready
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PERFORMANCE CHARACTERISTICS                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Initialization Time:
+    Small DB (< 10K):      < 100ms
+    Medium DB (10K-1M):    < 1s
+    Large DB (> 1M):       < 10s
+
+Memory Footprint:
+    Base overhead:         ~10MB
+    Per vector (384d):     ~1.5KB (vector + metadata + HNSW)
+    1M vectors:            ~1.5GB + index overhead
+
+Startup Modes:
+    Cold Start:            Create new DB → ~100ms
+    Warm Start:            Load existing DB → < 1s (memory-mapped)

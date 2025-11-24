@@ -168,7 +168,10 @@ class OpenAILM {
       throw new Error(`OpenAI API error: ${response.status} ${error}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as {
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
+      choices: Array<{ message: { content: string } }>;
+    };
     this.inputTokens += data.usage?.prompt_tokens || 0;
     this.outputTokens += data.usage?.completion_tokens || 0;
 
@@ -221,7 +224,10 @@ class AnthropicLM {
       throw new Error(`Anthropic API error: ${response.status} ${error}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as {
+      usage?: { input_tokens?: number; output_tokens?: number };
+      content: Array<{ text: string }>;
+    };
     this.inputTokens += data.usage?.input_tokens || 0;
     this.outputTokens += data.usage?.output_tokens || 0;
 
@@ -281,7 +287,7 @@ class DataQualityModule extends PredictModule {
           { name: 'errors', type: 'string', description: 'Any validation errors' }
         ]
       },
-      promptTemplate: ({ data, schema }) => `
+      promptTemplate: ({ data, schema }: { data: any; schema: any }) => `
 Validate this synthetic data against the schema and provide quality metrics.
 
 Data: ${data}
@@ -475,7 +481,7 @@ export class MultiModelBenchmark {
     const trainset = this.generateTrainingSet(schema, 20);
 
     const optimizer = new BootstrapFewShot(
-      (input, output, expected) => {
+      (input: any, output: any, expected?: any) => {
         if (!expected) return 0;
         return this.calculateQualityScore(output, expected);
       },
@@ -501,7 +507,7 @@ export class MultiModelBenchmark {
     const trainset = this.generateTrainingSet(schema, 20);
 
     const optimizer = new MIPROv2(
-      (input, output, expected) => {
+      (input: any, output: any, expected?: any) => {
         if (!expected) return 0;
         return this.calculateQualityScore(output, expected);
       },
@@ -535,8 +541,8 @@ export class MultiModelBenchmark {
         const score = this.calculateQualityScore(result, example.output);
         totalScore += score;
         count++;
-      } catch (error) {
-        console.error(`    ⚠ Evaluation error: ${error.message}`);
+      } catch (error: any) {
+        console.error(`    ⚠ Evaluation error: ${error.message || error}`);
       }
     }
 
@@ -566,8 +572,8 @@ export class MultiModelBenchmark {
 
         const latency = performance.now() - start;
         latencies.push(latency);
-      } catch (error) {
-        console.error(`    ⚠ Performance test error: ${error.message}`);
+      } catch (error: any) {
+        console.error(`    ⚠ Performance test error: ${error.message || error}`);
       }
     }
 
@@ -946,7 +952,7 @@ async function main() {
     console.log('📊 Check the results directory for detailed reports.');
     console.log('='.repeat(70));
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('\n❌ Benchmark failed:', error);
     console.error(error.stack);
     process.exit(1);

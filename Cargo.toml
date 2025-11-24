@@ -78,6 +78,9 @@ criterion = { version = "0.5", features = ["html_reports"] }
 proptest = "1.5"
 mockall = "0.13"
 
+# Signal handling (Unix)
+signal-hook = "0.3"
+
 # Performance
 dashmap = "6.1"
 parking_lot = "0.12"

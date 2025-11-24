@@ -64,11 +64,15 @@ describe('APIClient', () => {
     });
 
     it('should handle API errors', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found'
-      });
+      // Mock all retry attempts (client retries 3 times)
+      for (let i = 0; i < 3; i++) {
+        global.fetch.mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+          json: async () => ({ error: 'Not found' })
+        });
+      }
 
       await expect(client.request('/test')).rejects.toThrow('API error: 404 Not Found');
     });

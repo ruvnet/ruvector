@@ -3,7 +3,6 @@
 [![Crates.io](https://img.shields.io/crates/v/ruvector-tiny-dancer-core.svg)](https://crates.io/crates/ruvector-tiny-dancer-core)
 [![Documentation](https://docs.rs/ruvector-tiny-dancer-core/badge.svg)](https://docs.rs/ruvector-tiny-dancer-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/ruvnet/ruvector/workflows/CI/badge.svg)](https://github.com/ruvnet/ruvector/actions)
 [![Rust Version](https://img.shields.io/badge/rust-1.77%2B-blue.svg)](https://www.rust-lang.org)
 
 Production-grade AI agent routing system with FastGRNN neural inference for **70-85% LLM cost reduction**.

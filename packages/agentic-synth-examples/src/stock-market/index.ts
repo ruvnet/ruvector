@@ -55,6 +55,19 @@ export interface StockMarketConfig extends Partial<SynthConfig> {
 }
 
 /**
+ * Internal config with required properties
+ */
+interface ResolvedStockMarketConfig extends SynthConfig {
+  symbols: string[];
+  startPrice: number;
+  volatility: number;
+  marketCondition: MarketCondition;
+  includeNews: boolean;
+  newsFrequency: number;
+  tradingHours: boolean;
+}
+
+/**
  * Market statistics
  */
 export interface MarketStatistics {
@@ -104,7 +117,7 @@ export interface MarketStatistics {
  */
 export class StockMarketSimulator extends EventEmitter {
   private synth: AgenticSynth;
-  private config: StockMarketConfig;
+  private config: ResolvedStockMarketConfig;
   private generatedCandles: OHLCVData[] = [];
   private newsEvents: MarketNewsEvent[] = [];
   private currentPrice: Map<string, number> = new Map();

@@ -89,6 +89,17 @@ export interface SwarmConfig extends Partial<SynthConfig> {
 }
 
 /**
+ * Internal config with required properties
+ */
+interface ResolvedSwarmConfig extends SynthConfig {
+  agentCount: number;
+  strategy: CoordinationStrategy;
+  enableLearning: boolean;
+  memorySize: number;
+  syncInterval: number;
+}
+
+/**
  * Swarm statistics
  */
 export interface SwarmStatistics {
@@ -140,7 +151,7 @@ export interface SwarmStatistics {
  */
 export class SwarmCoordinator extends EventEmitter {
   private synth: AgenticSynth;
-  private config: SwarmConfig;
+  private config: ResolvedSwarmConfig;
   private agents: Map<string, Agent> = new Map();
   private tasks: CoordinationTask[] = [];
   private learningPatterns: DistributedLearningPattern[] = [];
@@ -280,7 +291,7 @@ export class SwarmCoordinator extends EventEmitter {
 
       this.emit('coordination:complete', {
         taskId: task.id,
-        duration: task.endTime.getTime() - task.startTime.getTime(),
+        duration: task.endTime!.getTime() - task.startTime!.getTime(),
         resultCount: result.data.length
       });
 

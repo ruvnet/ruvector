@@ -140,6 +140,17 @@ export interface CICDConfig extends Partial<SynthConfig> {
 }
 
 /**
+ * Internal config with required properties
+ */
+interface ResolvedCICDConfig extends SynthConfig {
+  pipelineNames: string[];
+  environments: Environment[];
+  failureRate: number;
+  includePerformanceData: boolean;
+  includeAlerts: boolean;
+}
+
+/**
  * CI/CD Data Generator for pipeline testing and DevOps analytics
  *
  * Features:
@@ -178,7 +189,7 @@ export interface CICDConfig extends Partial<SynthConfig> {
  */
 export class CICDDataGenerator extends EventEmitter {
   private synth: AgenticSynth;
-  private config: CICDConfig;
+  private config: ResolvedCICDConfig;
   private executions: PipelineExecution[] = [];
   private deployments: DeploymentRecord[] = [];
   private alerts: MonitoringAlert[] = [];

@@ -1,7 +1,0 @@
-src/
-test/
-tsconfig.json
-*.log
-node_modules/
-.DS_Store
-*.tgz
