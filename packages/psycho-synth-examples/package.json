@@ -1,0 +1,71 @@
+{
+  "name": "psycho-synth-examples",
+  "version": "0.1.0",
+  "description": "Advanced psycho-symbolic reasoning examples: audience analysis, voter sentiment, marketing optimization, financial insights, medical patient analysis, and exotic psychological profiling",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "bin": {
+    "psycho-synth-examples": "./bin/cli.js",
+    "pse": "./bin/cli.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "example:audience": "tsx examples/audience-analysis.ts",
+    "example:voter": "tsx examples/voter-sentiment.ts",
+    "example:marketing": "tsx examples/marketing-optimization.ts",
+    "example:financial": "tsx examples/financial-sentiment.ts",
+    "example:medical": "tsx examples/medical-patient-analysis.ts",
+    "example:psychological": "tsx examples/psychological-profiling.ts",
+    "example:all": "npm run example:audience && npm run example:voter && npm run example:marketing && npm run example:financial && npm run example:medical && npm run example:psychological"
+  },
+  "dependencies": {
+    "psycho-symbolic-integration": "^0.1.0",
+    "@ruvector/agentic-synth": "^0.1.0",
+    "psycho-symbolic-reasoner": "^1.0.7",
+    "commander": "^11.1.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.0"
+  },
+  "keywords": [
+    "psycho-symbolic",
+    "reasoning",
+    "synthetic-data",
+    "audience-analysis",
+    "voter-sentiment",
+    "marketing-optimization",
+    "financial-analysis",
+    "medical-insights",
+    "psychological-profiling",
+    "sentiment-analysis",
+    "preference-extraction",
+    "examples"
+  ],
+  "author": "rUv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruvnet/ruvector.git",
+    "directory": "packages/psycho-synth-examples"
+  },
+  "bugs": {
+    "url": "https://github.com/ruvnet/ruvector/issues"
+  },
+  "homepage": "https://github.com/ruvnet/ruvector/tree/main/packages/psycho-synth-examples#readme",
+  "files": [
+    "dist",
+    "bin",
+    "examples",
+    "src",
+    "README.md",
+    "LICENSE"
+  ]
+}

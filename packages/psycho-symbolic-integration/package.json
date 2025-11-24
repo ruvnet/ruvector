@@ -1,0 +1,67 @@
+{
+  "name": "psycho-symbolic-integration",
+  "version": "0.1.0",
+  "description": "Integration layer combining psycho-symbolic-reasoner with ruvector and agentic-synth for advanced AI reasoning and data generation",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "psycho-symbolic-reasoner": "^1.0.7",
+    "@ruvector/agentic-synth": "^0.1.0"
+  },
+  "peerDependencies": {
+    "ruvector": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^1.0.0"
+  },
+  "keywords": [
+    "psycho-symbolic",
+    "reasoning",
+    "ruvector",
+    "agentic-synth",
+    "ai",
+    "vector-database",
+    "synthetic-data",
+    "integration"
+  ],
+  "author": "rUv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruvnet/ruvector.git",
+    "directory": "packages/psycho-symbolic-integration"
+  },
+  "bugs": {
+    "url": "https://github.com/ruvnet/ruvector/issues"
+  },
+  "homepage": "https://github.com/ruvnet/ruvector#readme",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ]
+}

@@ -1,0 +1,27 @@
+# Development files
+*.log
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+
+# Testing
+coverage/
+.nyc_output/
+*.test.ts
+*.spec.ts
+
+# Development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts not needed
+node_modules/
+.claude-flow/
+tsconfig.tsbuildinfo
+
+# Docs (keep README.md)
+docs/

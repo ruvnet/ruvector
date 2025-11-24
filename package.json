@@ -5,7 +5,8 @@
   "private": true,
   "workspaces": [
     "crates/ruvector-node",
-    "crates/ruvector-wasm"
+    "crates/ruvector-wasm",
+    "packages/*"
   ],
   "scripts": {
     "build": "cargo build --release",
@@ -35,5 +36,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "psycho-symbolic-reasoner": "^1.0.7"
   }
 }
