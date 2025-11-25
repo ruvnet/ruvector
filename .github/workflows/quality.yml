@@ -1,0 +1,293 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run weekly security scans on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Annotate code with lint results
+        uses: ataylorme/eslint-annotate-action@v2
+        if: always()
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: "packages/genomic-vector-analysis/eslint-report.json"
+          check-name: "ESLint Results"
+
+  prettier:
+    name: Prettier Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check formatting
+        run: npx prettier --check 'src/**/*.ts' 'tests/**/*.ts'
+        working-directory: ./packages/genomic-vector-analysis
+
+  typescript-strict:
+    name: TypeScript Strict Mode
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Type check with strict mode
+        run: npm run typecheck
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check for any TypeScript errors
+        run: |
+          OUTPUT=$(npm run typecheck 2>&1)
+          if echo "$OUTPUT" | grep -q "error TS"; then
+            echo "❌ TypeScript errors found"
+            echo "$OUTPUT"
+            exit 1
+          else
+            echo "✅ No TypeScript errors"
+          fi
+        working-directory: ./packages/genomic-vector-analysis
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Generate audit report
+        run: |
+          npm audit --json > audit-report.json || true
+          echo "Audit report generated"
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: packages/genomic-vector-analysis/audit-report.json
+
+  snyk-security:
+    name: Snyk Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --file=packages/genomic-vector-analysis/package.json
+          command: test
+
+      - name: Upload Snyk results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'typescript']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: GPL-2.0, GPL-3.0
+
+  code-complexity:
+    name: Code Complexity Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Install complexity analysis tools
+        run: npm install -D complexity-report
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Analyze code complexity
+        run: |
+          echo "Analyzing code complexity..."
+
+          # Simple complexity check - count lines per file
+          find src -name "*.ts" -exec wc -l {} \; | while read lines file; do
+            if [ "$lines" -gt 500 ]; then
+              echo "⚠️ $file has $lines lines (threshold: 500)"
+            fi
+          done
+
+          echo "✅ Complexity analysis complete"
+        working-directory: ./packages/genomic-vector-analysis
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check licenses
+        run: |
+          npx license-checker --summary --production --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD"
+        continue-on-error: true
+        working-directory: ./packages/genomic-vector-analysis
+
+  quality-summary:
+    name: Quality Summary
+    runs-on: ubuntu-latest
+    needs: [eslint, prettier, typescript-strict, security-audit, code-complexity]
+    if: always()
+
+    steps:
+      - name: Generate quality report
+        run: |
+          echo "# Code Quality Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Results" >> $GITHUB_STEP_SUMMARY
+          echo "- ESLint: ${{ needs.eslint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Prettier: ${{ needs.prettier.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- TypeScript: ${{ needs.typescript-strict.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security: ${{ needs.security-audit.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Complexity: ${{ needs.code-complexity.result }}" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.eslint.result }}" != "success" ] || \
+             [ "${{ needs.prettier.result }}" != "success" ] || \
+             [ "${{ needs.typescript-strict.result }}" != "success" ]; then
+            echo "❌ Quality checks failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ All quality checks passed" >> $GITHUB_STEP_SUMMARY
+          fi

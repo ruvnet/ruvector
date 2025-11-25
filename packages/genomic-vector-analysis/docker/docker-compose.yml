@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Main genomic analysis service
+  genomic-analysis:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: genomic-vector-analysis:latest
+    container_name: genomic-analysis
+    volumes:
+      # Mount local data directories
+      - ./data/input:/data/input
+      - ./data/output:/data/output
+      - ./data/cache:/data/cache
+      # Mount source code for development
+      - ../src:/app/src
+      - ../integrations:/app/integrations
+      - ../examples:/app/examples
+    environment:
+      # OpenAI API for embeddings
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Database configurations
+      - ANNOVAR_PATH=/opt/annovar
+      - VEP_PATH=/opt/bioinformatics/ensembl-vep
+      - VEP_CACHE=/opt/vep-cache
+      - REFERENCE_GENOME=/data/reference/chr22.fa
+      - CLINVAR_VCF=/data/databases/clinvar.vcf.gz
+      - GNOMAD_VCF=/data/databases/gnomad.genomes.v4.0.sites.chr22.vcf.bgz
+      - HPO_OBO=/data/databases/hp.obo
+      - HPO_GENES=/data/databases/phenotype_to_genes.txt
+      # Performance settings
+      - NODE_OPTIONS=--max-old-space-size=4096
+    networks:
+      - genomic-network
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Jupyter notebook for interactive analysis
+  jupyter:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: genomic-vector-analysis:latest
+    container_name: jupyter-genomics
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/notebooks
+      - ./data/input:/data/input
+      - ./data/output:/data/output
+      - ../src:/app/src
+      - ../integrations:/app/integrations
+      - ../examples:/app/examples
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - JUPYTER_ENABLE_LAB=yes
+    networks:
+      - genomic-network
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --notebook-dir=/notebooks
+
+  # Vector database service (using AgentDB/ruvector)
+  vector-db:
+    image: redis:alpine
+    container_name: genomic-vector-db
+    ports:
+      - "6379:6379"
+    volumes:
+      - vector-db-data:/data
+    networks:
+      - genomic-network
+    command: redis-server --appendonly yes
+
+  # PostgreSQL for metadata storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: genomic-postgres
+    environment:
+      - POSTGRES_DB=genomics
+      - POSTGRES_USER=genomics
+      - POSTGRES_PASSWORD=genomics_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - genomic-network
+
+  # BLAST server for sequence similarity (optional)
+  blast:
+    image: ncbi/blast:latest
+    container_name: genomic-blast
+    volumes:
+      - ./data/blast-db:/blast/blastdb:ro
+      - ./data/blast-queries:/blast/queries
+      - ./data/blast-results:/blast/results
+    networks:
+      - genomic-network
+    command: tail -f /dev/null
+
+  # Web UI for visualization (optional)
+  web-ui:
+    build:
+      context: ./web-ui
+      dockerfile: Dockerfile
+    image: genomic-web-ui:latest
+    container_name: genomic-web-ui
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    networks:
+      - genomic-network
+    depends_on:
+      - genomic-analysis
+
+networks:
+  genomic-network:
+    driver: bridge
+
+volumes:
+  vector-db-data:
+  postgres-data:

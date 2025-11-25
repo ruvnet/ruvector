@@ -1,0 +1,209 @@
+name: Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  typescript-build:
+    name: TypeScript Build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Build TypeScript
+        run: npm run build
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check build output
+        run: |
+          ls -lah dist/
+          test -f dist/index.js
+          test -f dist/index.d.ts
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-node-${{ matrix.node-version }}
+          path: packages/genomic-vector-analysis/dist/
+          retention-days: 7
+
+  rust-wasm-build:
+    name: Rust WASM Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM
+        run: wasm-pack build --target nodejs
+        working-directory: ./packages/genomic-vector-analysis/src-rust
+
+      - name: Check WASM output
+        run: |
+          ls -lah pkg/
+          test -f pkg/*.wasm
+        working-directory: ./packages/genomic-vector-analysis/src-rust
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: packages/genomic-vector-analysis/src-rust/pkg/
+          retention-days: 7
+
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    needs: [typescript-build]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-node-20.x
+          path: packages/genomic-vector-analysis/dist
+
+      - name: Analyze bundle size
+        run: |
+          BUNDLE_SIZE=$(du -sk dist | cut -f1)
+          BUNDLE_SIZE_KB=$((BUNDLE_SIZE))
+          THRESHOLD_KB=512
+
+          echo "Bundle size: ${BUNDLE_SIZE_KB}KB"
+          echo "Threshold: ${THRESHOLD_KB}KB"
+
+          if [ $BUNDLE_SIZE_KB -gt $THRESHOLD_KB ]; then
+            echo "❌ Bundle size (${BUNDLE_SIZE_KB}KB) exceeds threshold (${THRESHOLD_KB}KB)"
+            exit 1
+          else
+            echo "✅ Bundle size (${BUNDLE_SIZE_KB}KB) is within threshold (${THRESHOLD_KB}KB)"
+          fi
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Comment bundle size on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            function getDirectorySize(dir) {
+              let size = 0;
+              const files = fs.readdirSync(dir);
+              for (const file of files) {
+                const filePath = path.join(dir, file);
+                const stats = fs.statSync(filePath);
+                if (stats.isDirectory()) {
+                  size += getDirectorySize(filePath);
+                } else {
+                  size += stats.size;
+                }
+              }
+              return size;
+            }
+
+            const distPath = 'packages/genomic-vector-analysis/dist';
+            const sizeBytes = getDirectorySize(distPath);
+            const sizeKB = (sizeBytes / 1024).toFixed(2);
+            const threshold = 512;
+            const status = sizeKB < threshold ? '✅' : '❌';
+
+            const comment = `## Bundle Size Analysis
+
+            | Metric | Value | Threshold | Status |
+            |--------|-------|-----------|--------|
+            | Bundle Size | ${sizeKB} KB | ${threshold} KB | ${status} |
+
+            ${sizeKB < threshold ?
+              'Bundle size is within acceptable limits.' :
+              '⚠️ Bundle size exceeds threshold. Consider optimization.'}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Run type check
+        run: npm run typecheck
+        working-directory: ./packages/genomic-vector-analysis
+
+  build-success:
+    name: Build Success
+    runs-on: ubuntu-latest
+    needs: [typescript-build, rust-wasm-build, bundle-analysis, typecheck]
+    if: always()
+
+    steps:
+      - name: Check build status
+        run: |
+          if [ "${{ needs.typescript-build.result }}" != "success" ] || \
+             [ "${{ needs.rust-wasm-build.result }}" != "success" ] || \
+             [ "${{ needs.bundle-analysis.result }}" != "success" ] || \
+             [ "${{ needs.typecheck.result }}" != "success" ]; then
+            echo "❌ Build failed"
+            exit 1
+          else
+            echo "✅ All builds passed"
+          fi

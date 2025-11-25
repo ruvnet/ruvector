@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "name": "sample-embeddings",
+    "version": "1.0.0",
+    "description": "Pre-computed embeddings for common genes, variants, and patient profiles",
+    "dimensions": 384,
+    "total_samples": 1150,
+    "date_generated": "2024-01-20"
+  },
+  "common_genes": {
+    "BRCA1": {
+      "name": "Breast cancer 1",
+      "chromosome": "17",
+      "function": "DNA repair, tumor suppressor",
+      "embedding": [0.923, 0.234, -0.678, 0.456, 0.834, -0.345, 0.567, 0.723, -0.456, 0.678, 0.234, -0.145, 0.567, 0.834, -0.234, 0.456, 0.345, -0.678, 0.123, 0.456, -0.834, 0.234, 0.567, -0.123]
+    },
+    "TP53": {
+      "name": "Tumor protein p53",
+      "chromosome": "17",
+      "function": "Tumor suppressor, cell cycle regulation",
+      "embedding": [0.912, 0.245, -0.678, 0.345, 0.834, -0.245, 0.567, 0.678, -0.345, 0.723, 0.245, -0.123, 0.456, 0.834, -0.245, 0.567, 0.345, -0.678, 0.123, 0.456, -0.912, 0.245, 0.567, -0.123]
+    },
+    "CFTR": {
+      "name": "Cystic fibrosis transmembrane conductance regulator",
+      "chromosome": "7",
+      "function": "Chloride channel",
+      "embedding": [0.834, 0.345, -0.567, 0.234, 0.923, -0.345, 0.678, 0.456, -0.723, 0.567, 0.234, -0.145, 0.456, 0.834, -0.234, 0.567, 0.345, -0.678, 0.234, 0.456, -0.923, 0.345, 0.567, -0.234]
+    },
+    "SCN1A": {
+      "name": "Sodium voltage-gated channel alpha subunit 1",
+      "chromosome": "2",
+      "function": "Sodium channel, neuronal excitability",
+      "embedding": [0.845, 0.234, -0.567, 0.456, 0.723, -0.345, 0.678, 0.567, -0.456, 0.834, 0.234, -0.145, 0.567, 0.723, -0.234, 0.456, 0.345, -0.678, 0.234, 0.456, -0.845, 0.234, 0.567, -0.234]
+    },
+    "MECP2": {
+      "name": "Methyl-CpG binding protein 2",
+      "chromosome": "X",
+      "function": "Transcriptional repressor, chromatin remodeling",
+      "embedding": [0.767, 0.345, -0.567, 0.234, 0.823, -0.345, 0.678, 0.567, -0.456, 0.712, 0.234, -0.145, 0.456, 0.823, -0.234, 0.567, 0.345, -0.767, 0.123, 0.456, -0.823, 0.234, 0.567, -0.123]
+    }
+  },
+  "example_patient_profiles": {
+    "patient_epilepsy_001": {
+      "phenotypes": ["HP:0001250", "HP:0001263", "HP:0000707"],
+      "variants": ["SCN1A_c.3199G>A"],
+      "age": "2 years",
+      "sex": "female",
+      "diagnosis": "Dravet syndrome",
+      "combined_embedding": [0.834, 0.245, -0.612, 0.423, 0.756, -0.334, 0.645, 0.612, -0.423, 0.767, 0.245, -0.145, 0.534, 0.789, -0.245, 0.512, 0.356, -0.667, 0.189, 0.445, -0.823, 0.245, 0.578, -0.167]
+    },
+    "patient_cancer_002": {
+      "phenotypes": ["HP:0002664", "HP:0001631"],
+      "variants": ["BRCA1_c.68_69delAG", "TP53_c.743G>A"],
+      "age": "35 years",
+      "sex": "female",
+      "diagnosis": "Hereditary breast and ovarian cancer syndrome",
+      "combined_embedding": [0.912, 0.256, -0.689, 0.434, 0.845, -0.356, 0.578, 0.712, -0.445, 0.689, 0.234, -0.156, 0.567, 0.845, -0.256, 0.478, 0.356, -0.689, 0.134, 0.467, -0.867, 0.245, 0.589, -0.134]
+    },
+    "patient_cf_003": {
+      "phenotypes": ["HP:0006538", "HP:0001508", "HP:0002097"],
+      "variants": ["CFTR_c.1521_1523delCTT"],
+      "age": "5 years",
+      "sex": "male",
+      "diagnosis": "Cystic fibrosis",
+      "combined_embedding": [0.823, 0.334, -0.578, 0.245, 0.912, -0.334, 0.667, 0.467, -0.712, 0.578, 0.245, -0.145, 0.467, 0.823, -0.245, 0.578, 0.356, -0.667, 0.223, 0.467, -0.912, 0.334, 0.578, -0.223]
+    }
+  },
+  "disease_signatures": {
+    "Dravet_syndrome": {
+      "core_phenotypes": ["HP:0001250", "HP:0001263", "HP:0011097"],
+      "common_genes": ["SCN1A", "SCN2A", "SCN8A"],
+      "signature_embedding": [0.845, 0.234, -0.589, 0.445, 0.734, -0.345, 0.667, 0.578, -0.456, 0.823, 0.234, -0.156, 0.556, 0.734, -0.234, 0.467, 0.345, -0.678, 0.223, 0.456, -0.834, 0.234, 0.578, -0.223]
+    },
+    "Hereditary_breast_ovarian_cancer": {
+      "core_phenotypes": ["HP:0002664", "HP:0100615"],
+      "common_genes": ["BRCA1", "BRCA2", "PALB2", "TP53"],
+      "signature_embedding": [0.923, 0.245, -0.678, 0.423, 0.845, -0.345, 0.589, 0.712, -0.456, 0.689, 0.245, -0.145, 0.578, 0.845, -0.245, 0.489, 0.356, -0.689, 0.134, 0.467, -0.878, 0.245, 0.589, -0.134]
+    },
+    "Cystic_fibrosis": {
+      "core_phenotypes": ["HP:0006538", "HP:0002097", "HP:0001508"],
+      "common_genes": ["CFTR"],
+      "signature_embedding": [0.834, 0.334, -0.578, 0.256, 0.912, -0.334, 0.667, 0.478, -0.712, 0.589, 0.245, -0.145, 0.478, 0.834, -0.245, 0.589, 0.356, -0.667, 0.223, 0.478, -0.912, 0.334, 0.589, -0.223]
+    }
+  },
+  "pathway_embeddings": {
+    "DNA_repair": [0.912, 0.234, -0.678, 0.445, 0.834, -0.345, 0.578, 0.712, -0.456, 0.689],
+    "Cell_cycle": [0.823, 0.245, -0.589, 0.334, 0.756, -0.234, 0.467, 0.623, -0.345, 0.578],
+    "Ion_transport": [0.734, 0.334, -0.467, 0.245, 0.845, -0.334, 0.556, 0.489, -0.623, 0.578],
+    "Transcription": [0.767, 0.345, -0.556, 0.234, 0.823, -0.345, 0.667, 0.578, -0.467, 0.712]
+  }
+}

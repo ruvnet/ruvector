@@ -1,0 +1,321 @@
+/**
+ * Custom CSS for Genomic Vector Analysis API Documentation
+ * Genomics-themed branding with professional scientific styling
+ */
+
+:root {
+  /* Genomics color palette */
+  --color-dna-blue: #0066cc;
+  --color-dna-green: #00aa66;
+  --color-dna-red: #cc3333;
+  --color-dna-yellow: #ffaa00;
+  --color-background: #ffffff;
+  --color-background-secondary: #f5f7fa;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-border: #e0e0e0;
+  --color-code-bg: #f8f9fa;
+  --color-accent: var(--color-dna-blue);
+}
+
+/* Dark mode colors */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1a1a1a;
+    --color-background-secondary: #252525;
+    --color-text: #e0e0e0;
+    --color-text-secondary: #a0a0a0;
+    --color-border: #404040;
+    --color-code-bg: #2a2a2a;
+  }
+}
+
+/* Header customization */
+.tsd-page-title {
+  background: linear-gradient(135deg, var(--color-dna-blue), var(--color-dna-green));
+  color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.tsd-page-title h1 {
+  color: white !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Navigation styling */
+.tsd-navigation {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.tsd-navigation a {
+  color: var(--color-text);
+  transition: all 0.2s ease;
+}
+
+.tsd-navigation a:hover {
+  color: var(--color-accent);
+  background-color: var(--color-background-secondary);
+}
+
+/* Code blocks */
+pre {
+  background-color: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+code {
+  background-color: var(--color-code-bg);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+/* Example sections */
+.tsd-example {
+  background-color: var(--color-background-secondary);
+  border-left: 4px solid var(--color-dna-green);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.tsd-example::before {
+  content: "💡 Example";
+  display: block;
+  font-weight: bold;
+  color: var(--color-dna-green);
+  margin-bottom: 0.5rem;
+}
+
+/* Performance notes */
+.tsd-performance {
+  background-color: #fff9e6;
+  border-left: 4px solid var(--color-dna-yellow);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.tsd-performance::before {
+  content: "⚡ Performance";
+  display: block;
+  font-weight: bold;
+  color: #cc8800;
+  margin-bottom: 0.5rem;
+}
+
+/* Deprecation warnings */
+.tsd-deprecated {
+  background-color: #ffe6e6;
+  border-left: 4px solid var(--color-dna-red);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.tsd-deprecated::before {
+  content: "⚠️ Deprecated";
+  display: block;
+  font-weight: bold;
+  color: var(--color-dna-red);
+  margin-bottom: 0.5rem;
+}
+
+/* Method signatures */
+.tsd-signature {
+  background-color: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* Parameter tables */
+.tsd-parameters {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.tsd-parameters th {
+  background-color: var(--color-dna-blue);
+  color: white;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.tsd-parameters td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tsd-parameters tr:hover {
+  background-color: var(--color-background-secondary);
+}
+
+/* Returns section */
+.tsd-returns {
+  background-color: #e6f7ff;
+  border-left: 4px solid var(--color-dna-blue);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.tsd-returns::before {
+  content: "↩️ Returns";
+  display: block;
+  font-weight: bold;
+  color: var(--color-dna-blue);
+  margin-bottom: 0.5rem;
+}
+
+/* Complexity indicators */
+.complexity-constant::after {
+  content: "O(1)";
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.complexity-logarithmic::after {
+  content: "O(log n)";
+  background-color: #d1ecf1;
+  color: #0c5460;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.complexity-linear::after {
+  content: "O(n)";
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.complexity-quadratic::after {
+  content: "O(n²)";
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+/* Badge styles */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-experimental {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-beta {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-stable {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* Search enhancement */
+.tsd-search {
+  background-color: var(--color-background-secondary);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.tsd-search input {
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.tsd-search input:focus {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Type links */
+.tsd-kind-type-alias,
+.tsd-kind-interface {
+  color: var(--color-dna-green);
+}
+
+.tsd-kind-class {
+  color: var(--color-dna-blue);
+}
+
+.tsd-kind-function,
+.tsd-kind-method {
+  color: var(--color-dna-red);
+}
+
+/* Footer */
+.tsd-footer {
+  border-top: 2px solid var(--color-border);
+  margin-top: 3rem;
+  padding-top: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tsd-page-title {
+    padding: 1rem;
+  }
+
+  .tsd-parameters {
+    font-size: 0.9em;
+  }
+}
+
+/* Print styles */
+@media print {
+  .tsd-navigation,
+  .tsd-search,
+  .tsd-footer {
+    display: none;
+  }
+
+  body {
+    font-size: 10pt;
+  }
+
+  pre {
+    border: 1px solid #000;
+  }
+}

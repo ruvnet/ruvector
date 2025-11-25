@@ -1,0 +1,59 @@
+version: 2
+updates:
+  # Enable version updates for npm (genomic-vector-analysis)
+  - package-ecosystem: "npm"
+    directory: "/packages/genomic-vector-analysis"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "ruvnet"
+    assignees:
+      - "ruvnet"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    versioning-strategy: "increase"
+    ignore:
+      # Ignore major version updates for stable dependencies
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+
+  # Cargo dependencies for Rust/WASM
+  - package-ecosystem: "cargo"
+    directory: "/packages/genomic-vector-analysis/src-rust"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "ruvnet"
+    labels:
+      - "dependencies"
+      - "rust"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "ruvnet"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"

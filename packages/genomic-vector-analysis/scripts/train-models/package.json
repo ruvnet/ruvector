@@ -1,0 +1,19 @@
+{
+  "name": "@ruvector/genomic-training-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Training scripts for genomic embedding models",
+  "scripts": {
+    "train:kmer-3": "ts-node train-kmer-model.ts sequences.fasta ../../models/kmer-3-384d.json 3 384",
+    "train:kmer-5": "ts-node train-kmer-model.ts sequences.fasta ../../models/kmer-5-384d.json 5 384",
+    "train:kmer-7": "ts-node train-kmer-model.ts sequences.fasta ../../models/kmer-7-512d.json 7 512",
+    "train:hpo": "ts-node train-hpo-embeddings.ts ../../models/phenotype-hpo.json hp.obo 384",
+    "train:variants": "ts-node train-variant-patterns.ts ../../models/variant-patterns.json clinvar.vcf 384",
+    "train:all": "npm run train:kmer-3 && npm run train:kmer-5 && npm run train:hpo && npm run train:variants"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "out": "./docs/api",
+  "name": "Genomic Vector Analysis API Documentation",
+  "includeVersion": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "readme": "./README.md",
+  "theme": "default",
+  "navigationLinks": {
+    "GitHub": "https://github.com/ruvnet/ruvector",
+    "NPM": "https://www.npmjs.com/package/@ruvector/genomic-vector-analysis"
+  },
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Core",
+    "Embeddings",
+    "Learning",
+    "Advanced Learning",
+    "Plugins",
+    "Types",
+    "*"
+  ],
+  "sort": ["source-order"],
+  "gitRevision": "main",
+  "gitRemote": "origin",
+  "excludeNotDocumented": false,
+  "excludeInternal": false,
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-merge-modules"
+  ],
+  "searchInComments": true,
+  "searchInDocuments": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "commentStyle": "jsdoc",
+  "skipErrorChecking": false,
+  "treatWarningsAsErrors": false,
+  "basePath": ".",
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/tests/**",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "externalPattern": [
+    "**/node_modules/**"
+  ],
+  "media": "./docs/images",
+  "includes": "./src",
+  "hideGenerator": false,
+  "visibilityFilters": {
+    "protected": true,
+    "private": true,
+    "inherited": true,
+    "external": false
+  },
+  "cacheBust": true,
+  "cleanOutputDir": true,
+  "emit": "docs",
+  "markedOptions": {
+    "mangle": false
+  },
+  "githubPages": true,
+  "cname": "",
+  "customCss": "./docs/api/custom.css",
+  "gaID": "",
+  "gaSite": "",
+  "disableSources": false,
+  "sourceLinkTemplate": "https://github.com/ruvnet/ruvector/blob/{gitRevision}/{path}#L{line}",
+  "lightHighlightTheme": "light-plus",
+  "darkHighlightTheme": "dark-plus",
+  "customFooterHtml": "<p>Generated for @ruvector/genomic-vector-analysis</p>",
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true,
+    "includeFolders": true
+  },
+  "hostedBaseUrl": "https://ruvnet.github.io/ruvector/genomic-vector-analysis/",
+  "preserveLinkText": true,
+  "useFirstParagraphOfCommentAsSummary": true,
+  "blockTags": [
+    "@author",
+    "@category",
+    "@deprecated",
+    "@example",
+    "@experimental",
+    "@internal",
+    "@param",
+    "@returns",
+    "@see",
+    "@throws",
+    "@typeParam",
+    "@module",
+    "@packageDocumentation"
+  ],
+  "inlineTags": [
+    "@link",
+    "@linkcode",
+    "@linkplain",
+    "@inheritDoc"
+  ],
+  "modifierTags": [
+    "@public",
+    "@private",
+    "@protected",
+    "@readonly",
+    "@override",
+    "@virtual",
+    "@sealed"
+  ]
+}

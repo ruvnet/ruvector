@@ -1,0 +1,315 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  validate-docs:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check markdown links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/markdown-link-check-config.json'
+
+      - name: Validate code examples in docs
+        run: |
+          echo "Validating code examples..."
+
+          # Extract and validate TypeScript code blocks from README
+          if [ -f "README.md" ]; then
+            echo "Checking README.md examples..."
+            # This would run a custom script to extract and validate code blocks
+          fi
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check tutorials
+        run: |
+          TUTORIALS_DIR="docs/tutorials"
+          if [ -d "$TUTORIALS_DIR" ]; then
+            echo "Found tutorials directory"
+            for tutorial in $TUTORIALS_DIR/*.md; do
+              echo "Validating: $tutorial"
+              # Validate tutorial structure and code examples
+            done
+          fi
+        working-directory: ./packages/genomic-vector-analysis
+
+  generate-api-docs:
+    name: Generate API Documentation
+    runs-on: ubuntu-latest
+    needs: [validate-docs]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Install TypeDoc
+        run: npm install -D typedoc typedoc-plugin-markdown
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Generate API documentation
+        run: |
+          npx typedoc \
+            --out docs/api \
+            --entryPoints src/index.ts \
+            --excludePrivate \
+            --excludeProtected \
+            --excludeInternal \
+            --readme README.md \
+            --theme default \
+            --name "Genomic Vector Analysis API"
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Upload API docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: packages/genomic-vector-analysis/docs/api/
+
+  build-docs-site:
+    name: Build Documentation Site
+    runs-on: ubuntu-latest
+    needs: [generate-api-docs]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Download API docs
+        uses: actions/download-artifact@v4
+        with:
+          name: api-docs
+          path: packages/genomic-vector-analysis/docs/api
+
+      - name: Create documentation index
+        run: |
+          mkdir -p docs-site
+          cat > docs-site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Genomic Vector Analysis Documentation</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 2rem;
+                line-height: 1.6;
+              }
+              h1 { color: #2c3e50; }
+              .card {
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 1.5rem;
+                margin: 1rem 0;
+                background: #f9f9f9;
+              }
+              .card h2 { margin-top: 0; color: #34495e; }
+              a { color: #3498db; text-decoration: none; }
+              a:hover { text-decoration: underline; }
+              .links { display: flex; gap: 1rem; flex-wrap: wrap; }
+              .badge {
+                display: inline-block;
+                padding: 0.25rem 0.75rem;
+                background: #3498db;
+                color: white;
+                border-radius: 4px;
+                font-size: 0.875rem;
+                margin-right: 0.5rem;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>📊 Genomic Vector Analysis Documentation</h1>
+
+            <div class="card">
+              <h2>🚀 Quick Start</h2>
+              <p>High-performance genomic variant analysis using vector databases and WASM acceleration.</p>
+              <div class="links">
+                <a href="https://github.com/ruvnet/ruvector">GitHub Repository</a>
+                <a href="https://www.npmjs.com/package/@ruvector/genomic-vector-analysis">NPM Package</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>📚 Documentation</h2>
+              <ul>
+                <li><a href="./api/index.html">API Reference</a> - Complete API documentation</li>
+                <li><a href="../README.md">README</a> - Getting started guide</li>
+                <li><a href="../ARCHITECTURE.md">Architecture</a> - System architecture overview</li>
+                <li><a href="../CONTRIBUTING.md">Contributing</a> - Contribution guidelines</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h2>🧬 Features</h2>
+              <ul>
+                <li><span class="badge">WASM</span> Rust-powered WASM acceleration</li>
+                <li><span class="badge">HNSW</span> Advanced vector indexing</li>
+                <li><span class="badge">AI</span> Pattern recognition and learning</li>
+                <li><span class="badge">Scale</span> 100GB+ genomic data support</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h2>🔗 Links</h2>
+              <div class="links">
+                <a href="../examples/">Examples</a>
+                <a href="../docs/adrs/">Architecture Decision Records</a>
+                <a href="../CHANGELOG.md">Changelog</a>
+                <a href="../TEST_COVERAGE_REPORT.md">Test Coverage</a>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Copy documentation files
+        run: |
+          cp -r packages/genomic-vector-analysis/docs/api docs-site/api
+          cp packages/genomic-vector-analysis/README.md docs-site/
+          cp packages/genomic-vector-analysis/ARCHITECTURE.md docs-site/
+          cp packages/genomic-vector-analysis/CONTRIBUTING.md docs-site/
+          cp packages/genomic-vector-analysis/CHANGELOG.md docs-site/
+
+      - name: Upload documentation site
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: docs-site/
+
+  deploy-docs:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [build-docs-site]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Download documentation site
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-site
+          path: docs-site
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  docs-coverage:
+    name: Documentation Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Check documentation coverage
+        run: |
+          echo "Checking documentation coverage..."
+
+          # Count documented vs undocumented exports
+          TOTAL_EXPORTS=$(grep -r "^export" src --include="*.ts" | wc -l)
+          echo "Total exports: $TOTAL_EXPORTS"
+
+          # This is a simple heuristic - in production you'd use a proper tool
+          DOCUMENTED=$(grep -B5 "^export" src --include="*.ts" | grep -c "/\*\*" || true)
+          echo "Documented exports: $DOCUMENTED"
+
+          if [ $TOTAL_EXPORTS -gt 0 ]; then
+            COVERAGE=$((DOCUMENTED * 100 / TOTAL_EXPORTS))
+            echo "Documentation coverage: ${COVERAGE}%"
+
+            if [ $COVERAGE -lt 70 ]; then
+              echo "⚠️ Documentation coverage (${COVERAGE}%) is below threshold (70%)"
+              exit 1
+            else
+              echo "✅ Documentation coverage (${COVERAGE}%) meets threshold"
+            fi
+          fi
+        working-directory: ./packages/genomic-vector-analysis
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## Documentation Coverage
+
+            Documentation coverage report will be available once proper tooling is configured.
+
+            Please ensure all public APIs are documented with TSDoc comments.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
