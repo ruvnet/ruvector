@@ -1,7 +1,7 @@
 {
   "name": "ruvector",
-  "version": "0.1.1",
-  "description": "High-performance vector database with native bindings and WASM fallback",
+  "version": "0.1.2",
+  "description": "All-in-one vector database: HNSW search, Cypher queries, GNN layers, compression. Pinecone + Neo4j + PyTorch in one package.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
@@ -34,7 +34,15 @@
     "ai",
     "rust",
     "napi",
-    "wasm"
+    "wasm",
+    "graph",
+    "cypher",
+    "neo4j",
+    "gnn",
+    "neural-network",
+    "compression",
+    "hnsw",
+    "rag"
   ],
   "author": "rUv",
   "license": "MIT",
@@ -51,7 +59,11 @@
     "inquirer": "^8.2.6"
   },
   "optionalDependencies": {
-    "@ruvector/core": "^0.1.1"
+    "@ruvector/core": "^0.1.1",
+    "@ruvector/graph-node": "^0.1.0",
+    "@ruvector/graph-wasm": "^0.1.0",
+    "@ruvector/gnn-node": "^0.1.0",
+    "@ruvector/gnn-wasm": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
