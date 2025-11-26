@@ -14,6 +14,8 @@ pub mod inclination_analysis;
 pub mod aphelion_clustering;
 pub mod eccentricity_analysis;
 pub mod perihelion_analysis;
+pub mod kozai_lidov_mechanism;
+pub mod anti_alignment_analysis;
 
 pub use kuiper_cluster::{
     KuiperBeltObject,
@@ -47,4 +49,17 @@ pub use perihelion_analysis::{
     generate_report,
     ClusteringAnalysis,
     HighQObject,
+};
+pub use kozai_lidov_mechanism::{
+    analyze_kozai_lidov_mechanism,
+    get_kozai_analysis_report,
+    KozaiLidovAnalysis,
+    KozaiCandidate,
+    PerturberParameters,
+};
+pub use anti_alignment_analysis::{
+    analyze_anti_alignment,
+    generate_anti_alignment_report,
+    AntiAlignmentAnalysis,
+    AntiAlignmentObject,
 };

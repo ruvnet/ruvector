@@ -1,0 +1,86 @@
+╔════════════════════════════════════════════════════════════════════╗
+║        ANALYSIS AGENT 11: KOZAI-LIDOV MECHANISM                    ║
+║        Coupled Eccentricity-Inclination Oscillations               ║
+╚════════════════════════════════════════════════════════════════════╝
+
+═════════════════════════════════════════════════════════════════════
+SELECTION CRITERIA: e > 0.5 AND i > 30° AND a > 50 AU
+═════════════════════════════════════════════════════════════════════
+
+IDENTIFIED CANDIDATES: 6
+  Strong Kozai Evidence (score > 0.7): 0
+  Moderate Kozai Evidence (score > 0.5): 1
+
+ORBITAL PARAMETER STATISTICS:
+─────────────────────────────────────────────────────────────────────
+Semi-Major Axis: 200.16 AU (average)
+
+Eccentricity Distribution:
+  Range: 0.503 - 0.971
+  Mean: 0.8094 | Std Dev: 0.1683
+
+Inclination Distribution:
+  Range: 30.8° - 140.8°
+  Mean: 55.4° | Std Dev: 40.5°
+
+═════════════════════════════════════════════════════════════════════
+KOZAI-LIDOV MECHANISM ANALYSIS
+═════════════════════════════════════════════════════════════════════
+
+Average Kozai Parameter: 0.4172
+  (Measure of e-i coupling strength; 0 = no coupling, 1 = max coupling)
+
+═════════════════════════════════════════════════════════════════════
+ESTIMATED PERTURBER PROPERTIES
+═════════════════════════════════════════════════════════════════════
+
+Semi-Major Axis: 901 - 1101 AU
+Mass: 4.0 - 7.0 Earth masses
+Inclination: 10.0° (relative to TNO plane)
+Eccentricity: ~0.30
+
+Overall Confidence: 40%
+
+CANDIDATE PERTURBERS:
+  • Planet Nine (hypothetical)
+  • Distant stellar companion
+
+
+═════════════════════════════════════════════════════════════════════
+TOP KOZAI-LIDOV CANDIDATES (by Evidence Score)
+═════════════════════════════════════════════════════════════════════
+
+1. ★★ 82158 (2001 FP185)
+   a=213.40 AU | e=0.8398 | i=30.8° | q=34.19 AU | ad=392.7 AU
+   Kozai Parameter: 0.4663 | Evidence Score: 0.526
+   → Moderate Kozai-Lidov coupling
+
+2. ★ 336756 (2010 NV1)
+   a=305.20 AU | e=0.9690 | i=140.8° | q=9.46 AU | ad=600.9 AU
+   Kozai Parameter: 0.1915 | Evidence Score: 0.494
+
+3. ★ 353222 (2009 YD7)
+   a=125.70 AU | e=0.8936 | i=30.8° | q=13.38 AU | ad=238.1 AU
+   Kozai Parameter: 0.3857 | Evidence Score: 0.490
+
+4. ★ 437360 (2013 TV158)
+   a=114.10 AU | e=0.6801 | i=31.1° | q=36.48 AU | ad=191.6 AU
+   Kozai Parameter: 0.6275 | Evidence Score: 0.470
+
+5. ★ 225088 Gonggong
+   a=66.89 AU | e=0.5032 | i=30.9° | q=33.23 AU | ad=100.5 AU
+   Kozai Parameter: 0.7417 | Evidence Score: 0.453
+
+6. ★ 418993 (2009 MS9)
+   a=375.70 AU | e=0.9706 | i=68.0° | q=11.05 AU | ad=740.4 AU
+   Kozai Parameter: 0.0903 | Evidence Score: 0.439
+
+═════════════════════════════════════════════════════════════════════
+KEY FINDINGS & INTERPRETATION
+═════════════════════════════════════════════════════════════════════
+
+PERTURBER HYPOTHESIS:
+  • Distance: ~1101 AU (typical for Planet Nine)
+  • Mass: ~7.0 Earth masses
+  • Inclination: ~10.0° offset from TNO plane
+  • Most likely candidate: Planet Nine or similar distant massive perturber

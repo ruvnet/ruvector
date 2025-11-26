@@ -1,0 +1,49 @@
+{
+  "analysis_type": "EXTREME_TNO_ANALYSIS_PLANET_NINE",
+  "timestamp": "2025-11-26",
+  "filtering_criteria": {
+    "semi_major_axis_min": 250.0,
+    "perihelion_min": 30.0
+  },
+  "extreme_objects": [
+    {
+      "name": "90377 Sedna",
+      "a": 549.5,
+      "e": 0.8613,
+      "i": 11.93,
+      "q": 76.223,
+      "ad": 1022.86,
+      "classification": "EXTREME",
+      "perturbation_strength": 0.4308
+    }
+  ],
+  "statistics": {
+    "count": 1,
+    "a_mean": 549.5,
+    "a_min": 549.5,
+    "a_max": 549.5,
+    "a_median": 549.5,
+    "q_mean": 76.223,
+    "q_min": 76.223,
+    "q_max": 76.223,
+    "ad_mean": 1022.86,
+    "ad_max": 1022.86,
+    "e_mean": 0.8613,
+    "e_min": 0.8613,
+    "e_max": 0.8613,
+    "i_mean": 11.93,
+    "i_max": 11.93,
+    "period_mean": 12886.0,
+    "period_max": 12886.0
+  },
+  "planet_nine_signature": {
+    "total_extreme_objects": 1,
+    "objects": [
+      "90377 Sedna"
+    ],
+    "kozai_cluster_0": 0,
+    "kozai_cluster_180": 0,
+    "avg_perturbation_strength": 0.4308,
+    "high_eccentricity_fraction": 1.0
+  }
+}
