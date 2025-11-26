@@ -1,275 +1,139 @@
 # RuVector
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![npm](https://img.shields.io/npm/v/ruvector.svg)](https://www.npmjs.com/package/ruvector)
 [![Rust](https://img.shields.io/badge/rust-1.77%2B-orange.svg)](https://www.rust-lang.org)
-[![npm](https://img.shields.io/npm/v/ruvector-gnn.svg)](https://www.npmjs.com/package/ruvector-gnn)
 
-**A vector database that learns.** Store embeddings, query with Cypher, and let the index improve itself through Graph Neural Networks.
+**A vector database that learns.** Combines vector search, graph queries, and neural networks in one package.
 
-## What Problem Does RuVector Solve?
+```bash
+npx ruvector
+```
 
-Traditional vector databases just store and search. When you ask "find similar items," they return results but never get smarter.
+## Why RuVector?
 
-**RuVector is different:**
+Most vector databases just store and retrieve. RuVector does more:
 
-1. **Store vectors** like any vector DB (embeddings from OpenAI, Cohere, etc.)
-2. **Query with Cypher** like Neo4j (`MATCH (a)-[:SIMILAR]->(b) RETURN b`)
-3. **The index learns** — GNN layers make search results improve over time
-
-Think of it as: **Pinecone + Neo4j + PyTorch** in one Rust package.
+| Capability | Description |
+|------------|-------------|
+| **Vector Search** | HNSW index with <0.5ms latency, 95%+ recall |
+| **Graph Database** | Neo4j-compatible Cypher queries |
+| **Hyperedges** | N-ary relationships (connect 3+ nodes) |
+| **GNN Layers** | Index topology becomes a trainable neural network |
+| **Tensor Compression** | 2-32x memory reduction (f32→f16→PQ8→PQ4→Binary) |
+| **Differentiable Search** | Soft attention k-NN with gradient flow |
+| **WASM/Browser** | Full client-side support |
 
 ## Quick Start
 
-### Node.js / Browser
-
 ```bash
-# Install
-npm install ruvector-gnn
+# Install globally
+npm install -g ruvector
 
-# Or try instantly with npx
-npx ruvector-gnn --demo
+# Or run directly
+npx ruvector
+
+# Or add to project
+npm install ruvector
 ```
 
 ```javascript
-const { RuvectorLayer, TensorCompress, differentiableSearch } = require('ruvector-gnn');
+const ruvector = require('ruvector');
 
-// Create a GNN layer (128-dim input, 256 hidden, 4 attention heads)
-const layer = new RuvectorLayer(128, 256, 4, 0.1);
+// Vector search
+const db = new ruvector.VectorDB(128); // 128 dimensions
+db.insert('doc1', embedding1);
+db.insert('doc2', embedding2);
+const results = db.search(queryEmbedding, 10); // top 10
 
-// Your embeddings (from OpenAI, Cohere, or any model)
-const queryEmbedding = new Float32Array([0.1, 0.2, ...]);
-const documentEmbeddings = [
-  new Float32Array([0.15, 0.22, ...]),
-  new Float32Array([0.8, 0.1, ...]),
-  // ... more documents
-];
+// Graph queries (Cypher)
+db.execute("CREATE (a:Person {name: 'Alice'})-[:KNOWS]->(b:Person {name: 'Bob'})");
+db.execute("MATCH (p:Person)-[:KNOWS]->(friend) RETURN friend.name");
 
-// Find top 10 similar with soft attention (differentiable!)
-const { indices, weights } = differentiableSearch(queryEmbedding, documentEmbeddings, 10, 0.07);
+// GNN-enhanced search
+const layer = new ruvector.GNNLayer(128, 256, 4); // input, hidden, heads
+const enhanced = layer.forward(query, neighbors, weights);
 
-console.log('Most similar:', indices);
-console.log('Confidence:', weights);
+// Compression (2-32x memory savings)
+const compressed = ruvector.compress(embedding, 0.3); // access frequency
 ```
 
-### Rust
+## Comparison
 
-```bash
-cargo add ruvector-graph ruvector-gnn
-```
+| Feature | RuVector | Pinecone | Qdrant | Milvus | ChromaDB |
+|---------|----------|----------|--------|--------|----------|
+| **Latency (p50)** | <0.5ms | ~2ms | ~1ms | ~5ms | ~50ms |
+| **Memory (1M vec)** | 200MB* | 2GB | 1.5GB | 1GB | 3GB |
+| **Graph Queries** | ✅ Cypher | ❌ | ❌ | ❌ | ❌ |
+| **Hyperedges** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Self-Learning (GNN)** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Auto-Compression** | ✅ 2-32x | ❌ | ❌ | ✅ | ❌ |
+| **Browser/WASM** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Differentiable** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Open Source** | ✅ MIT | ❌ | ✅ | ✅ | ✅ |
 
-```rust
-use ruvector_graph::{GraphDB, NodeBuilder, EdgeBuilder};
-use ruvector_gnn::{RuvectorLayer, differentiable_search};
+*With PQ8 compression
 
-// Create graph database
-let db = GraphDB::new();
-
-// Add nodes with embeddings
-let doc1 = NodeBuilder::new("doc1")
-    .label("Document")
-    .property("text", "Machine learning basics")
-    .property("embedding", vec![0.1, 0.2, 0.3])
-    .build();
-db.create_node(doc1)?;
-
-// Query with Cypher
-let results = db.execute("MATCH (d:Document) WHERE d.text CONTAINS 'learning' RETURN d")?;
-
-// Use GNN for smarter search
-let layer = RuvectorLayer::new(128, 256, 4, 0.1);
-let enhanced = layer.forward(&query_embedding, &neighbor_embeddings, &edge_weights);
-```
-
-## Features
-
-| Feature | What It Does | Why It Matters |
-|---------|--------------|----------------|
-| **Vector Search** | Find similar items in <0.5ms | Fast enough for real-time apps |
-| **Cypher Queries** | `MATCH`, `WHERE`, `CREATE`, `RETURN` | Use familiar Neo4j syntax |
-| **GNN Layers** | Neural network on the index graph | Search improves with usage |
-| **Hyperedges** | Connect 3+ nodes at once | Model complex relationships |
-| **Auto-Compression** | 2-32x memory reduction | Store more, pay less |
-| **Browser Support** | Full WASM build | Run AI search client-side |
-
-## Performance
+## How GNN Learning Works
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Benchmark              RuVector    Pinecone    ChromaDB │
-├─────────────────────────────────────────────────────────┤
-│ Query Latency (p50)    <0.5ms      ~2ms        ~50ms   │
-│ Memory (1M vectors)    ~200MB*     ~2GB        ~3GB    │
-│ Browser Support        ✅          ❌          ❌      │
-│ Graph Queries          ✅          ❌          ❌      │
-│ Self-Improving         ✅          ❌          ❌      │
-└─────────────────────────────────────────────────────────┘
-* With PQ8 compression enabled
+Traditional:  Query → Index → Results (static)
+
+RuVector:     Query → Index → GNN → Results
+                       ↑              │
+                       └── learns ────┘
 ```
 
-## How the GNN Works
-
-Traditional vector search:
-```
-Query → HNSW Index → Top K Results
-```
-
-RuVector with GNN:
-```
-Query → HNSW Index → GNN Layer → Enhanced Results
-                ↑                      │
-                └──── learns from ─────┘
-```
-
-The GNN layer:
-1. Takes your query and its nearest neighbors
-2. Applies attention to weigh which neighbors matter
-3. Updates representations based on graph structure
-4. Returns better-ranked results
-
-Over time, frequently-accessed paths get reinforced, making common queries faster and more accurate.
+The GNN layer treats HNSW neighbors as a graph, applying attention-based message passing. Frequently-used paths get reinforced, improving accuracy over time.
 
 ## Compression Tiers
 
-RuVector automatically compresses cold data:
+| Tier | Access Freq | Format | Ratio | Use |
+|------|-------------|--------|-------|-----|
+| Hot | >80% | f32 | 1x | Active |
+| Warm | 40-80% | f16 | 2x | Recent |
+| Cool | 10-40% | PQ8 | 8x | Older |
+| Cold | 1-10% | PQ4 | 16x | Archive |
+| Frozen | <1% | Binary | 32x | Rare |
 
-| Access Frequency | Format | Compression | Example |
-|-----------------|--------|-------------|---------|
-| Hot (>80%) | f32 | 1x | Active queries |
-| Warm (40-80%) | f16 | 2x | Recent docs |
-| Cool (10-40%) | PQ8 | 8x | Older content |
-| Cold (1-10%) | PQ4 | 16x | Archives |
-| Archive (<1%) | Binary | 32x | Rarely used |
+## Installation
 
-## Use Cases
-
-**RAG (Retrieval-Augmented Generation)**
-```javascript
-// Find relevant context for LLM
-const context = differentiableSearch(questionEmbedding, documentEmbeddings, 5, 0.1);
-const prompt = `Context: ${context.map(i => docs[i]).join('\n')}\n\nQuestion: ${question}`;
-```
-
-**Recommendation Systems**
-```cypher
-MATCH (user:User)-[:VIEWED]->(item:Product)
-MATCH (item)-[:SIMILAR_TO]->(rec:Product)
-WHERE NOT (user)-[:VIEWED]->(rec)
-RETURN rec ORDER BY rec.score DESC LIMIT 10
-```
-
-**Knowledge Graphs**
-```cypher
-MATCH (concept:Concept)-[:RELATES_TO*1..3]->(related)
-WHERE concept.embedding <-> $query_embedding < 0.5
-RETURN related
-```
-
-## Installation Options
-
-### NPM (Node.js)
 ```bash
-npm install ruvector-gnn
-```
+# Node.js
+npm install ruvector
 
-### NPM (Browser/WASM)
-```bash
-npm install ruvector-gnn-wasm
-```
+# Browser/WASM
+npm install ruvector-wasm
 
-### Cargo (Rust)
-```bash
+# Rust
 cargo add ruvector-core ruvector-graph ruvector-gnn
 ```
 
-### From Source
-```bash
-git clone https://github.com/ruvnet/ruvector.git
-cd ruvector
-cargo build --release
-```
+## Use Cases
 
-## API Overview
-
-### Core Classes
-
-```javascript
-// GNN Layer - enhances embeddings using graph structure
-const layer = new RuvectorLayer(inputDim, hiddenDim, heads, dropout);
-const output = layer.forward(nodeEmbedding, neighborEmbeddings, edgeWeights);
-
-// Compression - reduce memory 2-32x
-const compressor = new TensorCompress();
-const compressed = compressor.compress(embedding, accessFrequency);
-const restored = compressor.decompress(compressed);
-
-// Search - differentiable k-NN
-const { indices, weights } = differentiableSearch(query, candidates, k, temperature);
-```
-
-### Cypher Queries
-
-```cypher
--- Create nodes
-CREATE (a:Person {name: 'Alice', embedding: [0.1, 0.2, 0.3]})
-
--- Create relationships
-MATCH (a:Person), (b:Person)
-WHERE a.name = 'Alice' AND b.name = 'Bob'
-CREATE (a)-[:KNOWS {since: 2020}]->(b)
-
--- Query patterns
-MATCH (p:Person)-[:KNOWS*1..2]->(friend)
-RETURN p.name, collect(friend.name) as friends
-
--- Vector similarity (extension)
-MATCH (d:Document)
-WHERE d.embedding <-> $query < 0.5
-RETURN d.title, d.embedding <-> $query as distance
-```
-
-## Project Structure
-
-```
-ruvector/
-├── crates/
-│   ├── ruvector-core/       # Vector DB engine
-│   ├── ruvector-graph/      # Graph DB + Cypher
-│   ├── ruvector-gnn/        # GNN layers + training
-│   ├── ruvector-gnn-wasm/   # Browser bindings
-│   └── ruvector-gnn-node/   # Node.js bindings
-└── docs/                    # Documentation
-```
+**RAG** — Retrieve context for LLMs with graph-aware ranking
+**Recommendations** — User→Item→Similar paths via Cypher
+**Knowledge Graphs** — Entities + embeddings + relationships
+**Fraud Detection** — Pattern matching on transaction graphs
+**Semantic Search** — Sub-millisecond similarity with compression
 
 ## Documentation
 
-- [Getting Started Guide](./docs/guide/GETTING_STARTED.md)
+- [Getting Started](./docs/guide/GETTING_STARTED.md)
 - [Cypher Reference](./docs/api/CYPHER_REFERENCE.md)
 - [GNN Architecture](./docs/gnn-layer-implementation.md)
-- [Node.js API](./crates/ruvector-gnn-node/README.md)
-- [WASM API](./crates/ruvector-gnn-wasm/README.md)
-
-## Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](./docs/development/CONTRIBUTING.md).
-
-```bash
-# Run tests
-cargo test --workspace
-
-# Run benchmarks
-cargo bench --workspace
-```
+- [API Reference](./docs/api/)
 
 ## License
 
-MIT License - free for commercial and personal use.
+MIT — free for commercial use.
 
 ---
 
 <div align="center">
 
-**Built by [rUv](https://ruv.io)** • [GitHub](https://github.com/ruvnet/ruvector)
+**[GitHub](https://github.com/ruvnet/ruvector)** • **[npm](https://npmjs.com/package/ruvector)** • **[Docs](./docs/)**
 
-*Vector search that gets smarter over time.*
+*Vector search that gets smarter.*
 
 </div>
