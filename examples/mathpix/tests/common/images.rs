@@ -2,11 +2,19 @@
 //
 // Provides functions to generate test images with equations
 
-use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
+use image::{DynamicImage, Rgba, RgbaImage};
 use imageproc::drawing::{draw_text_mut, draw_filled_rect_mut};
 use imageproc::rect::Rect;
-use rusttype::{Font, Scale};
+use ab_glyph::{FontRef, PxScale};
 use rand::Rng;
+
+// Embedded font data
+const FONT_DATA: &[u8] = include_bytes!("../../assets/fonts/DejaVuSans.ttf");
+
+fn get_font() -> FontRef<'static> {
+    FontRef::try_from_slice(FONT_DATA)
+        .expect("Error loading embedded font")
+}
 
 /// Generate a simple equation image
 pub fn generate_simple_equation(equation: &str) -> DynamicImage {
@@ -16,12 +24,8 @@ pub fn generate_simple_equation(equation: &str) -> DynamicImage {
     // Create white background
     let mut image = RgbaImage::from_pixel(width, height, Rgba([255, 255, 255, 255]));
 
-    // Load font (using a basic font, in real implementation would use math font)
-    let font_data = include_bytes!("../../assets/fonts/DejaVuSans.ttf");
-    let font = Font::try_from_bytes(font_data as &[u8])
-        .unwrap_or_else(|| panic!("Error loading font"));
-
-    let scale = Scale::uniform(32.0);
+    let font = get_font();
+    let scale = PxScale::from(32.0);
     let color = Rgba([0, 0, 0, 255]);
 
     // Draw text
@@ -37,10 +41,8 @@ pub fn generate_fraction(numerator: i32, denominator: i32) -> DynamicImage {
 
     let mut image = RgbaImage::from_pixel(width, height, Rgba([255, 255, 255, 255]));
 
-    let font_data = include_bytes!("../../assets/fonts/DejaVuSans.ttf");
-    let font = Font::try_from_bytes(font_data as &[u8]).unwrap();
-
-    let scale = Scale::uniform(28.0);
+    let font = get_font();
+    let scale = PxScale::from(28.0);
     let color = Rgba([0, 0, 0, 255]);
 
     // Draw numerator

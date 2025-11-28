@@ -105,6 +105,11 @@ approx = "0.5"
 criterion = { version = "0.5", features = ["html_reports"] }
 rusttype = "0.9"
 env_logger = "0.11"
+predicates = "3.1"
+assert_cmd = "2.0"
+ab_glyph = "0.2"
+tokio = { workspace = true, features = ["process"] }
+reqwest = { version = "0.12", features = ["blocking"] }
 
 [features]
 default = ["preprocess", "cache", "optimize"]
