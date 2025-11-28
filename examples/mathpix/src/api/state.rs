@@ -1,4 +1,6 @@
 use moka::future::Cache;
+use sha2::{Sha256, Digest};
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -15,15 +17,24 @@ pub struct AppState {
 
     /// Rate limiter
     pub rate_limiter: AppRateLimiter,
+
+    /// Whether authentication is enabled
+    pub auth_enabled: bool,
+
+    /// Map of app_id -> hashed API key
+    /// Keys should be stored as SHA-256 hashes, never in plaintext
+    pub api_keys: Arc<HashMap<String, String>>,
 }
 
 impl AppState {
-    /// Create a new application state instance
+    /// Create a new application state instance with authentication disabled
     pub fn new() -> Self {
         Self {
             job_queue: Arc::new(JobQueue::new()),
             cache: create_cache(),
             rate_limiter: create_rate_limiter(),
+            auth_enabled: false,
+            api_keys: Arc::new(HashMap::new()),
         }
     }
 
@@ -37,7 +48,38 @@ impl AppState {
                 .time_to_idle(Duration::from_secs(600))
                 .build(),
             rate_limiter: create_rate_limiter(),
+            auth_enabled: false,
+            api_keys: Arc::new(HashMap::new()),
         }
+    }
+
+    /// Create state with authentication enabled
+    pub fn with_auth(api_keys: HashMap<String, String>) -> Self {
+        // Hash all provided API keys
+        let hashed_keys: HashMap<String, String> = api_keys
+            .into_iter()
+            .map(|(app_id, key)| (app_id, hash_api_key(&key)))
+            .collect();
+
+        Self {
+            job_queue: Arc::new(JobQueue::new()),
+            cache: create_cache(),
+            rate_limiter: create_rate_limiter(),
+            auth_enabled: true,
+            api_keys: Arc::new(hashed_keys),
+        }
+    }
+
+    /// Add an API key (hashes the key before storing)
+    pub fn add_api_key(&mut self, app_id: String, api_key: &str) {
+        let hashed = hash_api_key(api_key);
+        Arc::make_mut(&mut self.api_keys).insert(app_id, hashed);
+        self.auth_enabled = true;
+    }
+
+    /// Enable or disable authentication
+    pub fn set_auth_enabled(&mut self, enabled: bool) {
+        self.auth_enabled = enabled;
     }
 }
 
@@ -45,6 +87,13 @@ impl Default for AppState {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Hash an API key using SHA-256
+fn hash_api_key(key: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(key.as_bytes());
+    format!("{:x}", hasher.finalize())
 }
 
 /// Create a cache with default configuration

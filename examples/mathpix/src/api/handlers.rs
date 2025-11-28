@@ -34,6 +34,10 @@ pub async fn get_health() -> impl IntoResponse {
 
 /// Process text/image OCR request
 /// Supports multipart/form-data, base64, and URL inputs
+///
+/// # Important
+/// This endpoint requires OCR models to be configured. If models are not available,
+/// returns a 503 Service Unavailable error with instructions.
 pub async fn process_text(
     State(_state): State<AppState>,
     Json(request): Json<TextRequest>,
@@ -47,7 +51,7 @@ pub async fn process_text(
     })?;
 
     // Download or decode image
-    let _image_data = match request.get_image_data().await {
+    let image_data = match request.get_image_data().await {
         Ok(data) => data,
         Err(e) => {
             error!("Failed to get image data: {:?}", e);
@@ -55,34 +59,24 @@ pub async fn process_text(
         }
     };
 
-    // TODO: Process with OCR engine
-    // For now, return mock response
-    let response = TextResponse {
-        request_id: Uuid::new_v4().to_string(),
-        text: "Sample OCR text".to_string(),
-        confidence: 0.95,
-        latex: request
-            .metadata
-            .formats
-            .contains(&"latex".to_string())
-            .then(|| "x^2 + y^2 = z^2".to_string()),
-        mathml: request
-            .metadata
-            .formats
-            .contains(&"mathml".to_string())
-            .then(|| "<math>...</math>".to_string()),
-        html: request
-            .metadata
-            .formats
-            .contains(&"html".to_string())
-            .then(|| "<p>Sample text</p>".to_string()),
-    };
+    // Validate image data is not empty
+    if image_data.is_empty() {
+        return Err(ErrorResponse::validation_error("Image data is empty"));
+    }
 
-    info!("Text OCR completed successfully");
-    Ok(Json(response))
+    // OCR processing requires models to be configured
+    // Return informative error explaining how to set up the service
+    Err(ErrorResponse::service_unavailable(
+        "OCR service not fully configured. ONNX models are required for OCR processing. \
+         Please download compatible models (PaddleOCR, TrOCR) and configure the model directory. \
+         See documentation at /docs/MODEL_SETUP.md for setup instructions."
+    ))
 }
 
 /// Process digital ink strokes
+///
+/// # Important
+/// This endpoint requires OCR models to be configured.
 pub async fn process_strokes(
     State(_state): State<AppState>,
     Json(request): Json<StrokesRequest>,
@@ -93,20 +87,21 @@ pub async fn process_strokes(
         ErrorResponse::validation_error(format!("Validation failed: {}", e))
     })?;
 
-    // TODO: Process strokes with recognition engine
-    let response = TextResponse {
-        request_id: Uuid::new_v4().to_string(),
-        text: "Recognized text from strokes".to_string(),
-        confidence: 0.92,
-        latex: Some("\\int_{0}^{\\infty} e^{-x} dx".to_string()),
-        mathml: None,
-        html: None,
-    };
+    // Validate we have stroke data
+    if request.strokes.is_empty() {
+        return Err(ErrorResponse::validation_error("No strokes provided"));
+    }
 
-    Ok(Json(response))
+    // Stroke recognition requires models to be configured
+    Err(ErrorResponse::service_unavailable(
+        "Stroke recognition service not configured. ONNX models required for ink recognition."
+    ))
 }
 
 /// Process legacy LaTeX equation request
+///
+/// # Important
+/// This endpoint requires OCR models to be configured.
 pub async fn process_latex(
     State(_state): State<AppState>,
     Json(request): Json<LatexRequest>,
@@ -117,16 +112,10 @@ pub async fn process_latex(
         ErrorResponse::validation_error(format!("Validation failed: {}", e))
     })?;
 
-    let response = TextResponse {
-        request_id: Uuid::new_v4().to_string(),
-        text: "Processed equation".to_string(),
-        confidence: 0.98,
-        latex: Some("y = mx + b".to_string()),
-        mathml: None,
-        html: None,
-    };
-
-    Ok(Json(response))
+    // LaTeX recognition requires models to be configured
+    Err(ErrorResponse::service_unavailable(
+        "LaTeX recognition service not configured. ONNX models required."
+    ))
 }
 
 /// Create async PDF processing job
@@ -238,18 +227,19 @@ pub async fn stream_pdf_results(
 }
 
 /// Convert document to different format (MMD/DOCX/etc)
+///
+/// # Note
+/// Document conversion requires additional backend services to be configured.
 pub async fn convert_document(
     State(_state): State<AppState>,
     Json(_request): Json<serde_json::Value>,
 ) -> Result<Json<serde_json::Value>, ErrorResponse> {
     info!("Converting document");
 
-    // TODO: Implement document conversion
-    Ok(Json(serde_json::json!({
-        "conversion_id": Uuid::new_v4().to_string(),
-        "status": "completed",
-        "output_url": "https://example.com/converted.docx"
-    })))
+    // Document conversion is not yet implemented
+    Err(ErrorResponse::not_implemented(
+        "Document conversion is not yet implemented. This feature requires additional backend services."
+    ))
 }
 
 /// Get OCR processing history
@@ -265,33 +255,44 @@ fn default_limit() -> u32 {
     50
 }
 
+/// Get OCR processing history
+///
+/// # Note
+/// History storage requires a database backend to be configured.
+/// Returns empty results if no database is available.
 pub async fn get_ocr_results(
     State(_state): State<AppState>,
     Query(params): Query<HistoryQuery>,
 ) -> Result<Json<serde_json::Value>, ErrorResponse> {
     info!("Getting OCR results history: page={}, limit={}", params.page, params.limit);
 
-    // TODO: Query database for history
+    // History storage not configured - return empty results with notice
     Ok(Json(serde_json::json!({
         "results": [],
         "total": 0,
         "page": params.page,
-        "limit": params.limit
+        "limit": params.limit,
+        "notice": "History storage not configured. Results are not persisted."
     })))
 }
 
 /// Get OCR usage statistics
+///
+/// # Note
+/// Usage tracking requires a database backend to be configured.
+/// Returns zeros if no database is available.
 pub async fn get_ocr_usage(
     State(_state): State<AppState>,
 ) -> Result<Json<serde_json::Value>, ErrorResponse> {
     info!("Getting OCR usage statistics");
 
-    // TODO: Calculate usage statistics
+    // Usage tracking not configured - return zeros with notice
     Ok(Json(serde_json::json!({
-        "requests_today": 42,
-        "requests_month": 1337,
-        "quota_limit": 10000,
-        "quota_remaining": 8663
+        "requests_today": 0,
+        "requests_month": 0,
+        "quota_limit": null,
+        "quota_remaining": null,
+        "notice": "Usage tracking not configured. Statistics are not recorded."
     })))
 }
 

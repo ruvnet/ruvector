@@ -10,6 +10,7 @@ use governor::{
     Quota, RateLimiter,
 };
 use nonzero_ext::nonzero;
+use sha2::{Sha256, Digest};
 use std::sync::Arc;
 use tracing::{debug, warn};
 
@@ -23,6 +24,12 @@ pub async fn auth_middleware(
     request: Request,
     next: Next,
 ) -> Result<Response, ErrorResponse> {
+    // Check if authentication is enabled
+    if !state.auth_enabled {
+        debug!("Authentication disabled, allowing request");
+        return Ok(next.run(request).await);
+    }
+
     // Extract credentials from headers
     let app_id = headers
         .get("app_id")
@@ -84,11 +91,49 @@ pub async fn rate_limit_middleware(
     }
 }
 
-/// Validate app credentials
-async fn validate_credentials(_state: &AppState, app_id: &str, app_key: &str) -> bool {
-    // TODO: Implement actual credential validation
-    // For now, accept any non-empty credentials
-    !app_id.is_empty() && !app_key.is_empty()
+/// Validate app credentials using secure comparison
+///
+/// SECURITY: This implementation:
+/// 1. Requires credentials to be pre-configured in AppState
+/// 2. Uses constant-time comparison to prevent timing attacks
+/// 3. Hashes the key before comparison
+async fn validate_credentials(state: &AppState, app_id: &str, app_key: &str) -> bool {
+    // Reject empty credentials
+    if app_id.is_empty() || app_key.is_empty() {
+        return false;
+    }
+
+    // Get configured credentials from state
+    let Some(expected_key_hash) = state.api_keys.get(app_id) else {
+        warn!("Unknown app_id attempted authentication: {}", app_id);
+        return false;
+    };
+
+    // Hash the provided key
+    let provided_key_hash = hash_api_key(app_key);
+
+    // Constant-time comparison to prevent timing attacks
+    constant_time_compare(&provided_key_hash, expected_key_hash.as_str())
+}
+
+/// Hash an API key using SHA-256
+fn hash_api_key(key: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(key.as_bytes());
+    format!("{:x}", hasher.finalize())
+}
+
+/// Constant-time string comparison to prevent timing attacks
+fn constant_time_compare(a: &str, b: &str) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+
+    let mut result = 0u8;
+    for (x, y) in a.bytes().zip(b.bytes()) {
+        result |= x ^ y;
+    }
+    result == 0
 }
 
 /// Extract query parameter from query string
@@ -127,11 +172,28 @@ mod tests {
         assert_eq!(extract_query_param(query, "missing"), None);
     }
 
+    #[test]
+    fn test_hash_api_key() {
+        let key = "test_key_123";
+        let hash1 = hash_api_key(key);
+        let hash2 = hash_api_key(key);
+        assert_eq!(hash1, hash2);
+        assert_ne!(hash_api_key("different"), hash1);
+    }
+
+    #[test]
+    fn test_constant_time_compare() {
+        assert!(constant_time_compare("abc", "abc"));
+        assert!(!constant_time_compare("abc", "abd"));
+        assert!(!constant_time_compare("abc", "ab"));
+        assert!(!constant_time_compare("", "a"));
+    }
+
     #[tokio::test]
-    async fn test_validate_credentials() {
+    async fn test_validate_credentials_rejects_empty() {
         let state = AppState::new();
-        assert!(validate_credentials(&state, "test", "key").await);
         assert!(!validate_credentials(&state, "", "key").await);
         assert!(!validate_credentials(&state, "test", "").await);
+        assert!(!validate_credentials(&state, "", "").await);
     }
 }

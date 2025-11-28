@@ -113,6 +113,25 @@ impl ErrorResponse {
             status: StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
+
+    /// Create a service unavailable error response
+    /// Used when the service is not fully configured (e.g., missing models)
+    pub fn service_unavailable(message: impl Into<String>) -> Self {
+        Self {
+            error_code: "SERVICE_UNAVAILABLE".to_string(),
+            message: message.into(),
+            status: StatusCode::SERVICE_UNAVAILABLE,
+        }
+    }
+
+    /// Create a not implemented error response
+    pub fn not_implemented(message: impl Into<String>) -> Self {
+        Self {
+            error_code: "NOT_IMPLEMENTED".to_string(),
+            message: message.into(),
+            status: StatusCode::NOT_IMPLEMENTED,
+        }
+    }
 }
 
 impl IntoResponse for ErrorResponse {
