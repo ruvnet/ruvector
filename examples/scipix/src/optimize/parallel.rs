@@ -7,7 +7,6 @@ use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
 
-use crate::error::Result;
 use super::parallel_enabled;
 
 /// Parallel preprocessing of multiple images

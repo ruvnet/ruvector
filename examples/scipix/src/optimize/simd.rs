@@ -65,17 +65,17 @@ unsafe fn avx2_grayscale(rgba: &[u8], gray: &mut [u8]) {
     while i + 8 <= len {
         // Load 32 bytes (8 RGBA pixels)
         let rgba_ptr = rgba.as_ptr().add(i * 4);
-        let pixels = _mm256_loadu_si256(rgba_ptr as *const __m256i);
+        let _pixels = _mm256_loadu_si256(rgba_ptr as *const __m256i);
 
         // Separate RGBA channels (simplified - actual implementation would use shuffles)
         // For production, use proper channel extraction
 
         // Store grayscale result
         for j in 0..8 {
-            let idx = (i + j) * 4;
-            let r = *rgba.get_unchecked(idx) as u32;
-            let g = *rgba.get_unchecked(idx + 1) as u32;
-            let b = *rgba.get_unchecked(idx + 2) as u32;
+            let pixel_idx = (i + j) * 4;
+            let r = *rgba.get_unchecked(pixel_idx) as u32;
+            let g = *rgba.get_unchecked(pixel_idx + 1) as u32;
+            let b = *rgba.get_unchecked(pixel_idx + 2) as u32;
             *gray.get_unchecked_mut(i + j) = ((r * 77 + g * 150 + b * 29) >> 8) as u8;
         }
 
@@ -89,6 +89,7 @@ unsafe fn avx2_grayscale(rgba: &[u8], gray: &mut [u8]) {
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "sse4.2")]
 unsafe fn sse_grayscale(rgba: &[u8], gray: &mut [u8]) {
+    #[allow(unused_imports)]
     use std::arch::x86_64::*;
 
     let len = gray.len();
@@ -97,10 +98,10 @@ unsafe fn sse_grayscale(rgba: &[u8], gray: &mut [u8]) {
     // Process 4 pixels at a time (16 RGBA bytes)
     while i + 4 <= len {
         for j in 0..4 {
-            let idx = (i + j) * 4;
-            let r = *rgba.get_unchecked(idx) as u32;
-            let g = *rgba.get_unchecked(idx + 1) as u32;
-            let b = *rgba.get_unchecked(idx + 2) as u32;
+            let pixel_idx = (i + j) * 4;
+            let r = *rgba.get_unchecked(pixel_idx) as u32;
+            let g = *rgba.get_unchecked(pixel_idx + 1) as u32;
+            let b = *rgba.get_unchecked(pixel_idx + 2) as u32;
             *gray.get_unchecked_mut(i + j) = ((r * 77 + g * 150 + b * 29) >> 8) as u8;
         }
         i += 4;
@@ -376,8 +377,8 @@ unsafe fn avx2_resize_bilinear(
         let src_y = y as f32 * y_scale;
         let y0 = (src_y.floor() as usize).min(src_height - 1);
         let y1 = (y0 + 1).min(src_height - 1);
-        let y_frac = _mm256_set1_ps(src_y - src_y.floor());
-        let y_frac_inv = _mm256_set1_ps(1.0 - (src_y - src_y.floor()));
+        let _y_frac = _mm256_set1_ps(src_y - src_y.floor());
+        let _y_frac_inv = _mm256_set1_ps(1.0 - (src_y - src_y.floor()));
 
         let mut x = 0;
         while x + 8 <= dst_width {

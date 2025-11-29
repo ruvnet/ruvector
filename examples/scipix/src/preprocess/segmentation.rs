@@ -1,6 +1,6 @@
 //! Text region detection and segmentation
 
-use super::{PreprocessError, RegionType, Result, TextRegion};
+use super::{RegionType, Result, TextRegion};
 use image::GrayImage;
 use std::collections::{HashMap, HashSet};
 
@@ -156,7 +156,7 @@ fn filter_by_size(
 /// * `regions` - Vector of bounding boxes (x, y, width, height)
 /// * `merge_distance` - Maximum distance to merge regions
 pub fn merge_overlapping_regions(
-    mut regions: Vec<(u32, u32, u32, u32)>,
+    regions: Vec<(u32, u32, u32, u32)>,
     merge_distance: u32,
 ) -> Vec<(u32, u32, u32, u32)> {
     if regions.is_empty() {
@@ -238,7 +238,7 @@ fn merge_boxes(
 ///
 /// Groups regions into lines based on vertical alignment
 pub fn find_text_lines(
-    image: &GrayImage,
+    _image: &GrayImage,
     regions: &[(u32, u32, u32, u32)],
 ) -> Vec<Vec<(u32, u32, u32, u32)>> {
     if regions.is_empty() {

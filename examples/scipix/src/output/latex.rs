@@ -258,6 +258,7 @@ impl Default for LaTeXFormatter {
 }
 
 /// Styled LaTeX formatter with predefined templates
+#[allow(dead_code)]
 pub struct StyledLaTeXFormatter {
     base: LaTeXFormatter,
     style: LaTeXStyle,

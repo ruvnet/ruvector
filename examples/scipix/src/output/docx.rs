@@ -12,6 +12,7 @@ use super::{LineData, OcrResult};
 use std::io::Write;
 
 /// DOCX formatter (stub implementation)
+#[allow(dead_code)]
 pub struct DocxFormatter {
     include_styles: bool,
     page_size: PageSize,

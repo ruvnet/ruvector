@@ -1,6 +1,6 @@
 //! JSON API response formatter matching Scipix API specification
 
-use super::{OcrResult, FormatsData, LineData, WordData, BoundingBox};
+use super::{OcrResult, FormatsData, LineData};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;

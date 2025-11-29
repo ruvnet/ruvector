@@ -6,7 +6,7 @@ use std::sync::{Arc, RwLock};
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
-use crate::error::{ScipixError, Result};
+use crate::error::Result;
 use crate::config::CacheConfig;
 
 /// Cached OCR result with metadata

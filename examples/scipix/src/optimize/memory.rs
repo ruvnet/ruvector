@@ -15,6 +15,7 @@ use super::memory_opt_enabled;
 pub struct BufferPool<T> {
     pool: Arc<Mutex<VecDeque<T>>>,
     factory: Arc<dyn Fn() -> T + Send + Sync>,
+    #[allow(dead_code)]
     max_size: usize,
 }
 

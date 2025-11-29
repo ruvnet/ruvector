@@ -1,6 +1,6 @@
 //! Complete preprocessing pipeline with builder pattern and parallel processing
 
-use super::{PreprocessError, Result};
+use super::Result;
 use crate::preprocess::{transforms, rotation, deskew, enhancement};
 use image::{DynamicImage, GrayImage};
 use rayon::prelude::*;

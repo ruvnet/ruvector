@@ -8,7 +8,6 @@ use futures::stream::{self, Stream};
 use serde::{Deserialize, Serialize};
 use std::{convert::Infallible, time::Duration};
 use tracing::{error, info, warn};
-use uuid::Uuid;
 use validator::Validate;
 
 use super::{

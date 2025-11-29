@@ -207,7 +207,7 @@ async fn process_files_parallel(
 
     let mut handles = Vec::new();
 
-    for (idx, file) in files.into_iter().enumerate() {
+    for (_idx, file) in files.into_iter().enumerate() {
         let semaphore = semaphore.clone();
         let config = config.clone();
         let multi_progress = multi_progress.clone();

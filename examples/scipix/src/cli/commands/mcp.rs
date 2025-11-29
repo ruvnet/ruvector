@@ -16,7 +16,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::io::{self, BufRead, Write};
 use std::path::PathBuf;
-use tokio::sync::mpsc;
 
 /// MCP Server Arguments
 #[derive(Args, Debug, Clone)]
@@ -33,6 +32,7 @@ pub struct McpArgs {
 /// JSON-RPC 2.0 Request
 #[derive(Debug, Deserialize)]
 struct JsonRpcRequest {
+    #[allow(dead_code)]
     jsonrpc: String,
     id: Option<Value>,
     method: String,
@@ -98,6 +98,7 @@ struct Tool {
 
 /// Tool call result
 #[derive(Debug, Serialize)]
+#[allow(dead_code)]
 struct ToolResult {
     content: Vec<ContentBlock>,
     #[serde(rename = "isError", skip_serializing_if = "Option::is_none")]
@@ -105,6 +106,7 @@ struct ToolResult {
 }
 
 #[derive(Debug, Serialize)]
+#[allow(dead_code)]
 struct ContentBlock {
     #[serde(rename = "type")]
     content_type: String,
@@ -138,6 +140,7 @@ impl JsonRpcResponse {
 /// MCP Server state
 struct McpServer {
     debug: bool,
+    #[allow(dead_code)]
     models_dir: Option<PathBuf>,
 }
 

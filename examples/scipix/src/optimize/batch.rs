@@ -6,7 +6,7 @@
 use std::collections::VecDeque;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::{mpsc, Mutex, oneshot};
+use tokio::sync::{Mutex, oneshot};
 use tokio::time::sleep;
 
 /// Item in the batching queue
