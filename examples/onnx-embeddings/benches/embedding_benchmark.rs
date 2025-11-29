@@ -1,6 +1,7 @@
 //! Benchmarks for ONNX embedding generation
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use std::cell::RefCell;
 
 fn embedding_benchmarks(c: &mut Criterion) {
     // Note: These benchmarks require the tokio runtime
@@ -8,19 +9,19 @@ fn embedding_benchmarks(c: &mut Criterion) {
 
     let rt = tokio::runtime::Runtime::new().unwrap();
 
-    // Initialize embedder once
-    let embedder = rt.block_on(async {
+    // Initialize embedder once (wrapped in RefCell for interior mutability)
+    let embedder = RefCell::new(rt.block_on(async {
         ruvector_onnx_embeddings::Embedder::default_model()
             .await
             .expect("Failed to load model")
-    });
+    }));
 
     let mut group = c.benchmark_group("embedding_generation");
 
     // Single text embedding
     group.bench_function("single_text", |b| {
         b.iter(|| {
-            let _ = embedder.embed_one(black_box("This is a test sentence for benchmarking."));
+            let _ = embedder.borrow_mut().embed_one(black_box("This is a test sentence for benchmarking."));
         });
     });
 
@@ -35,26 +36,20 @@ fn embedding_benchmarks(c: &mut Criterion) {
             &texts,
             |b, texts| {
                 b.iter(|| {
-                    let _ = embedder.embed(black_box(texts));
+                    let _ = embedder.borrow_mut().embed(black_box(texts));
                 });
             },
         );
     }
 
-    // Parallel vs sequential
+    // Large batch embedding
     let large_batch: Vec<String> = (0..100)
         .map(|i| format!("Large batch sentence {} for parallel benchmark.", i))
         .collect();
 
-    group.bench_function("batch_100_sequential", |b| {
+    group.bench_function("batch_100", |b| {
         b.iter(|| {
-            let _ = embedder.embed(black_box(&large_batch));
-        });
-    });
-
-    group.bench_function("batch_100_parallel", |b| {
-        b.iter(|| {
-            let _ = embedder.embed_parallel(black_box(&large_batch));
+            let _ = embedder.borrow_mut().embed(black_box(&large_batch));
         });
     });
 
