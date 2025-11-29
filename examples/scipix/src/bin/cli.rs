@@ -35,6 +35,9 @@ async fn main() -> Result<()> {
         Commands::Serve(args) => {
             ruvector_scipix::cli::commands::serve::execute(args.clone(), &cli).await?;
         }
+        Commands::Mcp(args) => {
+            ruvector_scipix::cli::commands::mcp::run(args.clone()).await?;
+        }
         Commands::Config(args) => {
             ruvector_scipix::cli::commands::config::execute(args.clone(), &cli).await?;
         }

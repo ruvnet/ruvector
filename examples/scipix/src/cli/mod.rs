@@ -68,6 +68,9 @@ pub enum Commands {
     /// Start the API server
     Serve(commands::serve::ServeArgs),
 
+    /// Start the MCP (Model Context Protocol) server for AI integration
+    Mcp(commands::mcp::McpArgs),
+
     /// Manage configuration
     Config(commands::config::ConfigArgs),
 
