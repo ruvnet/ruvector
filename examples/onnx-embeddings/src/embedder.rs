@@ -8,6 +8,9 @@ use crate::{EmbeddingError, PretrainedModel, Result};
 use std::path::Path;
 use tracing::{debug, info, instrument};
 
+#[cfg(feature = "gpu")]
+use crate::gpu::{GpuAccelerator, GpuConfig};
+
 /// High-level embedder combining tokenizer, model, and pooling
 pub struct Embedder {
     /// ONNX model for inference
@@ -18,6 +21,9 @@ pub struct Embedder {
     pooler: Pooler,
     /// Configuration
     config: EmbedderConfig,
+    /// Optional GPU accelerator for similarity operations
+    #[cfg(feature = "gpu")]
+    gpu: Option<GpuAccelerator>,
 }
 
 /// Embedding output with metadata
@@ -95,11 +101,28 @@ impl Embedder {
 
         let pooler = Pooler::new(config.pooling, config.normalize);
 
+        // Initialize GPU accelerator if available
+        #[cfg(feature = "gpu")]
+        let gpu = {
+            match GpuAccelerator::new(GpuConfig::auto()).await {
+                Ok(accel) => {
+                    info!("GPU accelerator initialized: {}", accel.device_info().name);
+                    Some(accel)
+                }
+                Err(e) => {
+                    debug!("GPU not available, using CPU: {}", e);
+                    None
+                }
+            }
+        };
+
         Ok(Self {
             model,
             tokenizer,
             pooler,
             config,
+            #[cfg(feature = "gpu")]
+            gpu,
         })
     }
 
@@ -226,6 +249,7 @@ impl Embedder {
     }
 
     /// Find most similar texts from a corpus
+    /// Uses GPU acceleration when available and corpus is large enough
     #[instrument(skip(self, query, corpus), fields(corpus_size = corpus.len()))]
     pub fn most_similar<S: AsRef<str>>(
         &mut self,
@@ -236,6 +260,21 @@ impl Embedder {
         let query_emb = self.embed_one(query)?;
         let corpus_embs = self.embed(corpus)?;
 
+        // Try GPU-accelerated similarity if available
+        #[cfg(feature = "gpu")]
+        if let Some(ref gpu) = self.gpu {
+            if corpus.len() >= 64 {
+                let candidates: Vec<&[f32]> = corpus_embs.embeddings.iter().map(|v| v.as_slice()).collect();
+                if let Ok(results) = gpu.top_k_similar(&query_emb, &candidates, top_k) {
+                    return Ok(results
+                        .into_iter()
+                        .map(|(idx, score)| (idx, score, corpus[idx].as_ref().to_string()))
+                        .collect());
+                }
+            }
+        }
+
+        // CPU fallback
         let mut similarities: Vec<(usize, f32, String)> = corpus_embs
             .embeddings
             .iter()
@@ -250,6 +289,24 @@ impl Embedder {
         similarities.truncate(top_k);
 
         Ok(similarities)
+    }
+
+    /// Check if GPU acceleration is available
+    pub fn has_gpu(&self) -> bool {
+        #[cfg(feature = "gpu")]
+        {
+            self.gpu.is_some()
+        }
+        #[cfg(not(feature = "gpu"))]
+        {
+            false
+        }
+    }
+
+    /// Get GPU device info if available
+    #[cfg(feature = "gpu")]
+    pub fn gpu_info(&self) -> Option<crate::gpu::GpuInfo> {
+        self.gpu.as_ref().map(|g| g.device_info())
     }
 
     /// Cluster texts by similarity (simple k-means-like approach)

@@ -147,6 +147,16 @@ impl Default for ShaderRegistry {
 
 // ==================== Shader Source Code ====================
 
+// Public aliases for operations.rs
+pub const MEAN_POOL_SHADER: &str = SHADER_MEAN_POOL;
+pub const MAX_POOL_SHADER: &str = SHADER_MAX_POOL;
+pub const BATCH_COSINE_SIMILARITY_SHADER: &str = SHADER_BATCH_COSINE_SIMILARITY;
+pub const DOT_PRODUCT_SHADER: &str = SHADER_DOT_PRODUCT;
+pub const EUCLIDEAN_DISTANCE_SHADER: &str = SHADER_EUCLIDEAN_DISTANCE;
+pub const L2_NORMALIZE_SHADER: &str = SHADER_L2_NORMALIZE;
+pub const MATMUL_SHADER: &str = SHADER_MATMUL;
+pub const VECTOR_ADD_SHADER: &str = SHADER_VECTOR_ADD;
+
 /// Cosine similarity between two vectors
 pub const SHADER_COSINE_SIMILARITY: &str = r#"
 struct Params {

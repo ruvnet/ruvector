@@ -6,8 +6,13 @@
 //! - CPU fallback
 
 use crate::{EmbeddingError, Result};
-use super::config::{GpuConfig, GpuMode, GpuMemoryStats, PowerPreference};
-use std::sync::Arc;
+use super::config::{GpuConfig, GpuMemoryStats, GpuMode, PowerPreference};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex, atomic::{AtomicU64, Ordering}};
+
+/// Global buffer ID counter
+static BUFFER_ID_COUNTER: AtomicU64 = AtomicU64::new(1);
+static PIPELINE_ID_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 /// GPU device information
 #[derive(Debug, Clone)]
@@ -62,8 +67,19 @@ pub struct GpuBuffer {
     pub usage: BufferUsage,
 }
 
+impl GpuBuffer {
+    /// Create a new buffer handle
+    pub fn new(size: u64, usage: BufferUsage) -> Self {
+        Self {
+            id: BUFFER_ID_COUNTER.fetch_add(1, Ordering::SeqCst),
+            size,
+            usage,
+        }
+    }
+}
+
 /// Buffer usage flags
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BufferUsage {
     /// Storage buffer (read-write)
     Storage,
@@ -85,6 +101,17 @@ pub struct ComputePipeline {
     pub shader_name: String,
     /// Workgroup size
     pub workgroup_size: [u32; 3],
+}
+
+impl ComputePipeline {
+    /// Create a new pipeline handle
+    pub fn new(shader_name: String, workgroup_size: [u32; 3]) -> Self {
+        Self {
+            id: PIPELINE_ID_COUNTER.fetch_add(1, Ordering::SeqCst),
+            shader_name,
+            workgroup_size,
+        }
+    }
 }
 
 /// GPU Backend trait - unified interface for all GPU operations
@@ -156,7 +183,7 @@ impl GpuDevice {
     }
 }
 
-// ==================== Backend Implementations ====================
+// ==================== CPU Backend ====================
 
 /// CPU fallback backend
 pub struct CpuBackend;
@@ -180,13 +207,8 @@ impl GpuBackend for CpuBackend {
         GpuMemoryStats::default()
     }
 
-    fn create_buffer(&self, size: u64, _usage: BufferUsage) -> Result<GpuBuffer> {
-        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        Ok(GpuBuffer {
-            id: COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
-            size,
-            usage: _usage,
-        })
+    fn create_buffer(&self, size: u64, usage: BufferUsage) -> Result<GpuBuffer> {
+        Ok(GpuBuffer::new(size, usage))
     }
 
     fn write_buffer(&self, _buffer: &GpuBuffer, _data: &[u8]) -> Result<()> {
@@ -200,15 +222,10 @@ impl GpuBackend for CpuBackend {
     fn create_pipeline(
         &self,
         _shader_source: &str,
-        _entry_point: &str,
+        entry_point: &str,
         workgroup_size: [u32; 3],
     ) -> Result<ComputePipeline> {
-        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        Ok(ComputePipeline {
-            id: COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
-            shader_name: "cpu_fallback".to_string(),
-            workgroup_size,
-        })
+        Ok(ComputePipeline::new(entry_point.to_string(), workgroup_size))
     }
 
     fn dispatch(
@@ -233,13 +250,26 @@ impl GpuBackend for CpuBackend {
     }
 }
 
-/// WebGPU backend (via wgpu)
+// ==================== WebGPU Backend ====================
+
+#[cfg(feature = "gpu")]
+use wgpu;
+
+#[cfg(feature = "gpu")]
+use bytemuck;
+
+/// WebGPU backend (via wgpu) with proper buffer management
 #[cfg(feature = "gpu")]
 pub struct WebGpuBackend {
     device: wgpu::Device,
-    #[allow(dead_code)]
     queue: wgpu::Queue,
     adapter_info: wgpu::AdapterInfo,
+    /// Active buffers indexed by buffer ID
+    buffers: Mutex<HashMap<u64, wgpu::Buffer>>,
+    /// Active pipelines indexed by pipeline ID
+    pipelines: Mutex<HashMap<u64, wgpu::ComputePipeline>>,
+    /// Bind group layouts for compute pipelines
+    bind_group_layouts: Mutex<HashMap<u64, wgpu::BindGroupLayout>>,
 }
 
 #[cfg(feature = "gpu")]
@@ -264,7 +294,9 @@ impl WebGpuBackend {
                 force_fallback_adapter: false,
             })
             .await
-            .ok_or_else(|| EmbeddingError::other("No GPU adapter found"))?;
+            .ok_or_else(|| EmbeddingError::GpuNotAvailable {
+                reason: "No GPU adapter found".to_string(),
+            })?;
 
         let adapter_info = adapter.get_info();
 
@@ -279,13 +311,41 @@ impl WebGpuBackend {
                 None,
             )
             .await
-            .map_err(|e| EmbeddingError::other(format!("Failed to create device: {}", e)))?;
+            .map_err(|e| EmbeddingError::GpuInitFailed {
+                reason: format!("Failed to create device: {}", e),
+            })?;
 
         Ok(Self {
             device,
             queue,
             adapter_info,
+            buffers: Mutex::new(HashMap::new()),
+            pipelines: Mutex::new(HashMap::new()),
+            bind_group_layouts: Mutex::new(HashMap::new()),
         })
+    }
+
+    /// Convert BufferUsage to wgpu::BufferUsages
+    fn to_wgpu_usage(usage: BufferUsage) -> wgpu::BufferUsages {
+        match usage {
+            BufferUsage::Storage => {
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC
+            }
+            BufferUsage::Uniform => {
+                wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST
+            }
+            BufferUsage::Staging => {
+                wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST
+            }
+            BufferUsage::Vertex => {
+                wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST
+            }
+            BufferUsage::Index => {
+                wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST
+            }
+        }
     }
 }
 
@@ -303,7 +363,7 @@ impl GpuBackend for WebGpuBackend {
             api_version: "WebGPU".to_string(),
             driver_version: self.adapter_info.driver.clone(),
             total_memory: 0, // WebGPU doesn't expose this directly
-            max_workgroup_size: 256,
+            max_workgroup_size: self.device.limits().max_compute_workgroup_size_x,
             max_buffer_size: self.device.limits().max_storage_buffer_binding_size as u64,
             supports_compute: true,
             supports_f16: self.device.features().contains(wgpu::Features::SHADER_F16),
@@ -311,42 +371,91 @@ impl GpuBackend for WebGpuBackend {
     }
 
     fn memory_stats(&self) -> GpuMemoryStats {
-        GpuMemoryStats::default() // WebGPU doesn't expose memory stats
+        let buffers = self.buffers.lock().unwrap();
+        let total_allocated: u64 = buffers.values().map(|b| b.size()).sum();
+        GpuMemoryStats {
+            total: total_allocated,
+            used: total_allocated,
+            free: 0, // WebGPU doesn't expose this
+            peak: total_allocated,
+        }
     }
 
     fn create_buffer(&self, size: u64, usage: BufferUsage) -> Result<GpuBuffer> {
-        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let handle = GpuBuffer::new(size, usage);
 
-        let wgpu_usage = match usage {
-            BufferUsage::Storage => wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
-            BufferUsage::Uniform => wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            BufferUsage::Staging => wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-            BufferUsage::Vertex => wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
-            BufferUsage::Index => wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
-        };
-
-        let _buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("RuVector Buffer"),
+        let wgpu_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some(&format!("RuVector Buffer {}", handle.id)),
             size,
-            usage: wgpu_usage,
+            usage: Self::to_wgpu_usage(usage),
             mapped_at_creation: false,
         });
 
-        Ok(GpuBuffer {
-            id: COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
-            size,
-            usage,
-        })
+        self.buffers.lock().unwrap().insert(handle.id, wgpu_buffer);
+
+        Ok(handle)
     }
 
-    fn write_buffer(&self, _buffer: &GpuBuffer, _data: &[u8]) -> Result<()> {
-        // In real implementation, would use self.queue.write_buffer()
+    fn write_buffer(&self, buffer: &GpuBuffer, data: &[u8]) -> Result<()> {
+        let buffers = self.buffers.lock().unwrap();
+        let wgpu_buffer = buffers.get(&buffer.id).ok_or_else(|| {
+            EmbeddingError::GpuBufferError {
+                reason: format!("Buffer {} not found", buffer.id),
+            }
+        })?;
+
+        self.queue.write_buffer(wgpu_buffer, 0, data);
         Ok(())
     }
 
-    fn read_buffer(&self, _buffer: &GpuBuffer, size: u64) -> Result<Vec<u8>> {
-        // In real implementation, would map buffer and read
-        Ok(vec![0u8; size as usize])
+    fn read_buffer(&self, buffer: &GpuBuffer, size: u64) -> Result<Vec<u8>> {
+        let buffers = self.buffers.lock().unwrap();
+        let wgpu_buffer = buffers.get(&buffer.id).ok_or_else(|| {
+            EmbeddingError::GpuBufferError {
+                reason: format!("Buffer {} not found", buffer.id),
+            }
+        })?;
+
+        // Create staging buffer for reading
+        let staging_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Staging Read Buffer"),
+            size,
+            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        // Copy from GPU buffer to staging buffer
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Read Buffer Encoder"),
+        });
+        encoder.copy_buffer_to_buffer(wgpu_buffer, 0, &staging_buffer, 0, size);
+        self.queue.submit(std::iter::once(encoder.finish()));
+
+        // Map and read the staging buffer
+        let buffer_slice = staging_buffer.slice(..);
+        let (tx, rx) = std::sync::mpsc::channel();
+        buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
+            tx.send(result).unwrap();
+        });
+
+        self.device.poll(wgpu::Maintain::Wait);
+
+        rx.recv()
+            .map_err(|e| EmbeddingError::GpuOperationFailed {
+                operation: "read_buffer".to_string(),
+                reason: format!("Channel error: {}", e),
+            })?
+            .map_err(|e| EmbeddingError::GpuOperationFailed {
+                operation: "read_buffer".to_string(),
+                reason: format!("Buffer map failed: {:?}", e),
+            })?;
+
+        let data = buffer_slice.get_mapped_range();
+        let result = data.to_vec();
+        drop(data);
+        staging_buffer.unmap();
+
+        Ok(result)
     }
 
     fn create_pipeline(
@@ -355,27 +464,134 @@ impl GpuBackend for WebGpuBackend {
         entry_point: &str,
         workgroup_size: [u32; 3],
     ) -> Result<ComputePipeline> {
-        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let handle = ComputePipeline::new(entry_point.to_string(), workgroup_size);
 
-        let _shader = self.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("RuVector Shader"),
+        // Create shader module
+        let shader_module = self.device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some(&format!("Shader: {}", entry_point)),
             source: wgpu::ShaderSource::Wgsl(shader_source.into()),
         });
 
-        Ok(ComputePipeline {
-            id: COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
-            shader_name: entry_point.to_string(),
-            workgroup_size,
-        })
+        // Create bind group layout for storage buffers
+        // We support up to 4 storage buffers
+        let bind_group_layout = self.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some(&format!("BindGroupLayout: {}", entry_point)),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: false },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            ],
+        });
+
+        let pipeline_layout = self.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some(&format!("PipelineLayout: {}", entry_point)),
+            bind_group_layouts: &[&bind_group_layout],
+            push_constant_ranges: &[],
+        });
+
+        let compute_pipeline = self.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+            label: Some(&format!("Pipeline: {}", entry_point)),
+            layout: Some(&pipeline_layout),
+            module: &shader_module,
+            entry_point: Some(entry_point),
+            compilation_options: wgpu::PipelineCompilationOptions::default(),
+            cache: None,
+        });
+
+        self.pipelines.lock().unwrap().insert(handle.id, compute_pipeline);
+        self.bind_group_layouts.lock().unwrap().insert(handle.id, bind_group_layout);
+
+        Ok(handle)
     }
 
     fn dispatch(
         &self,
-        _pipeline: &ComputePipeline,
-        _bindings: &[&GpuBuffer],
-        _workgroups: [u32; 3],
+        pipeline: &ComputePipeline,
+        bindings: &[&GpuBuffer],
+        workgroups: [u32; 3],
     ) -> Result<()> {
-        // In real implementation, would create command encoder and dispatch
+        let pipelines = self.pipelines.lock().unwrap();
+        let layouts = self.bind_group_layouts.lock().unwrap();
+        let buffers = self.buffers.lock().unwrap();
+
+        let compute_pipeline = pipelines.get(&pipeline.id).ok_or_else(|| {
+            EmbeddingError::GpuOperationFailed {
+                operation: "dispatch".to_string(),
+                reason: format!("Pipeline {} not found", pipeline.id),
+            }
+        })?;
+
+        let bind_group_layout = layouts.get(&pipeline.id).ok_or_else(|| {
+            EmbeddingError::GpuOperationFailed {
+                operation: "dispatch".to_string(),
+                reason: format!("BindGroupLayout for pipeline {} not found", pipeline.id),
+            }
+        })?;
+
+        // Build bind group entries
+        let mut bind_group_entries = Vec::new();
+        for (i, buf_handle) in bindings.iter().enumerate() {
+            let wgpu_buffer = buffers.get(&buf_handle.id).ok_or_else(|| {
+                EmbeddingError::GpuBufferError {
+                    reason: format!("Buffer {} not found", buf_handle.id),
+                }
+            })?;
+            bind_group_entries.push(wgpu::BindGroupEntry {
+                binding: i as u32,
+                resource: wgpu_buffer.as_entire_binding(),
+            });
+        }
+
+        let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("Compute BindGroup"),
+            layout: bind_group_layout,
+            entries: &bind_group_entries,
+        });
+
+        // Create command encoder and dispatch
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Compute Encoder"),
+        });
+
+        {
+            let mut compute_pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("Compute Pass"),
+                timestamp_writes: None,
+            });
+            compute_pass.set_pipeline(compute_pipeline);
+            compute_pass.set_bind_group(0, &bind_group, &[]);
+            compute_pass.dispatch_workgroups(workgroups[0], workgroups[1], workgroups[2]);
+        }
+
+        self.queue.submit(std::iter::once(encoder.finish()));
+
         Ok(())
     }
 
@@ -384,13 +600,58 @@ impl GpuBackend for WebGpuBackend {
         Ok(())
     }
 
-    fn release_buffer(&self, _buffer: GpuBuffer) -> Result<()> {
-        Ok(()) // wgpu handles cleanup via Drop
+    fn release_buffer(&self, buffer: GpuBuffer) -> Result<()> {
+        self.buffers.lock().unwrap().remove(&buffer.id);
+        Ok(())
     }
 
-    fn release_pipeline(&self, _pipeline: ComputePipeline) -> Result<()> {
-        Ok(()) // wgpu handles cleanup via Drop
+    fn release_pipeline(&self, pipeline: ComputePipeline) -> Result<()> {
+        self.pipelines.lock().unwrap().remove(&pipeline.id);
+        self.bind_group_layouts.lock().unwrap().remove(&pipeline.id);
+        Ok(())
     }
+}
+
+// ==================== CUDA-WASM Backend ====================
+
+/// CUDA-WASM backend placeholder
+#[cfg(feature = "cuda-wasm")]
+pub struct CudaWasmBackend {
+    // Will hold cuda-rust-wasm transpiler context
+    _marker: std::marker::PhantomData<()>,
+}
+
+#[cfg(feature = "cuda-wasm")]
+impl CudaWasmBackend {
+    /// Create new CUDA-WASM backend
+    pub async fn new(_config: &GpuConfig) -> Result<Self> {
+        // TODO: Initialize cuda-rust-wasm transpiler
+        // This will use the transpiler from https://github.com/ruvector/ruv-FANN/tree/main/cuda-wasm
+        Err(EmbeddingError::GpuNotAvailable {
+            reason: "CUDA-WASM backend not yet fully implemented".to_string(),
+        })
+    }
+}
+
+#[cfg(feature = "cuda-wasm")]
+impl GpuBackend for CudaWasmBackend {
+    fn is_available(&self) -> bool { false }
+    fn device_info(&self) -> GpuInfo { GpuInfo::default() }
+    fn memory_stats(&self) -> GpuMemoryStats { GpuMemoryStats::default() }
+    fn create_buffer(&self, size: u64, usage: BufferUsage) -> Result<GpuBuffer> {
+        Ok(GpuBuffer::new(size, usage))
+    }
+    fn write_buffer(&self, _: &GpuBuffer, _: &[u8]) -> Result<()> { Ok(()) }
+    fn read_buffer(&self, _: &GpuBuffer, size: u64) -> Result<Vec<u8>> {
+        Ok(vec![0u8; size as usize])
+    }
+    fn create_pipeline(&self, _: &str, entry: &str, ws: [u32; 3]) -> Result<ComputePipeline> {
+        Ok(ComputePipeline::new(entry.to_string(), ws))
+    }
+    fn dispatch(&self, _: &ComputePipeline, _: &[&GpuBuffer], _: [u32; 3]) -> Result<()> { Ok(()) }
+    fn sync(&self) -> Result<()> { Ok(()) }
+    fn release_buffer(&self, _: GpuBuffer) -> Result<()> { Ok(()) }
+    fn release_pipeline(&self, _: ComputePipeline) -> Result<()> { Ok(()) }
 }
 
 // ==================== Factory Functions ====================
@@ -414,14 +675,25 @@ pub async fn create_backend(config: &GpuConfig) -> Result<Box<dyn GpuBackend>> {
         }
         #[cfg(feature = "cuda-wasm")]
         GpuMode::CudaWasm => {
-            // CUDA-WASM implementation would go here
-            tracing::warn!("CUDA-WASM backend not yet implemented, using CPU fallback");
-            Ok(Box::new(CpuBackend))
+            match CudaWasmBackend::new(config).await {
+                Ok(backend) => Ok(Box::new(backend)),
+                Err(e) if config.fallback_to_cpu => {
+                    tracing::warn!("CUDA-WASM not available, falling back to CPU: {}", e);
+                    Ok(Box::new(CpuBackend))
+                }
+                Err(e) => Err(e),
+            }
         }
         GpuMode::Auto => {
             #[cfg(feature = "gpu")]
             {
                 if let Ok(backend) = WebGpuBackend::new(config).await {
+                    return Ok(Box::new(backend));
+                }
+            }
+            #[cfg(feature = "cuda-wasm")]
+            {
+                if let Ok(backend) = CudaWasmBackend::new(config).await {
                     return Ok(Box::new(backend));
                 }
             }
@@ -471,5 +743,67 @@ pub async fn get_device_info() -> Option<GpuInfo> {
     #[cfg(not(feature = "gpu"))]
     {
         None
+    }
+}
+
+// ==================== High-Level GPU Compute Helper ====================
+
+/// High-level GPU compute executor for common operations
+#[cfg(feature = "gpu")]
+pub struct GpuCompute {
+    backend: Arc<WebGpuBackend>,
+}
+
+#[cfg(feature = "gpu")]
+impl GpuCompute {
+    /// Create new compute executor
+    pub fn new(backend: Arc<WebGpuBackend>) -> Self {
+        Self { backend }
+    }
+
+    /// Execute a compute shader with f32 inputs and outputs
+    pub fn execute_f32(
+        &self,
+        shader: &str,
+        entry_point: &str,
+        input_a: &[f32],
+        input_b: &[f32],
+        output_size: usize,
+        workgroups: [u32; 3],
+    ) -> Result<Vec<f32>> {
+        // Create buffers
+        let buf_a = self.backend.create_buffer(
+            (input_a.len() * 4) as u64,
+            BufferUsage::Storage,
+        )?;
+        let buf_b = self.backend.create_buffer(
+            (input_b.len() * 4) as u64,
+            BufferUsage::Storage,
+        )?;
+        let buf_out = self.backend.create_buffer(
+            (output_size * 4) as u64,
+            BufferUsage::Storage,
+        )?;
+
+        // Write input data
+        self.backend.write_buffer(&buf_a, bytemuck::cast_slice(input_a))?;
+        self.backend.write_buffer(&buf_b, bytemuck::cast_slice(input_b))?;
+
+        // Create and execute pipeline
+        let pipeline = self.backend.create_pipeline(shader, entry_point, [64, 1, 1])?;
+        self.backend.dispatch(&pipeline, &[&buf_a, &buf_b, &buf_out], workgroups)?;
+        self.backend.sync()?;
+
+        // Read output
+        let output_bytes = self.backend.read_buffer(&buf_out, (output_size * 4) as u64)?;
+        let output: Vec<f32> = bytemuck::cast_slice(&output_bytes).to_vec();
+
+        // Cleanup
+        self.backend.release_buffer(buf_a)?;
+        self.backend.release_buffer(buf_b)?;
+        self.backend.release_buffer(buf_out)?;
+        self.backend.release_pipeline(pipeline)?;
+
+        Ok(output)
     }
 }
