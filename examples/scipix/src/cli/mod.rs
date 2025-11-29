@@ -74,6 +74,9 @@ pub enum Commands {
     /// Manage configuration
     Config(commands::config::ConfigArgs),
 
+    /// Diagnose environment and optimize configuration
+    Doctor(commands::doctor::DoctorArgs),
+
     /// Show version information
     Version,
 

@@ -41,6 +41,9 @@ async fn main() -> Result<()> {
         Commands::Config(args) => {
             ruvector_scipix::cli::commands::config::execute(args.clone(), &cli).await?;
         }
+        Commands::Doctor(args) => {
+            ruvector_scipix::cli::commands::doctor::execute(args.clone()).await?;
+        }
         Commands::Version => {
             println!("scipix-cli v{}", env!("CARGO_PKG_VERSION"));
             println!("A Rust-based CLI for Scipix OCR processing");

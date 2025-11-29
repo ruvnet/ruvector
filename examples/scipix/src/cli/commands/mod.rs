@@ -3,6 +3,7 @@ pub mod batch;
 pub mod serve;
 pub mod config;
 pub mod mcp;
+pub mod doctor;
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
