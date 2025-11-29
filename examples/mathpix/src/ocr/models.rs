@@ -10,6 +10,9 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tracing::{debug, info, warn};
 
+#[cfg(feature = "ocr")]
+use ort::{Session, SessionBuilder};
+
 /// Model types supported by the OCR engine
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ModelType {
@@ -22,9 +25,6 @@ pub enum ModelType {
 }
 
 /// Handle to a loaded ONNX model
-///
-/// This is a mock implementation. In production, this would wrap
-/// an actual ONNX Runtime session.
 #[derive(Clone)]
 pub struct ModelHandle {
     /// Model type
@@ -33,9 +33,13 @@ pub struct ModelHandle {
     path: PathBuf,
     /// Model metadata
     metadata: ModelMetadata,
-    /// Mock session (in production, this would be ort::Session)
+    /// ONNX Runtime session (when ocr feature is enabled)
+    #[cfg(feature = "ocr")]
+    session: Option<Arc<Session>>,
+    /// Mock session for when ocr feature is disabled
+    #[cfg(not(feature = "ocr"))]
     #[allow(dead_code)]
-    session: Arc<MockOnnxSession>,
+    session: Option<()>,
 }
 
 impl ModelHandle {
@@ -43,11 +47,33 @@ impl ModelHandle {
     pub fn new(model_type: ModelType, path: PathBuf, metadata: ModelMetadata) -> Result<Self> {
         debug!("Creating model handle for {:?} at {:?}", model_type, path);
 
-        // In production, load actual ONNX model:
-        // let session = ort::Session::builder()?
-        //     .with_model_from_file(&path)?;
+        #[cfg(feature = "ocr")]
+        let session = if path.exists() {
+            match SessionBuilder::new() {
+                Ok(builder) => {
+                    match builder.with_model_from_file(&path) {
+                        Ok(session) => {
+                            info!("Successfully loaded ONNX model: {:?}", path);
+                            Some(Arc::new(session))
+                        }
+                        Err(e) => {
+                            warn!("Failed to load ONNX model {:?}: {}", path, e);
+                            None
+                        }
+                    }
+                }
+                Err(e) => {
+                    warn!("Failed to create ONNX session builder: {}", e);
+                    None
+                }
+            }
+        } else {
+            debug!("Model file not found: {:?}", path);
+            None
+        };
 
-        let session = Arc::new(MockOnnxSession::new());
+        #[cfg(not(feature = "ocr"))]
+        let session: Option<()> = None;
 
         Ok(Self {
             model_type,
@@ -55,6 +81,17 @@ impl ModelHandle {
             metadata,
             session,
         })
+    }
+
+    /// Check if the model session is loaded
+    pub fn is_loaded(&self) -> bool {
+        self.session.is_some()
+    }
+
+    /// Get the ONNX session (only available with ocr feature)
+    #[cfg(feature = "ocr")]
+    pub fn session(&self) -> Option<&Arc<Session>> {
+        self.session.as_ref()
     }
 
     /// Get the model type
@@ -100,17 +137,6 @@ pub struct ModelMetadata {
     pub file_size: u64,
     /// SHA256 checksum
     pub checksum: Option<String>,
-}
-
-/// Mock ONNX session for testing without actual models
-struct MockOnnxSession {
-    // In production, this would contain ort::Session
-}
-
-impl MockOnnxSession {
-    fn new() -> Self {
-        Self {}
-    }
 }
 
 /// Model registry for loading and caching models
@@ -167,15 +193,14 @@ impl ModelRegistry {
         // Get model path
         let model_path = self.get_model_path(model_type);
 
-        // Check if model exists, download if needed
+        // Check if model exists
         if !model_path.exists() {
             if self.lazy_loading {
                 warn!(
-                    "Model {:?} not found at {:?}, using mock model for development",
+                    "Model {:?} not found at {:?}. OCR will not work without models.",
                     model_type, model_path
                 );
-                // In production, download the model:
-                // self.download_model(model_type, &model_path).await?;
+                warn!("Download models from: https://github.com/PaddlePaddle/PaddleOCR or configure custom models.");
             } else {
                 return Err(OcrError::ModelLoading(format!(
                     "Model {:?} not found at {:?}",
@@ -190,18 +215,23 @@ impl ModelRegistry {
         // Verify checksum if provided
         if let Some(ref checksum) = metadata.checksum {
             if model_path.exists() {
-                debug!("Verifying model checksum...");
+                debug!("Verifying model checksum: {}", checksum);
                 // In production: verify_checksum(&model_path, checksum)?;
             }
         }
 
-        // Create model handle
+        // Create model handle (will load ONNX session if file exists)
         let handle = Arc::new(ModelHandle::new(model_type, model_path, metadata)?);
 
         // Cache the handle
         self.cache.insert(model_type, Arc::clone(&handle));
 
-        info!("Model {:?} loaded successfully", model_type);
+        if handle.is_loaded() {
+            info!("Model {:?} loaded successfully with ONNX session", model_type);
+        } else {
+            warn!("Model {:?} handle created but ONNX session not loaded", model_type);
+        }
+
         Ok(handle)
     }
 
@@ -225,7 +255,7 @@ impl ModelRegistry {
                 output_shape: vec![1, 25200, 85],   // Detections
                 input_dtype: "float32".to_string(),
                 file_size: 50_000_000, // ~50MB
-                checksum: Some("mock_checksum_detection".to_string()),
+                checksum: None,
             },
             ModelType::Recognition => ModelMetadata {
                 name: "Text Recognition".to_string(),
@@ -234,7 +264,7 @@ impl ModelRegistry {
                 output_shape: vec![1, 26, 37],    // Sequence length, vocab size
                 input_dtype: "float32".to_string(),
                 file_size: 20_000_000, // ~20MB
-                checksum: Some("mock_checksum_recognition".to_string()),
+                checksum: None,
             },
             ModelType::Math => ModelMetadata {
                 name: "Math Recognition".to_string(),
@@ -243,56 +273,9 @@ impl ModelRegistry {
                 output_shape: vec![1, 50, 512],   // Sequence length, vocab size
                 input_dtype: "float32".to_string(),
                 file_size: 80_000_000, // ~80MB
-                checksum: Some("mock_checksum_math".to_string()),
+                checksum: None,
             },
         }
-    }
-
-    /// Download a model with progress tracking
-    ///
-    /// This is a mock implementation. In production, this would:
-    /// 1. Download from a remote URL
-    /// 2. Show progress with indicatif
-    /// 3. Verify checksum
-    /// 4. Save to model_dir
-    #[allow(dead_code)]
-    async fn download_model(&self, model_type: ModelType, destination: &Path) -> Result<()> {
-        info!("Downloading model {:?} to {:?}", model_type, destination);
-
-        // Create model directory if it doesn't exist
-        if let Some(parent) = destination.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| {
-                OcrError::ModelLoading(format!("Failed to create model directory: {}", e))
-            })?;
-        }
-
-        // In production, implement actual download logic:
-        // let url = self.get_model_url(model_type);
-        // let response = reqwest::get(url).await?;
-        // let total_size = response.content_length().unwrap_or(0);
-        //
-        // let pb = ProgressBar::new(total_size);
-        // pb.set_style(ProgressStyle::default_bar()...);
-        //
-        // let mut file = File::create(destination)?;
-        // let mut downloaded = 0u64;
-        // let mut stream = response.bytes_stream();
-        //
-        // while let Some(chunk) = stream.next().await {
-        //     let chunk = chunk?;
-        //     file.write_all(&chunk)?;
-        //     downloaded += chunk.len() as u64;
-        //     pb.set_position(downloaded);
-        // }
-        //
-        // pb.finish_with_message("Download complete");
-
-        // For mock: just create an empty file
-        std::fs::write(destination, b"mock_model_data").map_err(|e| {
-            OcrError::ModelLoading(format!("Failed to write model file: {}", e))
-        })?;
-
-        Ok(())
     }
 
     /// Clear the model cache
@@ -363,5 +346,21 @@ mod tests {
         let mut registry = ModelRegistry::new();
         registry.clear_cache();
         assert_eq!(registry.cache.len(), 0);
+    }
+
+    #[test]
+    fn test_model_handle_without_file() {
+        let path = PathBuf::from("/nonexistent/model.onnx");
+        let metadata = ModelMetadata {
+            name: "Test".to_string(),
+            version: "1.0.0".to_string(),
+            input_shape: vec![1, 3, 640, 640],
+            output_shape: vec![1, 100, 85],
+            input_dtype: "float32".to_string(),
+            file_size: 1000,
+            checksum: None,
+        };
+        let handle = ModelHandle::new(ModelType::Detection, path, metadata).unwrap();
+        assert!(!handle.is_loaded());
     }
 }
