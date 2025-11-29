@@ -191,7 +191,7 @@ impl AsciiMathGenerator {
     }
 
     /// Convert binary operator to AsciiMath
-    fn binary_op_to_asciimath(&self, op: &BinaryOp) -> &str {
+    fn binary_op_to_asciimath<'a>(&self, op: &'a BinaryOp) -> &'a str {
         if self.unicode {
             match op {
                 BinaryOp::Add => "+",
@@ -236,7 +236,7 @@ impl AsciiMathGenerator {
     }
 
     /// Convert unary operator to AsciiMath
-    fn unary_op_to_asciimath(&self, op: &UnaryOp) -> &str {
+    fn unary_op_to_asciimath<'a>(&self, op: &'a UnaryOp) -> &'a str {
         match op {
             UnaryOp::Plus => "+",
             UnaryOp::Minus => "-",

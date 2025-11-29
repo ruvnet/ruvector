@@ -11,7 +11,9 @@ use std::sync::Arc;
 use tracing::{debug, info, warn};
 
 #[cfg(feature = "ocr")]
-use ort::{Session, SessionBuilder};
+use ort::session::Session;
+#[cfg(feature = "ocr")]
+use parking_lot::Mutex;
 
 /// Model types supported by the OCR engine
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -34,8 +36,9 @@ pub struct ModelHandle {
     /// Model metadata
     metadata: ModelMetadata,
     /// ONNX Runtime session (when ocr feature is enabled)
+    /// Wrapped in Mutex for mutable access required by ort 2.0 Session::run
     #[cfg(feature = "ocr")]
-    session: Option<Arc<Session>>,
+    session: Option<Arc<Mutex<Session>>>,
     /// Mock session for when ocr feature is disabled
     #[cfg(not(feature = "ocr"))]
     #[allow(dead_code)]
@@ -49,12 +52,12 @@ impl ModelHandle {
 
         #[cfg(feature = "ocr")]
         let session = if path.exists() {
-            match SessionBuilder::new() {
+            match Session::builder() {
                 Ok(builder) => {
-                    match builder.with_model_from_file(&path) {
+                    match builder.commit_from_file(&path) {
                         Ok(session) => {
                             info!("Successfully loaded ONNX model: {:?}", path);
-                            Some(Arc::new(session))
+                            Some(Arc::new(Mutex::new(session)))
                         }
                         Err(e) => {
                             warn!("Failed to load ONNX model {:?}: {}", path, e);
@@ -90,7 +93,7 @@ impl ModelHandle {
 
     /// Get the ONNX session (only available with ocr feature)
     #[cfg(feature = "ocr")]
-    pub fn session(&self) -> Option<&Arc<Session>> {
+    pub fn session(&self) -> Option<&Arc<Mutex<Session>>> {
         self.session.as_ref()
     }
 

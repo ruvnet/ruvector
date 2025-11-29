@@ -81,9 +81,16 @@ ndarray = { version = "0.16", optional = true }
 # ML inference with ONNX Runtime
 ort = { version = "2.0.0-rc.10", optional = true, features = ["load-dynamic"] }
 
+# Concurrent data structures
+parking_lot = "0.12"
+dashmap = "6.1"
+
 # Math parsing and processing
 nom = "7.1"
 once_cell = "1.19"
+
+# Font rendering for benchmarks
+rusttype = "0.9"
 
 # System info
 num_cpus = "1.16"
@@ -127,6 +134,10 @@ path = "src/bin/cli.rs"
 [[bin]]
 name = "scipix-server"
 path = "src/bin/server.rs"
+
+[[bin]]
+name = "scipix-benchmark"
+path = "src/bin/benchmark.rs"
 
 [lib]
 name = "ruvector_scipix"

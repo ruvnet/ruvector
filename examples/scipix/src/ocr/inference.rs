@@ -19,9 +19,9 @@ use std::sync::Arc;
 use tracing::{debug, info, warn};
 
 #[cfg(feature = "ocr")]
-use ndarray::{Array4, IxDyn};
+use ndarray::Array4;
 #[cfg(feature = "ocr")]
-use ort::Tensor;
+use ort::value::Tensor;
 
 /// Result from text detection
 #[derive(Debug, Clone)]
@@ -318,8 +318,9 @@ impl InferenceEngine {
         threshold: f32,
         original_image: &[u8],
     ) -> Result<Vec<DetectionResult>> {
-        let session = self.detection_model.session()
+        let session_arc = self.detection_model.session()
             .ok_or_else(|| OcrError::OnnxRuntime("Detection model session not loaded".to_string()))?;
+        let mut session = session_arc.lock();
 
         let input_shape = self.detection_model.input_shape();
         let shape: Vec<usize> = input_shape.to_vec();
@@ -343,13 +344,10 @@ impl InferenceEngine {
             .map(|(_, v)| v)
             .ok_or_else(|| OcrError::OnnxRuntime("No output tensor found".to_string()))?;
 
-        let output_data: Vec<f32> = output_tensor
+        let (_, raw_data) = output_tensor
             .try_extract_tensor::<f32>()
-            .map_err(|e| OcrError::OnnxRuntime(format!("Failed to extract output: {}", e)))?
-            .view()
-            .iter()
-            .copied()
-            .collect();
+            .map_err(|e| OcrError::OnnxRuntime(format!("Failed to extract output: {}", e)))?;
+        let output_data: Vec<f32> = raw_data.to_vec();
 
         let original_img = image::load_from_memory(original_image)
             .map_err(|e| OcrError::ImageProcessing(format!("Failed to decode image: {}", e)))?;
@@ -433,8 +431,9 @@ impl InferenceEngine {
         input_tensor: &[f32],
         _options: &OcrOptions,
     ) -> Result<RecognitionResult> {
-        let session = self.recognition_model.session()
+        let session_arc = self.recognition_model.session()
             .ok_or_else(|| OcrError::OnnxRuntime("Recognition model session not loaded".to_string()))?;
+        let mut session = session_arc.lock();
 
         let input_shape = self.recognition_model.input_shape();
         let shape: Vec<usize> = input_shape.to_vec();
@@ -455,13 +454,10 @@ impl InferenceEngine {
             .map(|(_, v)| v)
             .ok_or_else(|| OcrError::OnnxRuntime("No output tensor found".to_string()))?;
 
-        let output_data: Vec<f32> = output_tensor
+        let (_, raw_data) = output_tensor
             .try_extract_tensor::<f32>()
-            .map_err(|e| OcrError::OnnxRuntime(format!("Failed to extract output: {}", e)))?
-            .view()
-            .iter()
-            .copied()
-            .collect();
+            .map_err(|e| OcrError::OnnxRuntime(format!("Failed to extract output: {}", e)))?;
+        let output_data: Vec<f32> = raw_data.to_vec();
 
         let output_shape = self.recognition_model.output_shape();
         let seq_len = output_shape.get(1).copied().unwrap_or(26);
@@ -507,8 +503,9 @@ impl InferenceEngine {
         let math_model = self.math_model.as_ref()
             .ok_or_else(|| OcrError::Inference("Math model not loaded".to_string()))?;
 
-        let session = math_model.session()
+        let session_arc = math_model.session()
             .ok_or_else(|| OcrError::OnnxRuntime("Math model session not loaded".to_string()))?;
+        let mut session = session_arc.lock();
 
         let input_shape = math_model.input_shape();
         let shape: Vec<usize> = input_shape.to_vec();
@@ -529,13 +526,10 @@ impl InferenceEngine {
             .map(|(_, v)| v)
             .ok_or_else(|| OcrError::OnnxRuntime("No output tensor found".to_string()))?;
 
-        let output_data: Vec<f32> = output_tensor
+        let (_, raw_data) = output_tensor
             .try_extract_tensor::<f32>()
-            .map_err(|e| OcrError::OnnxRuntime(format!("Failed to extract output: {}", e)))?
-            .view()
-            .iter()
-            .copied()
-            .collect();
+            .map_err(|e| OcrError::OnnxRuntime(format!("Failed to extract output: {}", e)))?;
+        let output_data: Vec<f32> = raw_data.to_vec();
 
         let output_shape = math_model.output_shape();
         let seq_len = output_shape.get(1).copied().unwrap_or(50);

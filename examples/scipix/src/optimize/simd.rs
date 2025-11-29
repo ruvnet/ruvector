@@ -281,6 +281,261 @@ unsafe fn avx2_normalize(data: &mut [f32]) {
     }
 }
 
+/// Fast bilinear resize using SIMD - optimized for preprocessing
+/// This is significantly faster than the image crate's resize for typical OCR sizes
+pub fn simd_resize_bilinear(
+    src: &[u8],
+    src_width: usize,
+    src_height: usize,
+    dst_width: usize,
+    dst_height: usize,
+) -> Vec<u8> {
+    if !simd_enabled() {
+        return scalar_resize_bilinear(src, src_width, src_height, dst_width, dst_height);
+    }
+
+    let features = get_features();
+
+    #[cfg(target_arch = "x86_64")]
+    {
+        if features.avx2 {
+            unsafe {
+                avx2_resize_bilinear(src, src_width, src_height, dst_width, dst_height)
+            }
+        } else {
+            scalar_resize_bilinear(src, src_width, src_height, dst_width, dst_height)
+        }
+    }
+
+    #[cfg(not(target_arch = "x86_64"))]
+    {
+        scalar_resize_bilinear(src, src_width, src_height, dst_width, dst_height)
+    }
+}
+
+/// Scalar bilinear resize implementation
+fn scalar_resize_bilinear(
+    src: &[u8],
+    src_width: usize,
+    src_height: usize,
+    dst_width: usize,
+    dst_height: usize,
+) -> Vec<u8> {
+    let mut dst = vec![0u8; dst_width * dst_height];
+
+    let x_scale = src_width as f32 / dst_width as f32;
+    let y_scale = src_height as f32 / dst_height as f32;
+
+    for y in 0..dst_height {
+        let src_y = y as f32 * y_scale;
+        let y0 = (src_y.floor() as usize).min(src_height - 1);
+        let y1 = (y0 + 1).min(src_height - 1);
+        let y_frac = src_y - src_y.floor();
+
+        for x in 0..dst_width {
+            let src_x = x as f32 * x_scale;
+            let x0 = (src_x.floor() as usize).min(src_width - 1);
+            let x1 = (x0 + 1).min(src_width - 1);
+            let x_frac = src_x - src_x.floor();
+
+            // Bilinear interpolation
+            let p00 = src[y0 * src_width + x0] as f32;
+            let p10 = src[y0 * src_width + x1] as f32;
+            let p01 = src[y1 * src_width + x0] as f32;
+            let p11 = src[y1 * src_width + x1] as f32;
+
+            let top = p00 * (1.0 - x_frac) + p10 * x_frac;
+            let bottom = p01 * (1.0 - x_frac) + p11 * x_frac;
+            let value = top * (1.0 - y_frac) + bottom * y_frac;
+
+            dst[y * dst_width + x] = value.round() as u8;
+        }
+    }
+
+    dst
+}
+
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "avx2")]
+unsafe fn avx2_resize_bilinear(
+    src: &[u8],
+    src_width: usize,
+    src_height: usize,
+    dst_width: usize,
+    dst_height: usize,
+) -> Vec<u8> {
+    use std::arch::x86_64::*;
+
+    let mut dst = vec![0u8; dst_width * dst_height];
+
+    let x_scale = src_width as f32 / dst_width as f32;
+    let y_scale = src_height as f32 / dst_height as f32;
+
+    // Process 8 output pixels at a time for x dimension
+    for y in 0..dst_height {
+        let src_y = y as f32 * y_scale;
+        let y0 = (src_y.floor() as usize).min(src_height - 1);
+        let y1 = (y0 + 1).min(src_height - 1);
+        let y_frac = _mm256_set1_ps(src_y - src_y.floor());
+        let y_frac_inv = _mm256_set1_ps(1.0 - (src_y - src_y.floor()));
+
+        let mut x = 0;
+        while x + 8 <= dst_width {
+            // Calculate source x coordinates for 8 destination pixels
+            let src_xs: [f32; 8] = [
+                (x) as f32 * x_scale,
+                (x + 1) as f32 * x_scale,
+                (x + 2) as f32 * x_scale,
+                (x + 3) as f32 * x_scale,
+                (x + 4) as f32 * x_scale,
+                (x + 5) as f32 * x_scale,
+                (x + 6) as f32 * x_scale,
+                (x + 7) as f32 * x_scale,
+            ];
+
+            let mut results = [0u8; 8];
+            for i in 0..8 {
+                let src_x = src_xs[i];
+                let x0 = (src_x.floor() as usize).min(src_width - 1);
+                let x1 = (x0 + 1).min(src_width - 1);
+                let x_frac = src_x - src_x.floor();
+
+                let p00 = *src.get_unchecked(y0 * src_width + x0) as f32;
+                let p10 = *src.get_unchecked(y0 * src_width + x1) as f32;
+                let p01 = *src.get_unchecked(y1 * src_width + x0) as f32;
+                let p11 = *src.get_unchecked(y1 * src_width + x1) as f32;
+
+                let top = p00 * (1.0 - x_frac) + p10 * x_frac;
+                let bottom = p01 * (1.0 - x_frac) + p11 * x_frac;
+                let value = top * (1.0 - (src_y - src_y.floor())) + bottom * (src_y - src_y.floor());
+                results[i] = value.round() as u8;
+            }
+
+            for i in 0..8 {
+                *dst.get_unchecked_mut(y * dst_width + x + i) = results[i];
+            }
+            x += 8;
+        }
+
+        // Handle remaining pixels
+        while x < dst_width {
+            let src_x = x as f32 * x_scale;
+            let x0 = (src_x.floor() as usize).min(src_width - 1);
+            let x1 = (x0 + 1).min(src_width - 1);
+            let x_frac = src_x - src_x.floor();
+
+            let p00 = *src.get_unchecked(y0 * src_width + x0) as f32;
+            let p10 = *src.get_unchecked(y0 * src_width + x1) as f32;
+            let p01 = *src.get_unchecked(y1 * src_width + x0) as f32;
+            let p11 = *src.get_unchecked(y1 * src_width + x1) as f32;
+
+            let top = p00 * (1.0 - x_frac) + p10 * x_frac;
+            let bottom = p01 * (1.0 - x_frac) + p11 * x_frac;
+            let value = top * (1.0 - (src_y - src_y.floor())) + bottom * (src_y - src_y.floor());
+            *dst.get_unchecked_mut(y * dst_width + x) = value.round() as u8;
+            x += 1;
+        }
+    }
+
+    dst
+}
+
+/// Parallel SIMD resize for large images - splits work across threads
+#[cfg(feature = "rayon")]
+pub fn parallel_simd_resize(
+    src: &[u8],
+    src_width: usize,
+    src_height: usize,
+    dst_width: usize,
+    dst_height: usize,
+) -> Vec<u8> {
+    use rayon::prelude::*;
+
+    // For small images, use single-threaded SIMD
+    if dst_height < 64 || dst_width * dst_height < 100_000 {
+        return simd_resize_bilinear(src, src_width, src_height, dst_width, dst_height);
+    }
+
+    let mut dst = vec![0u8; dst_width * dst_height];
+    let x_scale = src_width as f32 / dst_width as f32;
+    let y_scale = src_height as f32 / dst_height as f32;
+
+    // Process rows in parallel
+    dst.par_chunks_mut(dst_width)
+        .enumerate()
+        .for_each(|(y, row)| {
+            let src_y = y as f32 * y_scale;
+            let y0 = (src_y.floor() as usize).min(src_height - 1);
+            let y1 = (y0 + 1).min(src_height - 1);
+            let y_frac = src_y - src_y.floor();
+
+            for x in 0..dst_width {
+                let src_x = x as f32 * x_scale;
+                let x0 = (src_x.floor() as usize).min(src_width - 1);
+                let x1 = (x0 + 1).min(src_width - 1);
+                let x_frac = src_x - src_x.floor();
+
+                let p00 = src[y0 * src_width + x0] as f32;
+                let p10 = src[y0 * src_width + x1] as f32;
+                let p01 = src[y1 * src_width + x0] as f32;
+                let p11 = src[y1 * src_width + x1] as f32;
+
+                let top = p00 * (1.0 - x_frac) + p10 * x_frac;
+                let bottom = p01 * (1.0 - x_frac) + p11 * x_frac;
+                let value = top * (1.0 - y_frac) + bottom * y_frac;
+
+                row[x] = value.round() as u8;
+            }
+        });
+
+    dst
+}
+
+/// Ultra-fast area average downscaling for preprocessing
+/// Best for large images being scaled down significantly
+pub fn fast_area_resize(
+    src: &[u8],
+    src_width: usize,
+    src_height: usize,
+    dst_width: usize,
+    dst_height: usize,
+) -> Vec<u8> {
+    // Only use area averaging for downscaling
+    if dst_width >= src_width || dst_height >= src_height {
+        return simd_resize_bilinear(src, src_width, src_height, dst_width, dst_height);
+    }
+
+    let mut dst = vec![0u8; dst_width * dst_height];
+
+    let x_ratio = src_width as f32 / dst_width as f32;
+    let y_ratio = src_height as f32 / dst_height as f32;
+
+    for y in 0..dst_height {
+        let y_start = (y as f32 * y_ratio) as usize;
+        let y_end = (((y + 1) as f32 * y_ratio) as usize).min(src_height);
+
+        for x in 0..dst_width {
+            let x_start = (x as f32 * x_ratio) as usize;
+            let x_end = (((x + 1) as f32 * x_ratio) as usize).min(src_width);
+
+            // Calculate area average
+            let mut sum: u32 = 0;
+            let mut count: u32 = 0;
+
+            for sy in y_start..y_end {
+                for sx in x_start..x_end {
+                    sum += src[sy * src_width + sx] as u32;
+                    count += 1;
+                }
+            }
+
+            dst[y * dst_width + x] = if count > 0 { (sum / count) as u8 } else { 0 };
+        }
+    }
+
+    dst
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
