@@ -8,9 +8,11 @@
 //! cargo run --example streaming -- document.pdf output/
 //! ```
 
-use ruvector_scipix::{OcrEngine, OcrConfig, OcrResult, OutputFormat};
+use ruvector_scipix::OcrConfig;
+use ruvector_scipix::ocr::OcrEngine;
+use ruvector_scipix::output::{OcrResult, OutputFormat};
 use anyhow::{Context, Result};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use futures::stream::{self, StreamExt};
 use tokio::fs;
 use serde::{Serialize, Deserialize};

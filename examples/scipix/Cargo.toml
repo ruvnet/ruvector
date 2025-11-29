@@ -152,6 +152,7 @@ path = "examples/simple_ocr.rs"
 [[example]]
 name = "batch_processing"
 path = "examples/batch_processing.rs"
+required-features = ["ocr"]
 
 [[example]]
 name = "api_server"
@@ -160,6 +161,7 @@ path = "examples/api_server.rs"
 [[example]]
 name = "streaming"
 path = "examples/streaming.rs"
+required-features = ["ocr"]
 
 [[example]]
 name = "custom_pipeline"

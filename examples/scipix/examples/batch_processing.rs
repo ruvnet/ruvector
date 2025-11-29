@@ -3,13 +3,17 @@
 //! This example demonstrates parallel batch processing of multiple images.
 //! It processes all images in a directory concurrently with a progress bar.
 //!
+//! Note: This example requires the `ocr` feature to be enabled.
+//!
 //! Usage:
 //! ```bash
-//! cargo run --example batch_processing -- /path/to/images output.json
+//! cargo run --example batch_processing --features ocr -- /path/to/images output.json
 //! ```
 
-use ruvector_scipix::{OcrEngine, OcrConfig, OcrResult};
-use anyhow::{Context, Result};
+use ruvector_scipix::OcrConfig;
+use ruvector_scipix::ocr::OcrEngine;
+use ruvector_scipix::output::{OcrResult, OutputFormat};
+use anyhow::Result;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::Semaphore;
