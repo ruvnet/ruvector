@@ -354,6 +354,23 @@ All crates are published to [crates.io](https://crates.io) under the `ruvector-*
 | [ruvector-router-ffi](./crates/ruvector-router-ffi) | FFI bindings for other languages | [![crates.io](https://img.shields.io/crates/v/ruvector-router-ffi.svg)](https://crates.io/crates/ruvector-router-ffi) |
 | [ruvector-router-wasm](./crates/ruvector-router-wasm) | WASM bindings for browser routing | [![crates.io](https://img.shields.io/crates/v/ruvector-router-wasm.svg)](https://crates.io/crates/ruvector-router-wasm) |
 
+### Scientific OCR (SciPix)
+
+| Crate | Description | crates.io |
+|-------|-------------|-----------|
+| [ruvector-scipix](./examples/scipix) | OCR engine for scientific documents, math equations → LaTeX/MathML | [![crates.io](https://img.shields.io/crates/v/ruvector-scipix.svg)](https://crates.io/crates/ruvector-scipix) |
+
+**SciPix** extracts text and mathematical equations from images, converting them to LaTeX, MathML, or plain text. Features GPU-accelerated ONNX inference, SIMD-optimized preprocessing, REST API server, CLI tool, and MCP integration for AI assistants.
+
+```bash
+# Install
+cargo add ruvector-scipix
+
+# CLI usage
+scipix-cli ocr --input equation.png --format latex
+scipix-cli serve --port 3000
+```
+
 ### Bindings & Tools
 
 | Crate | Description | crates.io |
