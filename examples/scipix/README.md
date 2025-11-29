@@ -1,13 +1,19 @@
 # SciPix - Scientific Image & Math OCR Engine
 
+[![Crates.io](https://img.shields.io/crates/v/ruvector-scipix.svg)](https://crates.io/crates/ruvector-scipix)
+[![Documentation](https://docs.rs/ruvector-scipix/badge.svg)](https://docs.rs/ruvector-scipix)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust](https://img.shields.io/badge/rust-1.77+-orange.svg)](https://www.rust-lang.org/)
+
 <p align="center">
   <strong>High-performance OCR for scientific documents, mathematical equations, and technical imagery</strong>
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> |
-  <a href="#quick-start">Quick Start</a> |
   <a href="#installation">Installation</a> |
+  <a href="#quick-start">Quick Start</a> |
+  <a href="#sdk-usage">SDK Usage</a> |
+  <a href="#cli-reference">CLI Reference</a> |
   <a href="#tutorials">Tutorials</a> |
   <a href="#api-reference">API Reference</a>
 </p>
@@ -16,75 +22,98 @@
 
 ## Introduction
 
-**SciPix** is a production-ready OCR (Optical Character Recognition) engine built in Rust, specifically designed for scientific documents, mathematical equations, and technical diagrams. It provides:
+**SciPix** is a production-ready OCR (Optical Character Recognition) engine built in Rust, specifically designed for scientific documents, mathematical equations, and technical diagrams. Part of the [ruvector](https://github.com/ruvnet/ruvector) ecosystem.
 
-- **Native ONNX Runtime Integration** - GPU-accelerated inference using the `ort` crate
-- **Multiple Deployment Options** - REST API server, CLI tool, WebAssembly module
-- **Advanced Math Recognition** - LaTeX, MathML, and ASCII output formats
-- **High Performance** - Async I/O, connection pooling, and intelligent caching
-- **Production Security** - SHA-256 authentication, rate limiting, request validation
+### Key Features
 
-Whether you're building a document processing pipeline, a math homework helper, or a scientific paper digitizer, SciPix provides the foundation you need.
+- 🚀 **Native ONNX Runtime Integration** - GPU-accelerated inference using the `ort` crate
+- 📦 **Multiple Deployment Options** - REST API server, CLI tool, Rust SDK, WebAssembly module
+- 🔢 **Advanced Math Recognition** - LaTeX, MathML, and ASCII output formats
+- ⚡ **High Performance** - SIMD optimizations, async I/O, intelligent caching
+- 🔒 **Production Security** - SHA-256 authentication, rate limiting, request validation
+- 🤖 **MCP Integration** - Model Context Protocol server for AI assistant integration
 
-## Features
+---
 
-### Core Capabilities
+## Installation
 
-| Feature | Description |
-|---------|-------------|
-| **Image OCR** | Extract text from images (PNG, JPEG, WebP, TIFF, BMP) |
-| **Math Recognition** | Convert handwritten/printed equations to LaTeX, MathML, ASCII |
-| **PDF Processing** | Async PDF extraction with job queue and progress tracking |
-| **Digital Ink** | Process stylus/tablet stroke data into formatted text |
-| **Document Conversion** | Convert between MMD, DOCX, and other formats |
+### From crates.io (Rust SDK)
 
-### Output Formats
+```bash
+cargo add ruvector-scipix
+```
 
-- **LaTeX** - Mathematical typesetting format
-- **MathML** - XML-based math markup for web
-- **HTML** - Web-ready formatted output
-- **ASCII** - Plain text representation
-- **MMD** - Multi-Markdown format
+Or add to your `Cargo.toml`:
 
-### Deployment Options
+```toml
+[dependencies]
+ruvector-scipix = "0.1.16"
 
-| Mode | Use Case | Bundle Size |
-|------|----------|-------------|
-| **REST API Server** | Backend services, microservices | ~15MB |
-| **CLI Tool** | Batch processing, automation | ~15MB |
-| **WebAssembly** | Browser-based OCR, offline apps | <2MB |
+# With specific features
+ruvector-scipix = { version = "0.1.16", features = ["ocr", "math", "optimize"] }
+```
 
-### Performance Features
+### From Source (CLI & Server)
 
-- Async I/O with Tokio runtime
-- ONNX Runtime for GPU/CPU inference
-- Intelligent result caching (Moka)
-- Token bucket rate limiting
-- Gzip response compression
-- Connection pooling for external requests
+```bash
+# Clone the repository
+git clone https://github.com/ruvnet/ruvector.git
+cd ruvector/examples/scipix
+
+# Build CLI and Server
+cargo build --release
+
+# Install globally (optional)
+cargo install --path .
+```
+
+### Pre-built Binaries
+
+```bash
+# Download latest release (Linux)
+curl -L https://github.com/ruvnet/ruvector/releases/latest/download/scipix-cli-linux-x64 -o scipix-cli
+chmod +x scipix-cli
+
+# Download latest release (macOS)
+curl -L https://github.com/ruvnet/ruvector/releases/latest/download/scipix-cli-darwin-arm64 -o scipix-cli
+chmod +x scipix-cli
+```
+
+### Feature Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `default` | preprocess, cache, optimize | ✅ |
+| `ocr` | ONNX-based OCR engine | ❌ |
+| `math` | Math expression parsing | ❌ |
+| `preprocess` | Image preprocessing | ✅ |
+| `cache` | Result caching | ✅ |
+| `optimize` | SIMD & parallel optimizations | ✅ |
+| `wasm` | WebAssembly support | ❌ |
+
+---
 
 ## Quick Start
 
 ### 30-Second Setup
 
 ```bash
-# Clone and build
+# Build and run the server
 cd examples/scipix
-cargo build --release
+cargo run --release --bin scipix-server
 
-# Run the server
-./target/release/scipix-server
-
-# Test with curl
+# In another terminal, test the API
 curl http://localhost:3000/health
+# {"status":"healthy","version":"0.1.16"}
 ```
 
 ### Process Your First Image
 
 ```bash
-# Base64 encode an image and send it
-BASE64_IMAGE=$(base64 -w 0 your_image.png)
+# Encode an image to base64
+BASE64_IMAGE=$(base64 -w 0 equation.png)
 
+# Send OCR request
 curl -X POST http://localhost:3000/v3/text \
   -H "Content-Type: application/json" \
   -H "app_id: demo" \
@@ -92,50 +121,304 @@ curl -X POST http://localhost:3000/v3/text \
   -d "{\"base64\": \"$BASE64_IMAGE\", \"metadata\": {\"formats\": [\"text\", \"latex\"]}}"
 ```
 
-## Installation
+---
 
-### Prerequisites
+## SDK Usage
 
-- **Rust 1.77+** - Install via [rustup](https://rustup.rs/)
-- **Cargo** - Comes with Rust
-- **(Optional) ONNX Runtime** - For GPU acceleration
+### Basic Usage
 
-### From Source
+```rust
+use ruvector_scipix::{Config, Result};
 
-```bash
-# Clone the repository
-git clone https://github.com/ruvnet/ruvector.git
-cd ruvector/examples/scipix
+fn main() -> Result<()> {
+    // Load default configuration
+    let config = Config::default();
 
-# Build with all features
-cargo build --release --all-features
+    // Validate configuration
+    config.validate()?;
 
-# Or build specific features
-cargo build --release --features "ocr,math,optimize"
+    println!("SciPix version: {}", ruvector_scipix::VERSION);
+    Ok(())
+}
 ```
 
-### Feature Flags
+### Image Preprocessing
 
+```rust
+use ruvector_scipix::preprocess::{PreprocessPipeline, transforms};
+use image::open;
+
+fn preprocess_image(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    // Load image
+    let img = open(path)?;
+
+    // Create preprocessing pipeline
+    let pipeline = PreprocessPipeline::new()
+        .with_auto_rotate(true)
+        .with_auto_deskew(true)
+        .with_noise_reduction(true)
+        .with_contrast_enhancement(true);
+
+    // Process image
+    let processed = pipeline.process(img)?;
+
+    // Save result
+    processed.save("processed.png")?;
+
+    Ok(())
+}
+```
+
+### OCR Engine (requires `ocr` feature)
+
+```rust
+use ruvector_scipix::ocr::{OcrEngine, OcrOptions};
+use ruvector_scipix::OcrConfig;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize OCR engine
+    let config = OcrConfig::default();
+    let engine = OcrEngine::new(config).await?;
+
+    // Load and process image
+    let image = image::open("equation.png")?;
+    let result = engine.recognize(&image).await?;
+
+    println!("Text: {}", result.text);
+    println!("Confidence: {:.2}%", result.confidence * 100.0);
+
+    // Get LaTeX output
+    if let Some(latex) = result.latex {
+        println!("LaTeX: {}", latex);
+    }
+
+    Ok(())
+}
+```
+
+### Math Parsing (requires `math` feature)
+
+```rust
+use ruvector_scipix::math::{parse_expression, to_latex, to_mathml};
+
+fn parse_math() -> Result<(), Box<dyn std::error::Error>> {
+    // Parse a mathematical expression
+    let expr = parse_expression("x^2 + 2x + 1")?;
+
+    // Convert to different formats
+    let latex = to_latex(&expr)?;
+    let mathml = to_mathml(&expr)?;
+
+    println!("LaTeX: {}", latex);
+    println!("MathML: {}", mathml);
+
+    Ok(())
+}
+```
+
+### Caching Results
+
+```rust
+use ruvector_scipix::cache::CacheManager;
+use ruvector_scipix::CacheConfig;
+
+fn use_cache() -> Result<(), Box<dyn std::error::Error>> {
+    let config = CacheConfig {
+        max_size: 1000,
+        ttl_seconds: 3600,
+        ..Default::default()
+    };
+
+    let cache = CacheManager::new(config)?;
+
+    // Store result
+    cache.store("image_hash_123", &result)?;
+
+    // Retrieve result
+    if let Some(cached) = cache.get("image_hash_123")? {
+        println!("Cache hit: {}", cached.latex);
+    }
+
+    Ok(())
+}
+```
+
+### Configuration Presets
+
+```rust
+use ruvector_scipix::{default_config, high_accuracy_config, high_speed_config};
+
+fn configure() {
+    // Default balanced configuration
+    let config = default_config();
+
+    // High accuracy (slower, more precise)
+    let accurate = high_accuracy_config();
+
+    // High speed (faster, may sacrifice accuracy)
+    let fast = high_speed_config();
+}
+```
+
+---
+
+## CLI Reference
+
+### Installation
+
+```bash
+# Install from source
+cargo install --path examples/scipix
+
+# Or use pre-built binary
+./scipix-cli --help
+```
+
+### Commands
+
+#### `ocr` - Process Single Image
+
+```bash
+# Basic OCR
+scipix-cli ocr --input document.png
+
+# With output file and format
+scipix-cli ocr --input equation.png --output result.json --format latex
+
+# Specify output formats
+scipix-cli ocr --input image.png --formats text,latex,mathml
+```
+
+**Options:**
 | Flag | Description | Default |
 |------|-------------|---------|
-| `ocr` | ONNX-based OCR engine | Off |
-| `math` | Math expression parsing | Off |
-| `preprocess` | Image preprocessing | On |
-| `cache` | Result caching | On |
-| `optimize` | Performance optimizations | On |
-| `wasm` | WebAssembly support | Off |
+| `-i, --input` | Input image path | Required |
+| `-o, --output` | Output file path | stdout |
+| `-f, --format` | Output format (json, text, latex) | json |
+| `--formats` | OCR formats (text, latex, mathml, html) | text |
+| `--confidence` | Minimum confidence threshold | 0.5 |
 
-### Download ONNX Models
+#### `batch` - Process Multiple Images
 
 ```bash
-# Run the model download script
-./scripts/download_models.sh
+# Process directory
+scipix-cli batch --input-dir ./images --output-dir ./results
 
-# Or manually place models in:
-# models/scipix_encoder.onnx
-# models/scipix_decoder.onnx
-# models/scipix_tokenizer.onnx
+# With parallel processing
+scipix-cli batch -i ./images -o ./results --parallel 8
+
+# Recursive with specific formats
+scipix-cli batch -i ./docs -o ./output --recursive --format latex
+
+# Watch mode for continuous processing
+scipix-cli batch -i ./inbox -o ./processed --watch
 ```
+
+**Options:**
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-i, --input-dir` | Input directory | Required |
+| `-o, --output-dir` | Output directory | Required |
+| `-p, --parallel` | Parallel workers | CPU cores |
+| `-r, --recursive` | Process subdirectories | false |
+| `--watch` | Watch for new files | false |
+| `--max-retries` | Retry failed files | 3 |
+
+#### `serve` - Start API Server
+
+```bash
+# Start with defaults
+scipix-cli serve
+
+# Custom address and port
+scipix-cli serve --address 0.0.0.0 --port 8080
+
+# With configuration file
+scipix-cli serve --config ./config.toml
+
+# Enable debug logging
+RUST_LOG=debug scipix-cli serve
+```
+
+**Options:**
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-a, --address` | Bind address | 127.0.0.1 |
+| `-p, --port` | Port number | 3000 |
+| `-c, --config` | Config file path | None |
+| `--workers` | Worker threads | CPU cores |
+
+#### `config` - Manage Configuration
+
+```bash
+# Show current configuration
+scipix-cli config show
+
+# Initialize default config file
+scipix-cli config init
+
+# Set specific values
+scipix-cli config set ocr.confidence_threshold 0.8
+scipix-cli config set server.port 8080
+
+# Validate configuration
+scipix-cli config validate
+```
+
+#### `doctor` - Environment Check
+
+```bash
+# Run full diagnostics
+scipix-cli doctor
+
+# Check specific components
+scipix-cli doctor --check cpu,memory,deps
+
+# Output as JSON
+scipix-cli doctor --format json
+
+# Auto-fix issues
+scipix-cli doctor --fix
+```
+
+**Checks performed:**
+- CPU cores and SIMD capabilities (SSE2, AVX, AVX2, AVX-512, NEON)
+- Memory availability
+- ONNX Runtime installation
+- Model file availability
+- Configuration validity
+- Network port availability
+
+#### `mcp` - MCP Server Mode
+
+```bash
+# Start MCP server for AI integration
+scipix-cli mcp
+
+# With debug logging
+scipix-cli mcp --debug
+
+# With custom models directory
+scipix-cli mcp --models-dir ./custom-models
+```
+
+**Available MCP Tools:**
+| Tool | Description |
+|------|-------------|
+| `ocr_image` | Process image file with OCR |
+| `ocr_base64` | Process base64-encoded image |
+| `batch_ocr` | Batch process multiple images |
+| `preprocess_image` | Apply image preprocessing |
+| `latex_to_mathml` | Convert LaTeX to MathML |
+| `benchmark_performance` | Run performance benchmarks |
+
+**Claude Code Integration:**
+```bash
+claude mcp add scipix -- scipix-cli mcp
+```
+
+---
 
 ## Tutorials
 
@@ -143,58 +426,24 @@ cargo build --release --features "ocr,math,optimize"
 
 Learn to extract text from images using the REST API.
 
-**Step 1: Start the Server**
-
 ```bash
+# Step 1: Start the server
 cargo run --bin scipix-server
-```
 
-**Step 2: Prepare Your Image**
-
-```bash
-# Encode image to base64
+# Step 2: Encode your image
 BASE64=$(base64 -w 0 document.png)
-echo $BASE64 > image.b64
-```
 
-**Step 3: Send OCR Request**
-
-```bash
+# Step 3: Send OCR request
 curl -X POST http://localhost:3000/v3/text \
   -H "Content-Type: application/json" \
   -H "app_id: test" \
   -H "app_key: test123" \
-  -d @- << EOF
-{
-  "base64": "$(cat image.b64)",
-  "metadata": {
-    "formats": ["text"],
-    "confidence_threshold": 0.8
-  }
-}
-EOF
-```
-
-**Step 4: Parse the Response**
-
-```json
-{
-  "request_id": "abc123",
-  "text": "Your extracted text here",
-  "confidence": 0.95,
-  "processing_time_ms": 150
-}
+  -d "{\"base64\": \"$BASE64\", \"metadata\": {\"formats\": [\"text\"]}}"
 ```
 
 ### Tutorial 2: Mathematical Equation Recognition
 
 Convert math images to LaTeX format.
-
-**Step 1: Capture Equation Image**
-
-Take a photo or screenshot of a mathematical equation.
-
-**Step 2: Request LaTeX Output**
 
 ```bash
 curl -X POST http://localhost:3000/v3/text \
@@ -210,8 +459,7 @@ curl -X POST http://localhost:3000/v3/text \
   }'
 ```
 
-**Step 3: Use the Output**
-
+**Response:**
 ```json
 {
   "latex": "\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
@@ -224,169 +472,92 @@ curl -X POST http://localhost:3000/v3/text \
 
 Process multi-page PDFs asynchronously.
 
-**Step 1: Submit PDF Job**
-
 ```bash
-JOB_RESPONSE=$(curl -s -X POST http://localhost:3000/v3/pdf \
+# Submit PDF job
+JOB=$(curl -s -X POST http://localhost:3000/v3/pdf \
   -H "Content-Type: application/json" \
   -H "app_id: test" \
   -H "app_key: test123" \
   -d '{
     "url": "https://example.com/paper.pdf",
-    "options": {
-      "format": "mmd",
-      "enable_ocr": true,
-      "include_images": true,
-      "page_range": "1-10"
-    }
+    "options": {"format": "mmd", "enable_ocr": true}
   }')
 
-JOB_ID=$(echo $JOB_RESPONSE | jq -r '.pdf_id')
-echo "Job ID: $JOB_ID"
+JOB_ID=$(echo $JOB | jq -r '.pdf_id')
+
+# Poll for completion
+curl http://localhost:3000/v3/pdf/$JOB_ID \
+  -H "app_id: test" -H "app_key: test123"
 ```
 
-**Step 2: Poll for Status**
+### Tutorial 4: CLI Batch Processing
 
 ```bash
-while true; do
-  STATUS=$(curl -s http://localhost:3000/v3/pdf/$JOB_ID \
-    -H "app_id: test" -H "app_key: test123" | jq -r '.status')
-
-  echo "Status: $STATUS"
-
-  if [ "$STATUS" = "completed" ] || [ "$STATUS" = "error" ]; then
-    break
-  fi
-
-  sleep 2
-done
-```
-
-**Step 3: Stream Results (SSE)**
-
-```bash
-curl -N http://localhost:3000/v3/pdf/$JOB_ID/stream \
-  -H "app_id: test" \
-  -H "app_key: test123"
-```
-
-### Tutorial 4: Digital Ink Recognition
-
-Process stylus/touch stroke data.
-
-**Step 1: Capture Strokes**
-
-```javascript
-// In your web application
-const strokes = [];
-canvas.addEventListener('touchmove', (e) => {
-  strokes.push({
-    x: Array.from(e.touches).map(t => t.clientX),
-    y: Array.from(e.touches).map(t => t.clientY)
-  });
-});
-```
-
-**Step 2: Send to API**
-
-```bash
-curl -X POST http://localhost:3000/v3/strokes \
-  -H "Content-Type: application/json" \
-  -H "app_id: test" \
-  -H "app_key: test123" \
-  -d '{
-    "strokes": [
-      {"x": [0, 10, 20, 30], "y": [0, 10, 10, 0]},
-      {"x": [40, 50, 60], "y": [5, 15, 5]}
-    ],
-    "metadata": {
-      "formats": ["latex", "text"]
-    }
-  }'
-```
-
-### Tutorial 5: WebAssembly Integration
-
-Run OCR directly in the browser.
-
-**Step 1: Build WASM Module**
-
-```bash
-# Install wasm-pack
-cargo install wasm-pack
-
-# Build WebAssembly package
-wasm-pack build --target web --features wasm
-```
-
-**Step 2: Use in Browser**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <script type="module">
-    import init, { ScipixWasm } from './pkg/ruvector_scipix.js';
-
-    async function processImage() {
-      await init();
-
-      const scipix = new ScipixWasm();
-      await scipix.initialize();
-
-      // Get image from canvas or file input
-      const canvas = document.getElementById('canvas');
-      const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-
-      const result = await scipix.recognize(imageData.data);
-      console.log('Result:', result);
-    }
-
-    processImage();
-  </script>
-</head>
-<body>
-  <canvas id="canvas" width="400" height="300"></canvas>
-</body>
-</html>
-```
-
-### Tutorial 6: CLI Batch Processing
-
-Process multiple files from command line.
-
-**Step 1: Single File**
-
-```bash
-./target/release/scipix-cli ocr --input document.png --output result.json --format latex
-```
-
-**Step 2: Batch Directory**
-
-```bash
-./target/release/scipix-cli batch \
+# Process entire directory
+scipix-cli batch \
   --input-dir ./documents \
   --output-dir ./results \
   --format latex \
   --parallel 4 \
   --recursive
-```
 
-**Step 3: Watch Mode**
-
-```bash
-./target/release/scipix-cli batch \
+# Watch mode for continuous processing
+scipix-cli batch \
   --input-dir ./inbox \
   --output-dir ./processed \
-  --watch \
-  --format text
+  --watch
 ```
+
+### Tutorial 5: WebAssembly Integration
+
+```bash
+# Build WASM module
+cargo install wasm-pack
+wasm-pack build --target web --features wasm
+```
+
+```html
+<script type="module">
+  import init, { ScipixWasm } from './pkg/ruvector_scipix.js';
+
+  async function processImage() {
+    await init();
+    const scipix = new ScipixWasm();
+    await scipix.initialize();
+
+    const canvas = document.getElementById('canvas');
+    const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+    const result = await scipix.recognize(imageData.data);
+    console.log('Result:', result);
+  }
+
+  processImage();
+</script>
+```
+
+### Tutorial 6: Using as MCP Server
+
+Integrate SciPix with Claude Code or other AI assistants.
+
+```bash
+# Add to Claude Code
+claude mcp add scipix -- scipix-cli mcp
+
+# Or run standalone
+scipix-cli mcp --debug
+```
+
+Then use tools in your AI conversations:
+- "Use the ocr_image tool to extract text from ./screenshot.png"
+- "Convert this LaTeX to MathML: \\frac{1}{2}"
+
+---
 
 ## API Reference
 
 ### Authentication
 
-All API endpoints (except `/health`) require authentication headers:
+All API endpoints (except `/health`) require authentication:
 
 ```
 app_id: your_application_id
@@ -397,151 +568,61 @@ app_key: your_secret_key
 
 #### `POST /v3/text` - Image OCR
 
-Process an image and extract text/equations.
-
-**Request Body:**
-
 ```json
 {
-  "base64": "string (optional)",
-  "url": "string (optional)",
+  "base64": "...",
+  "url": "https://...",
   "metadata": {
-    "formats": ["text", "latex", "mathml", "html"],
+    "formats": ["text", "latex", "mathml"],
     "confidence_threshold": 0.5,
-    "math_mode": false,
-    "language": "en"
+    "math_mode": false
   }
-}
-```
-
-**Response:**
-
-```json
-{
-  "request_id": "uuid",
-  "text": "extracted text",
-  "latex": "\\LaTeX output",
-  "mathml": "<math>...</math>",
-  "confidence": 0.95,
-  "processing_time_ms": 150
 }
 ```
 
 #### `POST /v3/strokes` - Digital Ink
 
-Process stylus stroke data.
-
-**Request Body:**
-
 ```json
 {
-  "strokes": [
-    {"x": [0.0, 1.0, 2.0], "y": [0.0, 1.0, 0.0]}
-  ],
-  "metadata": {
-    "formats": ["latex"]
-  }
+  "strokes": [{"x": [0, 10, 20], "y": [0, 10, 0]}],
+  "metadata": {"formats": ["latex"]}
 }
 ```
 
-#### `POST /v3/pdf` - PDF Job Creation
-
-**Request Body:**
+#### `POST /v3/pdf` - PDF Processing
 
 ```json
 {
-  "url": "https://example.com/document.pdf",
+  "url": "https://example.com/doc.pdf",
   "options": {
     "format": "mmd",
     "enable_ocr": true,
-    "include_images": true,
     "page_range": "1-10"
-  },
-  "webhook_url": "https://your-server.com/callback"
-}
-```
-
-**Response:**
-
-```json
-{
-  "pdf_id": "job-uuid",
-  "status": "processing"
-}
-```
-
-#### `GET /v3/pdf/:id` - Job Status
-
-Returns current job status and progress.
-
-#### `GET /v3/pdf/:id/stream` - SSE Stream
-
-Server-Sent Events stream for real-time progress updates.
-
-#### `DELETE /v3/pdf/:id` - Cancel Job
-
-Cancel a pending or processing job.
-
-#### `GET /health` - Health Check
-
-No authentication required.
-
-```json
-{
-  "status": "healthy",
-  "version": "0.1.16"
-}
-```
-
-### Error Responses
-
-```json
-{
-  "error": {
-    "code": "INVALID_IMAGE",
-    "message": "Unsupported image format",
-    "details": "Expected PNG, JPEG, or WebP"
   }
 }
 ```
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `UNAUTHORIZED` | 401 | Invalid or missing credentials |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `INVALID_IMAGE` | 400 | Unsupported or corrupt image |
-| `PROCESSING_ERROR` | 500 | Internal processing failure |
-| `NOT_FOUND` | 404 | Resource not found |
+#### `GET /health` - Health Check
+
+```json
+{"status": "healthy", "version": "0.1.16"}
+```
+
+---
 
 ## Configuration
 
 ### Environment Variables
 
 ```bash
-# Server configuration
 SERVER_ADDR=127.0.0.1:3000
-RUST_LOG=scipix_server=debug,tower_http=debug
-
-# Rate limiting
+RUST_LOG=scipix=info
 RATE_LIMIT_PER_MINUTE=100
-RATE_LIMIT_BURST=20
-
-# Caching
 CACHE_MAX_SIZE=1000
-CACHE_TTL_SECONDS=3600
-
-# OCR settings
 MODEL_PATH=./models
-CONFIDENCE_THRESHOLD=0.5
-MAX_IMAGE_SIZE=10485760
-
-# Security
-API_KEY_HASH_ROUNDS=10
 ```
 
 ### Configuration File
-
-Create `config.toml`:
 
 ```toml
 [server]
@@ -552,8 +633,6 @@ workers = 4
 [ocr]
 model_path = "./models"
 confidence_threshold = 0.5
-max_image_size = 10485760
-supported_formats = ["png", "jpeg", "webp", "tiff", "bmp"]
 
 [cache]
 max_size = 1000
@@ -562,122 +641,38 @@ ttl_seconds = 3600
 [rate_limit]
 requests_per_minute = 100
 burst_size = 20
-
-[security]
-require_https = false
-allowed_origins = ["*"]
 ```
 
-## Project Structure
-
-```
-examples/scipix/
-├── src/
-│   ├── api/                 # REST API implementation
-│   │   ├── handlers.rs      # Request handlers
-│   │   ├── middleware.rs    # Auth, rate limiting
-│   │   ├── routes.rs        # Route definitions
-│   │   ├── requests.rs      # Request validation
-│   │   ├── responses.rs     # Response types
-│   │   ├── jobs.rs          # Async job queue
-│   │   └── state.rs         # Application state
-│   ├── ocr/                 # OCR engine
-│   │   ├── engine.rs        # Main OCR engine
-│   │   ├── inference.rs     # ONNX inference
-│   │   ├── models.rs        # Model loading
-│   │   └── pipeline.rs      # Processing pipeline
-│   ├── preprocess/          # Image preprocessing
-│   │   ├── pipeline.rs      # Preprocessing pipeline
-│   │   ├── transforms.rs    # Image transforms
-│   │   ├── binarization.rs  # Binarization algorithms
-│   │   └── enhancement.rs   # Image enhancement
-│   ├── math/                # Math processing
-│   │   ├── parser.rs        # Expression parser
-│   │   ├── ast.rs           # Abstract syntax tree
-│   │   ├── renderer.rs      # LaTeX/MathML render
-│   │   └── symbols.rs       # Symbol tables
-│   ├── wasm/                # WebAssembly bindings
-│   │   ├── api.rs           # WASM API
-│   │   ├── worker.rs        # Web Worker support
-│   │   ├── canvas.rs        # Canvas handling
-│   │   └── memory.rs        # Memory management
-│   ├── cli/                 # CLI implementation
-│   │   └── commands/        # CLI commands
-│   ├── bin/
-│   │   ├── server.rs        # API server entry
-│   │   └── cli.rs           # CLI entry
-│   ├── cache/               # Caching layer
-│   ├── error.rs             # Error types
-│   ├── config.rs            # Configuration
-│   └── lib.rs               # Library exports
-├── tests/                   # Test suite
-├── benches/                 # Benchmarks
-├── models/                  # ONNX models
-├── scripts/                 # Utility scripts
-├── web/                     # WASM web resources
-├── Cargo.toml
-└── README.md
-```
+---
 
 ## Performance
 
-### Benchmarks
-
 | Operation | Time (avg) | Throughput |
 |-----------|------------|------------|
-| Simple text OCR | 50ms | 20 img/s |
-| Math equation | 80ms | 12 img/s |
-| Full page scan | 200ms | 5 img/s |
-| PDF page | 150ms | 6 pages/s |
+| SIMD Grayscale | 101µs | 4.2x faster |
+| SIMD Resize | 2.63ms | 1.5x faster |
+| Full Pipeline | 0.49ms | 4.4x faster |
+| Simple text OCR | ~50ms | 20 img/s |
+| Math equation | ~80ms | 12 img/s |
 
-### Optimization Tips
-
-1. **Use GPU acceleration** - Set `ONNX_USE_GPU=1`
-2. **Enable caching** - Duplicate requests are instant
-3. **Batch requests** - Use batch endpoints for multiple images
-4. **Tune workers** - Match `workers` to CPU cores
-5. **Preprocess images** - Resize large images before sending
+---
 
 ## Troubleshooting
 
-### Common Issues
-
-**Q: Server won't start**
 ```bash
-# Check port availability
-lsof -i :3000
+# Check environment
+scipix-cli doctor
 
-# Check logs
-RUST_LOG=debug cargo run --bin scipix-server
-```
+# Enable debug logging
+RUST_LOG=debug scipix-cli serve
 
-**Q: OCR returns empty results**
-```bash
-# Verify models are installed
+# Verify models installed
 ls -la models/
-
-# Check confidence threshold
-# Lower it in config if needed
 ```
 
-**Q: WASM module fails to load**
-```bash
-# Rebuild with correct target
-wasm-pack build --target web --features wasm
-
-# Check browser console for errors
-```
-
-**Q: Rate limiting too aggressive**
-```bash
-# Increase limits in .env
-RATE_LIMIT_PER_MINUTE=500
-RATE_LIMIT_BURST=50
-```
+---
 
 ## Contributing
-
-Contributions are welcome! Please read our contributing guidelines and submit PRs to the `main` branch.
 
 ```bash
 # Run tests
@@ -690,12 +685,15 @@ cargo clippy --all-features
 cargo fmt
 ```
 
+---
+
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](../../LICENSE) for details.
 
 ---
 
 <p align="center">
-  Built with Rust | Powered by ONNX Runtime
+  Part of the <a href="https://github.com/ruvnet/ruvector">ruvector</a> ecosystem<br>
+  Built with Rust 🦀 | Powered by ONNX Runtime
 </p>

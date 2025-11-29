@@ -5,6 +5,20 @@ edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
+description = "High-performance OCR engine for scientific documents, mathematical equations, and technical imagery"
+readme = "README.md"
+keywords = ["ocr", "math", "latex", "image-processing", "machine-learning"]
+categories = ["science", "text-processing", "multimedia::images", "command-line-utilities"]
+documentation = "https://docs.rs/ruvector-scipix"
+homepage = "https://github.com/ruvnet/ruvector/tree/main/examples/scipix"
+rust-version = "1.77"
+exclude = [
+    "assets/fonts/*.ttf",
+    "models/*",
+    "tests/fixtures/*",
+    ".github/*",
+    "benches/*",
+]
 
 [dependencies]
 # Workspace dependencies
