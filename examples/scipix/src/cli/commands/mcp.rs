@@ -165,38 +165,62 @@ impl McpServer {
         }
     }
 
-    /// Define available tools
+    /// Define available tools with examples following Anthropic best practices
+    /// See: https://www.anthropic.com/engineering/advanced-tool-use
     fn get_tools(&self) -> Vec<Tool> {
         vec![
             Tool {
                 name: "ocr_image".to_string(),
-                description: "Process an image with OCR to extract text and mathematical formulas. Returns LaTeX for math content.".to_string(),
+                description: r#"Process an image file with OCR to extract text and mathematical formulas.
+
+WHEN TO USE: Use this tool when you have an image file path containing text, equations,
+or mathematical notation that needs to be converted to a machine-readable format.
+
+EXAMPLES:
+- Extract LaTeX from a photo of a math equation: {"image_path": "equation.png", "format": "latex"}
+- Get plain text from a document scan: {"image_path": "document.jpg", "format": "text"}
+- Convert handwritten math to AsciiMath: {"image_path": "notes.png", "format": "asciimath"}
+
+RETURNS: JSON with the recognized content, confidence score (0-1), and processing metadata."#.to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "image_path": {
                             "type": "string",
-                            "description": "Path to the image file to process"
+                            "description": "Absolute or relative path to image file (PNG, JPG, JPEG, GIF, BMP, TIFF supported)"
                         },
                         "format": {
                             "type": "string",
                             "enum": ["latex", "text", "mathml", "asciimath"],
                             "default": "latex",
-                            "description": "Output format for recognized content"
+                            "description": "Output format: 'latex' for mathematical notation, 'text' for plain text, 'mathml' for XML, 'asciimath' for simple notation"
                         }
                     },
-                    "required": ["image_path"]
+                    "required": ["image_path"],
+                    "examples": [
+                        {"image_path": "/path/to/equation.png", "format": "latex"},
+                        {"image_path": "document.jpg", "format": "text"}
+                    ]
                 }),
             },
             Tool {
                 name: "ocr_base64".to_string(),
-                description: "Process a base64-encoded image with OCR. Useful for inline image data.".to_string(),
+                description: r#"Process a base64-encoded image with OCR. Use when image data is inline rather than a file.
+
+WHEN TO USE: Use this tool when you have image data as a base64 string (e.g., from an API
+response, clipboard, or embedded in a document) rather than a file path.
+
+EXAMPLES:
+- Process clipboard image: {"image_data": "iVBORw0KGgo...", "format": "latex"}
+- Extract text from API response image: {"image_data": "<base64_string>", "format": "text"}
+
+NOTE: The base64 string should not include the data URI prefix (e.g., "data:image/png;base64,")."#.to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "image_data": {
                             "type": "string",
-                            "description": "Base64-encoded image data"
+                            "description": "Base64-encoded image data (without data URI prefix)"
                         },
                         "format": {
                             "type": "string",
@@ -210,24 +234,34 @@ impl McpServer {
             },
             Tool {
                 name: "batch_ocr".to_string(),
-                description: "Process multiple images in batch mode for efficient bulk OCR.".to_string(),
+                description: r#"Process multiple images in a directory with OCR. Efficient for bulk operations.
+
+WHEN TO USE: Use this tool when you need to process 3+ images in the same directory.
+For 1-2 images, use ocr_image instead for simpler results.
+
+EXAMPLES:
+- Process all PNGs in a folder: {"directory": "./images", "pattern": "*.png"}
+- Process specific equation images: {"directory": "/docs/math", "pattern": "eq_*.jpg"}
+- Get JSON results for all images: {"directory": ".", "pattern": "*.{png,jpg}", "format": "json"}
+
+RETURNS: Array of results with file paths, recognized content, and confidence scores."#.to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "directory": {
                             "type": "string",
-                            "description": "Directory containing images to process"
+                            "description": "Directory path containing images to process"
                         },
                         "pattern": {
                             "type": "string",
                             "default": "*.png",
-                            "description": "Glob pattern to match image files"
+                            "description": "Glob pattern to match files (e.g., '*.png', '*.{jpg,png}', 'equation_*.jpg')"
                         },
                         "format": {
                             "type": "string",
                             "enum": ["latex", "text", "json"],
                             "default": "json",
-                            "description": "Output format for results"
+                            "description": "Output format: 'json' for structured results (recommended), 'latex' or 'text' for concatenated output"
                         }
                     },
                     "required": ["directory"]
@@ -235,17 +269,29 @@ impl McpServer {
             },
             Tool {
                 name: "preprocess_image".to_string(),
-                description: "Apply preprocessing to an image (grayscale, resize, threshold) for OCR optimization.".to_string(),
+                description: r#"Apply preprocessing operations to optimize an image for OCR.
+
+WHEN TO USE: Use this tool BEFORE ocr_image when dealing with:
+- Low contrast images (use threshold)
+- Large images that need resizing (use resize)
+- Color images (use grayscale for faster processing)
+- Noisy or blurry images (use denoise)
+
+EXAMPLES:
+- Prepare scan for OCR: {"image_path": "scan.jpg", "output_path": "scan_clean.png", "operations": ["grayscale", "threshold"]}
+- Resize large image: {"image_path": "photo.jpg", "output_path": "photo_small.png", "operations": ["resize"], "target_width": 800}
+
+WORKFLOW: preprocess_image -> ocr_image for best results on problematic images."#.to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "image_path": {
                             "type": "string",
-                            "description": "Path to the image file"
+                            "description": "Path to input image file"
                         },
                         "output_path": {
                             "type": "string",
-                            "description": "Path for the preprocessed output image"
+                            "description": "Path for preprocessed output image"
                         },
                         "operations": {
                             "type": "array",
@@ -253,17 +299,18 @@ impl McpServer {
                                 "type": "string",
                                 "enum": ["grayscale", "resize", "threshold", "denoise", "deskew"]
                             },
-                            "description": "List of preprocessing operations to apply"
+                            "default": ["grayscale", "resize"],
+                            "description": "Operations to apply in order: grayscale (convert to B&W), resize (scale to target size), threshold (binarize), denoise (reduce noise), deskew (straighten)"
                         },
                         "target_width": {
                             "type": "integer",
                             "default": 640,
-                            "description": "Target width for resize operation"
+                            "description": "Target width for resize (preserves aspect ratio)"
                         },
                         "target_height": {
                             "type": "integer",
                             "default": 480,
-                            "description": "Target height for resize operation"
+                            "description": "Target height for resize (preserves aspect ratio)"
                         }
                     },
                     "required": ["image_path", "output_path"]
@@ -271,32 +318,59 @@ impl McpServer {
             },
             Tool {
                 name: "latex_to_mathml".to_string(),
-                description: "Convert LaTeX mathematical notation to MathML format.".to_string(),
+                description: r#"Convert LaTeX mathematical notation to MathML XML format.
+
+WHEN TO USE: Use this tool when you need MathML output from LaTeX, such as:
+- Generating accessible math content for web pages
+- Converting equations for screen readers
+- Integrating with systems that require MathML
+
+EXAMPLES:
+- Convert fraction: {"latex": "\\frac{1}{2}"}
+- Convert integral: {"latex": "\\int_0^1 x^2 dx"}
+- Convert matrix: {"latex": "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"}"#.to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "latex": {
                             "type": "string",
-                            "description": "LaTeX expression to convert"
+                            "description": "LaTeX expression to convert (with or without $ delimiters)"
                         }
                     },
-                    "required": ["latex"]
+                    "required": ["latex"],
+                    "examples": [
+                        {"latex": "\\frac{a}{b}"},
+                        {"latex": "E = mc^2"}
+                    ]
                 }),
             },
             Tool {
                 name: "benchmark_performance".to_string(),
-                description: "Run performance benchmarks on the OCR pipeline and return metrics.".to_string(),
+                description: r#"Run performance benchmarks on the OCR pipeline and return timing metrics.
+
+WHEN TO USE: Use this tool to:
+- Verify OCR performance on your system
+- Compare preprocessing options
+- Debug slow processing issues
+
+EXAMPLES:
+- Quick performance check: {"iterations": 5}
+- Test specific image: {"image_path": "test.png", "iterations": 10}
+
+RETURNS: Average processing times for grayscale, resize operations, and system info."#.to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "iterations": {
                             "type": "integer",
                             "default": 10,
-                            "description": "Number of benchmark iterations"
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Number of benchmark iterations (higher = more accurate, slower)"
                         },
                         "image_path": {
                             "type": "string",
-                            "description": "Optional test image path"
+                            "description": "Optional: Path to test image (uses generated test image if not provided)"
                         }
                     }
                 }),
