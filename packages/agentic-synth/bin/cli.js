@@ -51,7 +51,7 @@ function loadSchema(schemaPath) {
 program
   .name('agentic-synth')
   .description('AI-powered synthetic data generation for agentic systems')
-  .version('0.1.0')
+  .version('0.1.6')
   .addHelpText('after', `
 Examples:
   $ agentic-synth generate --count 100 --schema schema.json
