@@ -513,6 +513,215 @@ npm run test:watch
 
 ---
 
+## Training Pipeline
+
+The Dynamic Attention system includes a comprehensive training infrastructure with bounded optimization, pruning, and configurable hyperparameters.
+
+### Quick Start Training
+
+```bash
+# Default training
+npm run train
+
+# Fast training (fewer epochs, larger batches)
+npm run train:fast
+
+# Production training (more epochs, validation)
+npm run train:production
+
+# Compression training (high sparsity pruning)
+npm run train:compress
+```
+
+### CLI Options
+
+```bash
+npm run train -- [options]
+
+# Presets
+--preset fast|production|compression
+
+# Basic Options
+--epochs <number>           # Training epochs (default: 100)
+--batch-size <number>       # Batch size (default: 32)
+--learning-rate <number>    # Initial LR (default: 0.001)
+--data-path <path>          # Training data directory
+
+# Optimizer
+--optimizer sgd|adam|adamw|rmsprop|lamb
+--momentum <number>         # SGD momentum (default: 0.9)
+--weight-decay <number>     # L2 regularization (default: 0.0001)
+--beta1 <number>            # Adam beta1 (default: 0.9)
+--beta2 <number>            # Adam beta2 (default: 0.999)
+
+# Learning Rate Scheduling
+--scheduler constant|step|cosine|cosine_warmup|one_cycle|reduce_on_plateau
+--warmup-steps <number>     # LR warmup steps (default: 1000)
+--min-lr <number>           # Minimum LR (default: 1e-6)
+
+# Bounded Optimization
+--clip-norm <number>        # Gradient norm clipping (default: 1.0)
+--clip-value <number>       # Gradient value clipping
+--max-norm <number>         # Weight max norm constraint
+--l1-reg <number>           # L1 regularization
+--l2-reg <number>           # L2 regularization
+
+# Pruning
+--pruning none|magnitude|random|lottery_ticket|movement|structured_channel
+--target-sparsity <number>  # Target sparsity (default: 0.5)
+--pruning-schedule one_shot|gradual|cubic|exponential
+--pruning-start <number>    # Epoch to start pruning
+--pruning-end <number>      # Epoch to end pruning
+--pruning-frequency <number># Steps between pruning updates
+
+# Knowledge Distillation
+--distillation              # Enable distillation
+--teacher-path <path>       # Teacher model checkpoint
+--distillation-temp <number># Softmax temperature (default: 4.0)
+--distillation-alpha <number># Loss weight (default: 0.5)
+
+# Checkpointing
+--checkpoint-dir <path>     # Checkpoint directory
+--save-every <number>       # Save every N epochs
+--keep-checkpoints <number> # Max checkpoints to keep
+
+# Help
+--help                      # Show all options
+```
+
+### Bounded Optimization
+
+Control weight and gradient magnitudes for stable training:
+
+```typescript
+import { Trainer } from '@ruvector/dynamic-attention-example';
+
+const trainer = new Trainer({
+  boundedOptimization: {
+    enabled: true,
+    gradientConstraint: {
+      type: 'clip_norm',
+      maxNorm: 1.0,
+    },
+    weightConstraint: {
+      type: 'spectral',
+      maxNorm: 1.0,
+    },
+  },
+});
+```
+
+**Weight Constraints:**
+| Type | Description |
+|------|-------------|
+| `max_norm` | Clip weights to max L2 norm |
+| `unit_norm` | Normalize to unit length |
+| `min_max` | Clamp to range [min, max] |
+| `spectral` | Spectral normalization |
+| `non_negative` | Enforce non-negative weights |
+
+**Gradient Constraints:**
+| Type | Description |
+|------|-------------|
+| `clip_norm` | Clip gradient by L2 norm |
+| `clip_value` | Clip gradient values |
+
+### Pruning Strategies
+
+Reduce model size with structured and unstructured pruning:
+
+```typescript
+const trainer = new Trainer({
+  pruning: {
+    enabled: true,
+    strategy: 'magnitude',
+    targetSparsity: 0.9,      // 90% sparse
+    schedule: 'gradual',
+    startEpoch: 5,
+    endEpoch: 80,
+    frequency: 100,           // Steps between updates
+  },
+});
+```
+
+**Pruning Strategies:**
+| Strategy | Description | Best For |
+|----------|-------------|----------|
+| `magnitude` | Prune smallest weights | General compression |
+| `lottery_ticket` | Find winning subnetwork | Research |
+| `movement` | Prune based on gradient changes | Fine-tuning |
+| `structured_channel` | Prune entire channels | Hardware acceleration |
+
+**Pruning Schedules:**
+| Schedule | Description |
+|----------|-------------|
+| `one_shot` | Prune all at once |
+| `gradual` | Linear increase in sparsity |
+| `cubic` | Cubic sparsity schedule |
+| `exponential` | Exponential increase |
+
+### Training Presets
+
+```typescript
+import {
+  DEFAULT_TRAINING_CONFIG,
+  FAST_TRAINING_CONFIG,
+  PRODUCTION_TRAINING_CONFIG,
+  COMPRESSION_TRAINING_CONFIG,
+} from '@ruvector/dynamic-attention-example';
+
+// Fast: Quick iteration
+// - 20 epochs, batch 64, no validation
+const fastTrainer = new Trainer(FAST_TRAINING_CONFIG);
+
+// Production: Best quality
+// - 200 epochs, cosine LR, early stopping, validation
+const prodTrainer = new Trainer(PRODUCTION_TRAINING_CONFIG);
+
+// Compression: Model size reduction
+// - Magnitude pruning, 90% target sparsity, gradual schedule
+const compressTrainer = new Trainer(COMPRESSION_TRAINING_CONFIG);
+```
+
+### Programmatic Training
+
+```typescript
+import { Trainer, Tensor } from '@ruvector/dynamic-attention-example';
+
+// Create trainer
+const trainer = new Trainer({
+  epochs: 100,
+  batchSize: 32,
+  optimizer: { type: 'adamw', lr: 0.001, weightDecay: 0.01 },
+  scheduler: { type: 'cosine_warmup', warmupSteps: 1000 },
+  pruning: { enabled: true, strategy: 'magnitude', targetSparsity: 0.7 },
+});
+
+// Prepare model weights as Tensors
+const weights = {
+  attention: new Tensor(attentionWeights, [dim, dim]),
+  fastgrnn: new Tensor(fastgrnnWeights, [hidden, hidden]),
+};
+
+// Training data
+const samples = [
+  { input: queryEmbed, target: expectedDecision },
+  // ...
+];
+
+// Train
+const metrics = await trainer.train(weights, samples, {
+  onEpochEnd: (epoch, metrics) => {
+    console.log(`Epoch ${epoch}: loss=${metrics.loss.toFixed(4)}`);
+  },
+});
+
+console.log(`Final loss: ${metrics.finalLoss}`);
+console.log(`Sparsity: ${(metrics.sparsity * 100).toFixed(1)}%`);
+```
+
+---
+
 ## Architecture
 
 ```
@@ -522,6 +731,12 @@ examples/dynamic-attention/
 │   ├── types.ts              # Type definitions
 │   ├── dynamic-attention.ts  # Pipeline implementation
 │   ├── simd-utils.ts         # SIMD utilities
+│   ├── training/
+│   │   ├── index.ts          # Training exports
+│   │   ├── config.ts         # Configuration types & presets
+│   │   ├── trainer.ts        # Trainer, optimizers, pruning
+│   │   ├── cli.ts            # CLI argument parser
+│   │   └── train.ts          # Main training script
 │   └── examples/
 │       ├── routing-demo.ts   # LLM routing example
 │       ├── attention-demo.ts # Attention comparison

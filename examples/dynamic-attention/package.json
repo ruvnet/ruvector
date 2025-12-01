@@ -8,6 +8,11 @@
   "scripts": {
     "build": "tsc",
     "start": "tsx src/index.ts",
+    "train": "tsx src/training/train.ts",
+    "train:fast": "tsx src/training/train.ts --preset fast",
+    "train:production": "tsx src/training/train.ts --preset production",
+    "train:compress": "tsx src/training/train.ts --preset compression --target-sparsity 0.9",
+    "train:help": "tsx src/training/train.ts --help",
     "benchmark": "tsx benchmarks/run-benchmarks.ts",
     "benchmark:attention": "tsx benchmarks/attention-benchmark.ts",
     "benchmark:fastgrnn": "tsx benchmarks/fastgrnn-benchmark.ts",
@@ -30,13 +35,19 @@
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
   },
+  "bin": {
+    "dynamic-attention-train": "./src/training/train.ts"
+  },
   "keywords": [
     "fastgrnn",
     "attention",
     "simd",
     "neural-routing",
     "vector-search",
-    "gnn"
+    "gnn",
+    "pruning",
+    "quantization",
+    "training"
   ],
   "license": "MIT"
 }

@@ -73,6 +73,39 @@ export {
   warmUp,
 } from './simd-utils.js';
 
+// Training module
+export {
+  // Config types
+  type TrainingConfig as FullTrainingConfig,
+  type BoundedOptimizationConfig,
+  type PruningConfig,
+  type OptimizerConfig,
+  type SchedulerConfig,
+  type LossConfig,
+  type WeightConstraint,
+  type GradientConstraint,
+  // Config presets
+  DEFAULT_TRAINING_CONFIG,
+  FAST_TRAINING_CONFIG,
+  PRODUCTION_TRAINING_CONFIG,
+  COMPRESSION_TRAINING_CONFIG,
+  // Trainer
+  Trainer,
+  Tensor,
+  PruningManager,
+  SGDOptimizer,
+  AdamOptimizer,
+  LearningRateScheduler,
+  applyWeightConstraint,
+  applyGradientConstraint,
+  computeLoss,
+  // CLI
+  parseCliArgs,
+  buildConfigFromArgs,
+  printHelp,
+  formatConfig,
+} from './training/index.js';
+
 /**
  * Quick start function for common use cases
  */
