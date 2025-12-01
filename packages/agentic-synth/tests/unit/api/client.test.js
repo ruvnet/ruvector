@@ -64,7 +64,8 @@ describe('APIClient', () => {
     });
 
     it('should handle API errors', async () => {
-      global.fetch.mockResolvedValueOnce({
+      // Mock must return error for all retry attempts
+      global.fetch.mockResolvedValue({
         ok: false,
         status: 404,
         statusText: 'Not Found'
