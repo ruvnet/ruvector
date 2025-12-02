@@ -1,6 +1,6 @@
 {
   "name": "@ruvector/gnn-linux-x64-gnu",
-  "version": "0.1.17",
+  "version": "0.1.19",
   "os": [
     "linux"
   ],

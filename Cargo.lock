@@ -4982,7 +4982,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-bench"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -5013,7 +5013,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-cli"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -5054,8 +5054,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "ruvector-cloudrun-gpu"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "clap",
+ "console",
+ "hdrhistogram",
+ "indicatif",
+ "rand 0.8.5",
+ "rand_distr",
+ "rayon",
+ "ruvector-attention",
+ "ruvector-core",
+ "ruvector-gnn",
+ "ruvector-graph",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "thiserror 2.0.17",
+ "tokio",
+ "tower 0.4.13",
+ "tower-http 0.5.2",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "ruvector-cluster"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "async-trait",
  "bincode 2.0.1",
@@ -5075,7 +5104,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-collections"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "bincode 2.0.1",
  "chrono",
@@ -5090,7 +5119,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-core"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -5122,7 +5151,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-filter"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "chrono",
  "dashmap 6.1.0",
@@ -5136,7 +5165,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-gnn"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "criterion",
@@ -5161,7 +5190,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-gnn-node"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "napi",
  "napi-build",
@@ -5187,7 +5216,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-graph"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -5248,7 +5277,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-graph-node"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "futures",
@@ -5267,7 +5296,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-graph-wasm"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "console_error_panic_hook",
@@ -5292,7 +5321,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-metrics"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "chrono",
  "lazy_static",
@@ -5303,7 +5332,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-node"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "napi",
@@ -5322,7 +5351,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-raft"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "bincode 2.0.1",
  "chrono",
@@ -5341,7 +5370,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-replication"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "bincode 2.0.1",
  "chrono",
@@ -5360,7 +5389,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-router-cli"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5375,7 +5404,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-router-core"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -5402,7 +5431,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-router-ffi"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5417,7 +5446,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-router-wasm"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "js-sys",
  "ruvector-router-core",
@@ -5431,7 +5460,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-scipix"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "ab_glyph",
  "anyhow",
@@ -5504,7 +5533,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-server"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "axum",
  "dashmap 6.1.0",
@@ -5522,7 +5551,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-snapshot"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "async-trait",
  "bincode 2.0.1",
@@ -5539,7 +5568,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-tiny-dancer-core"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -5569,7 +5598,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-tiny-dancer-node"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5586,7 +5615,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-tiny-dancer-wasm"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "js-sys",
  "ruvector-tiny-dancer-core",
@@ -5600,7 +5629,7 @@ dependencies = [
 
 [[package]]
 name = "ruvector-wasm"
-version = "0.1.18"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "console_error_panic_hook",
@@ -6626,6 +6655,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-serde"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "704b1aeb7be0d0a84fc9828cae51dab5970fee5088f83d1dd7ee6f6246fc6ff1"
+dependencies = [
+ "serde",
+ "tracing-core",
+]
+
+[[package]]
 name = "tracing-subscriber"
 version = "0.3.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6635,12 +6674,15 @@ dependencies = [
  "nu-ansi-term",
  "once_cell",
  "regex-automata",
+ "serde",
+ "serde_json",
  "sharded-slab",
  "smallvec 1.15.1",
  "thread_local",
  "tracing",
  "tracing-core",
  "tracing-log",
+ "tracing-serde",
 ]
 
 [[package]]

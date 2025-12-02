@@ -1,4 +1,5 @@
 [workspace]
+exclude = ["crates/micro-hnsw-wasm"]
 members = [
     "crates/ruvector-core",
     "crates/ruvector-node",
@@ -31,6 +32,7 @@ members = [
     "crates/ruvector-attention-node",
     "examples/refrag-pipeline",
     "examples/scipix",
+    "examples/google-cloud",
 ]
 resolver = "2"
 
