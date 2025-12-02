@@ -1,10 +1,28 @@
 # EXO-AI 2025: Advanced Cognitive Substrate
 
-A comprehensive cognitive substrate implementing cutting-edge theories from neuroscience, physics, and consciousness research.
+<div align="center">
+
+[![Crates.io](https://img.shields.io/crates/v/exo-core.svg)](https://crates.io/crates/exo-core)
+[![Documentation](https://docs.rs/exo-core/badge.svg)](https://docs.rs/exo-core)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-ruvnet%2Fruvector-blue?logo=github)](https://github.com/ruvnet/ruvector)
+[![Website](https://img.shields.io/badge/Website-ruv.io-purple)](https://ruv.io)
+
+**A research platform exploring the computational foundations of consciousness, memory, and cognition**
+
+[Documentation](https://docs.rs/exo-core) | [GitHub](https://github.com/ruvnet/ruvector) | [Website](https://ruv.io) | [Examples](#quick-start)
+
+</div>
+
+---
 
 ## Overview
 
-EXO-AI 2025 is a research platform exploring the computational foundations of consciousness, memory, and cognition through 9 interconnected Rust crates totaling ~15,800+ lines of code.
+EXO-AI 2025 is a comprehensive cognitive substrate implementing cutting-edge theories from neuroscience, physics, and consciousness research. Built on the [RuVector](https://github.com/ruvnet/ruvector) foundation, it provides 9 interconnected Rust crates totaling ~15,800+ lines of research-grade code.
+
+### Why EXO-AI?
+
+Traditional AI systems process information. EXO-AI aims to understand it — implementing theories of consciousness (IIT), memory consolidation, free energy minimization, and emergence detection. This isn't just another neural network framework; it's a platform for exploring the computational basis of mind.
 
 ### Key Achievements
 
@@ -16,6 +34,20 @@ EXO-AI 2025 is a research platform exploring the computational foundations of co
 | Test Pass Rate | 100% |
 | Theoretical Frameworks | 25+ |
 | Exotic Experiments | 10 |
+
+## Crates
+
+| Crate | Description | Docs |
+|-------|-------------|------|
+| [`exo-core`](https://crates.io/crates/exo-core) | IIT consciousness (Φ) measurement & Landauer thermodynamics | [![docs](https://docs.rs/exo-core/badge.svg)](https://docs.rs/exo-core) |
+| [`exo-temporal`](https://crates.io/crates/exo-temporal) | Temporal memory with causal tracking & consolidation | [![docs](https://docs.rs/exo-temporal/badge.svg)](https://docs.rs/exo-temporal) |
+| [`exo-hypergraph`](https://crates.io/crates/exo-hypergraph) | Topological analysis with persistent homology | [![docs](https://docs.rs/exo-hypergraph/badge.svg)](https://docs.rs/exo-hypergraph) |
+| [`exo-manifold`](https://crates.io/crates/exo-manifold) | SIREN networks for continuous embedding deformation | [![docs](https://docs.rs/exo-manifold/badge.svg)](https://docs.rs/exo-manifold) |
+| [`exo-exotic`](https://crates.io/crates/exo-exotic) | 10 cutting-edge cognitive experiments | [![docs](https://docs.rs/exo-exotic/badge.svg)](https://docs.rs/exo-exotic) |
+| [`exo-federation`](https://crates.io/crates/exo-federation) | Post-quantum federated cognitive mesh | [![docs](https://docs.rs/exo-federation/badge.svg)](https://docs.rs/exo-federation) |
+| [`exo-backend-classical`](https://crates.io/crates/exo-backend-classical) | SIMD-accelerated compute backend | [![docs](https://docs.rs/exo-backend-classical/badge.svg)](https://docs.rs/exo-backend-classical) |
+| [`exo-wasm`](https://crates.io/crates/exo-wasm) | Browser & edge WASM deployment | [![docs](https://docs.rs/exo-wasm/badge.svg)](https://docs.rs/exo-wasm) |
+| [`exo-node`](https://crates.io/crates/exo-node) | Node.js bindings via NAPI-RS | [![docs](https://docs.rs/exo-node/badge.svg)](https://docs.rs/exo-node) |
 
 ## Architecture
 
@@ -48,10 +80,20 @@ EXO-AI 2025 is a research platform exploring the computational foundations of co
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Crates
+## Installation
 
-### exo-core
-Foundation layer with IIT consciousness measurement and Landauer thermodynamics.
+Add EXO-AI crates to your `Cargo.toml`:
+
+```toml
+[dependencies]
+exo-core = "0.1"
+exo-temporal = "0.1"
+exo-exotic = "0.1"
+```
+
+## Quick Start
+
+### Consciousness Measurement (IIT)
 
 ```rust
 use exo_core::consciousness::{ConsciousnessSubstrate, IITConfig};
@@ -61,14 +103,15 @@ use exo_core::thermodynamics::CognitiveThermometer;
 let substrate = ConsciousnessSubstrate::new(IITConfig::default());
 substrate.add_pattern(pattern);
 let phi = substrate.compute_phi();
+println!("Consciousness level (Φ): {:.4}", phi);
 
 // Track computational thermodynamics
 let thermo = CognitiveThermometer::new(300.0); // Kelvin
 let cost = thermo.landauer_cost_bits(1024);
+println!("Landauer cost: {:.2e} J", cost);
 ```
 
-### exo-temporal
-Temporal memory with causal tracking, consolidation, and anticipation.
+### Temporal Memory
 
 ```rust
 use exo_temporal::{TemporalMemory, CausalConeType};
@@ -87,8 +130,7 @@ let results = memory.causal_query(
 memory.consolidate();
 ```
 
-### exo-hypergraph
-Topological data analysis with persistent homology and sheaf structures.
+### Topological Analysis
 
 ```rust
 use exo_hypergraph::{Hypergraph, TopologicalQuery};
@@ -103,18 +145,27 @@ let diagram = graph.query(TopologicalQuery::PersistentHomology {
 })?;
 ```
 
-### exo-manifold
-Continuous embedding space with SIREN networks for smooth deformation.
+### Exotic Experiments
 
 ```rust
-use exo_manifold::{Manifold, ManifoldConfig};
+use exo_exotic::{StrangeLoops, ArtificialDreams, FreeEnergy};
 
-let manifold = Manifold::new(ManifoldConfig::default());
-let delta = manifold.deform(pattern, learning_rate)?;
+// Hofstadter Strange Loops
+let loops = StrangeLoops::new(10);
+let confidence = loops.self_reference_cascade();
+
+// Dream-based creativity
+let dreams = ArtificialDreams::with_memories(memories);
+let novel_ideas = dreams.run_dream_cycle(100);
+
+// Friston Free Energy
+let fe = FreeEnergy::new(16, 16);
+let prediction_error = fe.minimize(observations);
 ```
 
-### exo-exotic
-10 cutting-edge cognitive experiments:
+## Exotic Experiments
+
+EXO-AI includes 10 cutting-edge cognitive experiments:
 
 | Experiment | Theory | Key Insight |
 |------------|--------|-------------|
@@ -132,34 +183,72 @@ let delta = manifold.deform(pattern, learning_rate)?;
 ## Key Discoveries
 
 ### 1. Self-Reference Limits
-Strange loops reveal that confidence decays ~10% per meta-level, naturally bounding infinite regress. This suggests consciousness has built-in recursion limits.
+Strange loops reveal that confidence decays ~10% per meta-level, naturally bounding infinite regress.
 
 ### 2. Dream Creativity Scaling
-Creative output increases logarithmically with memory diversity. 50+ memories yield 75%+ novel combinations. Dreams aren't random - they're combinatorial exploration.
+Creative output increases logarithmically with memory diversity. 50+ memories yield 75%+ novel combinations.
 
 ### 3. Free Energy Convergence
-Prediction error decreases 15-30% per learning cycle, stabilizing around iteration 100. The brain-as-prediction-engine metaphor has computational validity.
+Prediction error decreases 15-30% per learning cycle, stabilizing around iteration 100.
 
 ### 4. Morphogenetic Patterns
-Gray-Scott parameters (f=0.055, k=0.062) produce stable cognitive patterns. Self-organization doesn't require central control.
+Gray-Scott parameters (f=0.055, k=0.062) produce stable cognitive patterns.
 
 ### 5. Collective Φ Scaling
-Global integrated information scales with O(n²) connections. Sparse networks can achieve high Φ with strategic connections.
+Global integrated information scales with O(n²) connections.
 
 ### 6. Temporal Relativity
-Novelty dilates subjective time up to 2x. Flow states compress time to 0.1x. Time perception is computational, not physical.
+Novelty dilates subjective time up to 2x. Flow states compress time to 0.1x.
 
 ### 7. Multi-Self Coherence
-Sub-personalities naturally maintain 0.7-0.9 coherence. Conflict resolution converges in 3-5 iterations. The "unified self" is an emergent property.
+Sub-personalities naturally maintain 0.7-0.9 coherence.
 
 ### 8. Thermodynamic Bounds
-At 300K, Landauer limit is ~3×10⁻²¹ J/bit. Current cognitive operations are 10⁶x above this limit - massive room for efficiency gains.
+At 300K, Landauer limit is ~3×10⁻²¹ J/bit.
 
 ### 9. Causal Emergence
-Macro-level descriptions can have higher effective information than micro-level. Compression ratio of 0.5 (2:1) often optimal for emergence.
+Macro-level descriptions can have higher effective information than micro-level.
 
 ### 10. Escape Dynamics
-Reframing reduces cognitive black hole escape energy by 50%. Metacognition is literally energy-efficient.
+Reframing reduces cognitive black hole escape energy by 50%.
+
+## Performance
+
+| Module | Operation | Time |
+|--------|-----------|------|
+| IIT Φ Computation | 10 elements | ~15 µs |
+| Strange Loops | 10 levels | ~2.4 µs |
+| Dream Cycle | 100 memories | ~95 µs |
+| Free Energy | 16×16 grid | ~3.2 µs |
+| Morphogenesis | 32×32, 100 steps | ~9 ms |
+| Collective Φ | 20 substrates | ~35 µs |
+| Temporal Qualia | 1000 events | ~120 µs |
+| Multiple Selves | 10 selves | ~4 µs |
+| Thermodynamics | Landauer cost | ~0.02 µs |
+| Emergence | 128→32 coarse-grain | ~8 µs |
+| Black Holes | 1000 thoughts | ~150 µs |
+
+## Build & Test
+
+```bash
+# Clone the repository
+git clone https://github.com/ruvnet/ruvector.git
+cd ruvector/examples/exo-ai-2025
+
+# Build all crates
+cargo build --release
+
+# Run tests
+cargo test
+
+# Run benchmarks
+cargo bench
+
+# Run specific crate tests
+cargo test -p exo-exotic
+cargo test -p exo-core
+cargo test -p exo-temporal
+```
 
 ## Practical Applications
 
@@ -176,95 +265,35 @@ Reframing reduces cognitive black hole escape energy by 50%. Metacognition is li
 | **Pattern Recognition** | Self-organizing feature detection | exo-exotic |
 | **Therapy AI** | Multiple selves conflict resolution | exo-exotic |
 
-## Quick Start
-
-```bash
-# Build all crates
-cargo build --release
-
-# Run tests
-cargo test
-
-# Run benchmarks
-cargo bench
-
-# Run specific crate tests
-cargo test -p exo-exotic
-cargo test -p exo-core
-cargo test -p exo-temporal
-```
-
-## Benchmarks
-
-### Performance Summary
-
-| Module | Operation | Time |
-|--------|-----------|------|
-| IIT Φ Computation | 10 elements | ~15 µs |
-| Strange Loops | 10 levels | ~2.4 µs |
-| Dream Cycle | 100 memories | ~95 µs |
-| Free Energy | 16×16 grid | ~3.2 µs |
-| Morphogenesis | 32×32, 100 steps | ~9 ms |
-| Collective Φ | 20 substrates | ~35 µs |
-| Temporal Qualia | 1000 events | ~120 µs |
-| Multiple Selves | 10 selves | ~4 µs |
-| Thermodynamics | Landauer cost | ~0.02 µs |
-| Emergence | 128→32 coarse-grain | ~8 µs |
-| Black Holes | 1000 thoughts | ~150 µs |
-
-### Memory Usage
-
-| Component | Base | Per-Instance |
-|-----------|------|--------------|
-| Core Substrate | 4 KB | 256 bytes/pattern |
-| Temporal Memory | 8 KB | 512 bytes/pattern |
-| Strange Loops | 1 KB | 256 bytes/level |
-| Dreams | 2 KB | 128 bytes/memory |
-| Collective | 1 KB | 512 bytes/substrate |
-
 ## Theoretical Foundations
 
-### Consciousness (IIT 4.0)
-Giulio Tononi's Integrated Information Theory measuring Φ.
+- **IIT 4.0** (Tononi) — Integrated Information Theory for consciousness measurement
+- **Free Energy** (Friston) — Variational free energy minimization
+- **Strange Loops** (Hofstadter) — Self-referential consciousness
+- **Landauer's Principle** — Information has physical cost
+- **Turing Morphogenesis** — Reaction-diffusion pattern formation
+- **Causal Emergence** (Hoel) — Macro-level causal power
 
-### Thermodynamics (Landauer)
-Rolf Landauer's principle: k_B × T × ln(2) per bit erased.
+## Contributing
 
-### Free Energy (Friston)
-Karl Friston's variational free energy minimization framework.
+Contributions are welcome! See our [Contributing Guide](https://github.com/ruvnet/ruvector/blob/main/CONTRIBUTING.md) for details.
 
-### Strange Loops (Hofstadter)
-Douglas Hofstadter's theory of self-referential consciousness.
-
-### Morphogenesis (Turing)
-Alan Turing's reaction-diffusion model for pattern formation.
-
-### Causal Emergence (Hoel)
-Erik Hoel's framework for macro-level causal power.
-
-## Reports
-
-Detailed analysis reports are available in `/report`:
-- `EXOTIC_EXPERIMENTS_OVERVIEW.md` - All 10 experiments
-- `EXOTIC_BENCHMARKS.md` - Performance analysis
-- `EXOTIC_THEORETICAL_FOUNDATIONS.md` - Scientific basis
-- `EXOTIC_TEST_RESULTS.md` - Test coverage
-- `IIT_ARCHITECTURE_ANALYSIS.md` - Consciousness implementation
-- `INTELLIGENCE_METRICS.md` - Cognitive measurements
-- `REASONING_LOGIC_BENCHMARKS.md` - Logic performance
-- `COMPREHENSIVE_COMPARISON.md` - System comparison
-
-## Future Directions
-
-1. **Quantum Consciousness** - Penrose-Hameroff orchestrated objective reduction
-2. **Social Cognition** - Theory of mind and empathy modules
-3. **Language Emergence** - Compositional semantics from grounded experience
-4. **Embodied Cognition** - Sensorimotor integration
-5. **Meta-Learning** - Learning to learn optimization
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
 MIT OR Apache-2.0
+
+## Links
+
+- **GitHub**: [github.com/ruvnet/ruvector](https://github.com/ruvnet/ruvector)
+- **Website**: [ruv.io](https://ruv.io)
+- **Documentation**: [docs.rs/exo-core](https://docs.rs/exo-core)
+- **Crates.io**: [crates.io/crates/exo-core](https://crates.io/crates/exo-core)
 
 ## References
 
@@ -278,3 +307,11 @@ MIT OR Apache-2.0
 8. Schwartz, R. C. (1995). Internal Family Systems Therapy.
 9. Eagleman, D. M. (2008). Human time perception and its illusions.
 10. Revonsuo, A. (2000). The reinterpretation of dreams.
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [rUv](https://ruv.io)**
+
+</div>

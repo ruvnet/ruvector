@@ -2,13 +2,19 @@
 name = "exo-federation"
 version = "0.1.0"
 edition = "2021"
-authors = ["EXO-AI Contributors"]
-description = "Federated cognitive mesh with cryptographic sovereignty"
 license = "MIT OR Apache-2.0"
+authors = ["rUv <ruv@ruv.io>"]
+repository = "https://github.com/ruvnet/ruvector"
+homepage = "https://ruv.io"
+documentation = "https://docs.rs/exo-federation"
+description = "Federated cognitive mesh with post-quantum cryptographic sovereignty for distributed AI consciousness"
+keywords = ["federation", "distributed", "quantum", "crypto", "ai"]
+categories = ["cryptography", "network-programming", "science"]
+readme = "README.md"
 
 [dependencies]
 # Internal dependencies
-exo-core = { path = "../exo-core" }
+exo-core = "0.1"
 
 # Async runtime
 tokio = { version = "1.41", features = ["full"] }
@@ -25,22 +31,19 @@ anyhow = "1.0"
 dashmap = "6.1"
 
 # Crypto
-pqcrypto-kyber = "0.8"  # Post-quantum KEM
+pqcrypto-kyber = "0.8"
 pqcrypto-traits = "0.3"
-chacha20poly1305 = "0.10"  # AEAD encryption
-hmac = "0.12"  # HMAC for authentication
+chacha20poly1305 = "0.10"
+hmac = "0.12"
 rand = "0.8"
 sha2 = "0.10"
 hex = "0.4"
-subtle = "2.5"  # Constant-time operations
-zeroize = { version = "1.7", features = ["derive"] }  # Secure memory clearing
-
-# Networking
-# Will add when needed for actual network impl
+subtle = "2.5"
+zeroize = { version = "1.7", features = ["derive"] }
 
 [dev-dependencies]
 tokio-test = "0.4"
 
 [features]
 default = []
-post-quantum = []  # Feature flag for when we add real PQC
+post-quantum = []

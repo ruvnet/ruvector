@@ -1,6 +1,10 @@
-# exo-manifold: Learned Manifold Engine
+# exo-manifold
 
 Continuous manifold storage using implicit neural representations (SIREN networks) for the EXO-AI cognitive substrate.
+
+[![Crates.io](https://img.shields.io/crates/v/exo-manifold.svg)](https://crates.io/crates/exo-manifold)
+[![Documentation](https://docs.rs/exo-manifold/badge.svg)](https://docs.rs/exo-manifold)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
 
 ## Overview
 
@@ -143,3 +147,13 @@ cargo test -p exo-manifold
 - SIREN: "Implicit Neural Representations with Periodic Activation Functions" (Sitzmann et al., 2020)
 - EXO-AI Architecture: `../../architecture/ARCHITECTURE.md`
 - Pseudocode: `../../architecture/PSEUDOCODE.md`
+
+## Links
+
+- [GitHub](https://github.com/ruvnet/ruvector)
+- [Website](https://ruv.io)
+- [EXO-AI Documentation](https://github.com/ruvnet/ruvector/tree/main/examples/exo-ai-2025)
+
+## License
+
+MIT OR Apache-2.0

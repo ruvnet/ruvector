@@ -2,13 +2,19 @@
 name = "exo-temporal"
 version = "0.1.0"
 edition = "2021"
-authors = ["EXO-AI 2025 Team"]
-description = "Temporal memory coordinator with causal structure for EXO-AI cognitive substrate"
 license = "MIT OR Apache-2.0"
+authors = ["rUv <ruv@ruv.io>"]
+repository = "https://github.com/ruvnet/ruvector"
+homepage = "https://ruv.io"
+documentation = "https://docs.rs/exo-temporal"
+description = "Temporal memory coordinator with causal structure for EXO-AI cognitive substrate"
+keywords = ["memory", "temporal", "causal", "cognitive", "ai"]
+categories = ["science", "algorithms", "data-structures"]
+readme = "README.md"
 
 [dependencies]
 # Core types from exo-core
-exo-core = { path = "../exo-core" }
+exo-core = "0.1"
 
 # Concurrent data structures
 dashmap = "6.1"

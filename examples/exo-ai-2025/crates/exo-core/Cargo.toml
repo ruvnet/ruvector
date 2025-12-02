@@ -4,14 +4,19 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.77"
 license = "MIT OR Apache-2.0"
-authors = ["EXO-AI Contributors"]
+authors = ["rUv <ruv@ruv.io>"]
 repository = "https://github.com/ruvnet/ruvector"
-description = "Core traits and types for EXO-AI cognitive substrate"
+homepage = "https://ruv.io"
+documentation = "https://docs.rs/exo-core"
+description = "Core traits and types for EXO-AI cognitive substrate - IIT consciousness measurement and Landauer thermodynamics"
+keywords = ["consciousness", "cognitive", "ai", "iit", "thermodynamics"]
+categories = ["science", "algorithms", "simulation"]
+readme = "README.md"
 
 [dependencies]
 # Ruvector SDK dependencies
-ruvector-core = { version = "0.1.2", path = "../../../../crates/ruvector-core" }
-ruvector-graph = { version = "0.1.2", path = "../../../../crates/ruvector-graph" }
+ruvector-core = "0.1"
+ruvector-graph = "0.1"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

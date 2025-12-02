@@ -706,9 +706,25 @@ dependencies = [
 name = "exo-backend-classical"
 version = "0.1.0"
 dependencies = [
- "exo-core",
- "exo-federation",
- "exo-temporal",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "exo-federation 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "exo-temporal 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parking_lot",
+ "ruvector-core",
+ "ruvector-graph",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "uuid",
+]
+
+[[package]]
+name = "exo-backend-classical"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1c8ca605c4c1b15dde3f472a853fbf5a18b7c84ba91b2367724397e6171aeb4"
+dependencies = [
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "parking_lot",
  "ruvector-core",
  "ruvector-graph",
@@ -735,13 +751,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "exo-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3814a1f1b7022011545ab7cbc43977c7bf1ea037b5d2a44ce97bb58df61a88e"
+dependencies = [
+ "anyhow",
+ "dashmap",
+ "ruvector-core",
+ "ruvector-graph",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "exo-exotic"
 version = "0.1.0"
 dependencies = [
  "criterion",
  "dashmap",
- "exo-core",
- "exo-temporal",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "exo-temporal 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ordered-float",
  "parking_lot",
  "petgraph",
@@ -760,7 +793,7 @@ dependencies = [
  "anyhow",
  "chacha20poly1305",
  "dashmap",
- "exo-core",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex",
  "hmac",
  "pqcrypto-kyber",
@@ -777,11 +810,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "exo-federation"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "702e83b5538f5abbc2b1ce7266856fe409ef160ca39ea136f5aae488c8302437"
+dependencies = [
+ "anyhow",
+ "chacha20poly1305",
+ "dashmap",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hex",
+ "hmac",
+ "pqcrypto-kyber",
+ "pqcrypto-traits",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "sha2",
+ "subtle",
+ "thiserror 1.0.69",
+ "tokio",
+ "zeroize",
+]
+
+[[package]]
 name = "exo-hypergraph"
 version = "0.1.0"
 dependencies = [
  "dashmap",
- "exo-core",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "petgraph",
  "serde",
  "serde_json",
@@ -795,7 +852,7 @@ name = "exo-manifold"
 version = "0.1.0"
 dependencies = [
  "approx",
- "exo-core",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ndarray",
  "parking_lot",
  "serde",
@@ -807,8 +864,8 @@ name = "exo-node"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "exo-backend-classical",
- "exo-core",
+ "exo-backend-classical 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "napi",
  "napi-build",
  "napi-derive",
@@ -826,12 +883,29 @@ dependencies = [
  "ahash",
  "chrono",
  "dashmap",
- "exo-core",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "parking_lot",
  "petgraph",
  "serde",
  "thiserror 2.0.17",
  "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "exo-temporal"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9f826a00a26db45211fa82af14b4938e3dc448f86a0e6e12f73cdb43d03e637"
+dependencies = [
+ "ahash",
+ "chrono",
+ "dashmap",
+ "exo-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parking_lot",
+ "petgraph",
+ "serde",
+ "thiserror 2.0.17",
  "uuid",
 ]
 
@@ -2041,7 +2115,9 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
 name = "ruvector-core"
-version = "0.1.16"
+version = "0.1.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58ab1c7dd9ac0fd796e31fecf5238783681e15208616923a70ab5d21c79c8e0d"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -2068,7 +2144,9 @@ dependencies = [
 
 [[package]]
 name = "ruvector-graph"
-version = "0.1.16"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "373fb3c4c71af888f6b606b2525c4b353b5b1b54fcbaae80d3b0dc22579f3653"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",

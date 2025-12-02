@@ -2,6 +2,10 @@
 
 Hypergraph substrate for higher-order relational reasoning in the EXO-AI cognitive substrate.
 
+[![Crates.io](https://img.shields.io/crates/v/exo-hypergraph.svg)](https://crates.io/crates/exo-hypergraph)
+[![Documentation](https://docs.rs/exo-hypergraph/badge.svg)](https://docs.rs/exo-hypergraph)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+
 ## Features
 
 - **Hyperedge Support**: Relations spanning multiple entities (not just pairwise)
@@ -109,6 +113,12 @@ let result = hypergraph.query(&query).unwrap();
 - `petgraph`: Graph algorithms
 - `dashmap`: Concurrent hash maps
 - `serde`: Serialization
+
+## Links
+
+- [GitHub](https://github.com/ruvnet/ruvector)
+- [Website](https://ruv.io)
+- [EXO-AI Documentation](https://github.com/ruvnet/ruvector/tree/main/examples/exo-ai-2025)
 
 ## License
 

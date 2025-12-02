@@ -2,6 +2,10 @@
 
 WASM bindings for EXO-AI 2025 Cognitive Substrate, enabling browser-based deployment of advanced AI substrate operations.
 
+[![Crates.io](https://img.shields.io/crates/v/exo-wasm.svg)](https://crates.io/crates/exo-wasm)
+[![Documentation](https://docs.rs/exo-wasm/badge.svg)](https://docs.rs/exo-wasm)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+
 ## Features
 
 - **Pattern Storage**: Store and retrieve cognitive patterns with embeddings
@@ -189,6 +193,12 @@ exo-wasm/
 ├── Cargo.toml
 └── README.md
 ```
+
+## Links
+
+- [GitHub](https://github.com/ruvnet/ruvector)
+- [Website](https://ruv.io)
+- [EXO-AI Documentation](https://github.com/ruvnet/ruvector/tree/main/examples/exo-ai-2025)
 
 ## License
 

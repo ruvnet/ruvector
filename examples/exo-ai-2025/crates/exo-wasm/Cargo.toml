@@ -4,16 +4,21 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
 license = "MIT OR Apache-2.0"
-description = "WASM bindings for EXO-AI 2025 cognitive substrate"
+authors = ["rUv <ruv@ruv.io>"]
+repository = "https://github.com/ruvnet/ruvector"
+homepage = "https://ruv.io"
+documentation = "https://docs.rs/exo-wasm"
+description = "WASM bindings for EXO-AI 2025 cognitive substrate - browser and edge deployment"
+keywords = ["wasm", "webassembly", "browser", "cognitive", "ai"]
+categories = ["wasm", "science", "web-programming"]
 readme = "README.md"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# Note: exo-core will be created separately
-# For now, we'll use ruvector-core as a placeholder until exo-core exists
-ruvector-core = { version = "0.1.2", path = "../../../../crates/ruvector-core", default-features = false, features = ["memory-only", "uuid-support"] }
+# Ruvector core for memory-efficient operations
+ruvector-core = { version = "0.1", default-features = false, features = ["uuid-support"] }
 
 # WASM bindings
 wasm-bindgen = "0.2"
@@ -50,7 +55,6 @@ wasm-bindgen-test = "0.3"
 default = []
 simd = ["ruvector-core/simd"]
 
-# Ensure getrandom uses wasm_js/js features for WASM
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 

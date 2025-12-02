@@ -2,14 +2,23 @@
 name = "exo-backend-classical"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["rUv <ruv@ruv.io>"]
+repository = "https://github.com/ruvnet/ruvector"
+homepage = "https://ruv.io"
+documentation = "https://docs.rs/exo-backend-classical"
+description = "Classical compute backend for EXO-AI cognitive substrate with SIMD acceleration"
+keywords = ["backend", "compute", "simd", "cognitive", "ai"]
+categories = ["science", "algorithms", "simulation"]
+readme = "README.md"
 
 [dependencies]
 # EXO dependencies
-exo-core = { path = "../exo-core" }
+exo-core = "0.1"
 
 # Ruvector dependencies
-ruvector-core = { path = "../../../../crates/ruvector-core", features = ["simd"] }
-ruvector-graph = { path = "../../../../crates/ruvector-graph" }
+ruvector-core = { version = "0.1", features = ["simd"] }
+ruvector-graph = "0.1"
 
 # Utility dependencies
 serde = { version = "1.0", features = ["derive"] }
@@ -19,5 +28,5 @@ parking_lot = "0.12"
 uuid = { version = "1.0", features = ["v4"] }
 
 [dev-dependencies]
-exo-temporal = { path = "../exo-temporal" }
-exo-federation = { path = "../exo-federation" }
+exo-temporal = "0.1"
+exo-federation = "0.1"

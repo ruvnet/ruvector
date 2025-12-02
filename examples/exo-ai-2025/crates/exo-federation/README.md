@@ -2,6 +2,10 @@
 
 Federated cognitive mesh networking for EXO-AI 2025 distributed substrate.
 
+[![Crates.io](https://img.shields.io/crates/v/exo-federation.svg)](https://crates.io/crates/exo-federation)
+[![Documentation](https://docs.rs/exo-federation/badge.svg)](https://docs.rs/exo-federation)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+
 ## Overview
 
 This crate implements a distributed federation layer for cognitive substrates with:
@@ -239,6 +243,12 @@ This crate integrates with the broader EXO-AI cognitive substrate:
 - **exo-temporal**: Causal memory coordination
 - **exo-manifold**: Distributed manifold queries
 - **exo-hypergraph**: Federated topology queries
+
+## Links
+
+- [GitHub](https://github.com/ruvnet/ruvector)
+- [Website](https://ruv.io)
+- [EXO-AI Documentation](https://github.com/ruvnet/ruvector/tree/main/examples/exo-ai-2025)
 
 ## License
 

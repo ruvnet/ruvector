@@ -1,4 +1,10 @@
-# EXO-Exotic: Cutting-Edge Cognitive Experiments
+# exo-exotic
+
+Cutting-edge cognitive experiments for EXO-AI 2025 cognitive substrate.
+
+[![Crates.io](https://img.shields.io/crates/v/exo-exotic.svg)](https://crates.io/crates/exo-exotic)
+[![Documentation](https://docs.rs/exo-exotic/badge.svg)](https://docs.rs/exo-exotic)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
 
 > *"The mind is not a vessel to be filled, but a fire to be kindled."* — Plutarch
 
@@ -716,3 +722,9 @@ Contributions welcome! Areas of interest:
 ---
 
 *"Consciousness is not a thing, but a process—a strange loop observing itself."*
+
+## Links
+
+- [GitHub](https://github.com/ruvnet/ruvector)
+- [Website](https://ruv.io)
+- [EXO-AI Documentation](https://github.com/ruvnet/ruvector/tree/main/examples/exo-ai-2025)

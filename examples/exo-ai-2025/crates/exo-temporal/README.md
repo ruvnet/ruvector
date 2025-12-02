@@ -2,6 +2,10 @@
 
 Temporal memory coordinator with causal structure for the EXO-AI 2025 cognitive substrate.
 
+[![Crates.io](https://img.shields.io/crates/v/exo-temporal.svg)](https://crates.io/crates/exo-temporal)
+[![Documentation](https://docs.rs/exo-temporal/badge.svg)](https://docs.rs/exo-temporal)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+
 ## Overview
 
 This crate implements a biologically-inspired temporal memory system with:
@@ -175,6 +179,12 @@ This implementation follows the pseudocode in `PSEUDOCODE.md`:
 - ARCHITECTURE.md: Section 2.5 (Temporal Memory Coordinator)
 - PSEUDOCODE.md: Section 3 (Temporal Memory Coordinator)
 - Research: Zep-inspired temporal knowledge graphs, IIT consciousness metrics
+
+## Links
+
+- [GitHub](https://github.com/ruvnet/ruvector)
+- [Website](https://ruv.io)
+- [EXO-AI Documentation](https://github.com/ruvnet/ruvector/tree/main/examples/exo-ai-2025)
 
 ## License
 
