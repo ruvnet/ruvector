@@ -1,6 +1,6 @@
 [package]
 name = "ruvector-postgres"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 license = "MIT"
 description = "High-performance PostgreSQL vector database extension - pgvector drop-in replacement with 53+ SQL functions, SIMD acceleration, hyperbolic embeddings, GNN layers, and self-learning capabilities"
