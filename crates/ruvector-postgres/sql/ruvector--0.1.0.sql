@@ -482,79 +482,79 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- Create sparse vector from indices and values
 CREATE OR REPLACE FUNCTION ruvector_to_sparse(indices int[], vals real[], dim int)
 RETURNS text
-AS 'MODULE_PATHNAME', 'ruvector_to_sparse_wrapper'
+AS 'MODULE_PATHNAME', 'pg_to_sparse_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Sparse dot product
 CREATE OR REPLACE FUNCTION ruvector_sparse_dot(a text, b text)
 RETURNS real
-AS 'MODULE_PATHNAME', 'ruvector_sparse_dot_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_dot_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Sparse cosine distance
 CREATE OR REPLACE FUNCTION ruvector_sparse_cosine(a text, b text)
 RETURNS real
-AS 'MODULE_PATHNAME', 'ruvector_sparse_cosine_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_cosine_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Sparse euclidean distance
 CREATE OR REPLACE FUNCTION ruvector_sparse_euclidean(a text, b text)
 RETURNS real
-AS 'MODULE_PATHNAME', 'ruvector_sparse_euclidean_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_euclidean_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Sparse manhattan distance
 CREATE OR REPLACE FUNCTION ruvector_sparse_manhattan(a text, b text)
 RETURNS real
-AS 'MODULE_PATHNAME', 'ruvector_sparse_manhattan_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_manhattan_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Get number of non-zero elements
 CREATE OR REPLACE FUNCTION ruvector_sparse_nnz(v text)
 RETURNS int
-AS 'MODULE_PATHNAME', 'ruvector_sparse_nnz_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_nnz_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Get sparse vector dimension
 CREATE OR REPLACE FUNCTION ruvector_sparse_dim(v text)
 RETURNS int
-AS 'MODULE_PATHNAME', 'ruvector_sparse_dim_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_dim_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Get sparse vector norm
 CREATE OR REPLACE FUNCTION ruvector_sparse_norm(v text)
 RETURNS real
-AS 'MODULE_PATHNAME', 'ruvector_sparse_norm_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_norm_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Keep top k elements
 CREATE OR REPLACE FUNCTION ruvector_sparse_top_k(v text, k int)
 RETURNS text
-AS 'MODULE_PATHNAME', 'ruvector_sparse_top_k_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_top_k_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Prune elements below threshold
 CREATE OR REPLACE FUNCTION ruvector_sparse_prune(v text, threshold real)
 RETURNS text
-AS 'MODULE_PATHNAME', 'ruvector_sparse_prune_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_prune_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Convert dense to sparse
 CREATE OR REPLACE FUNCTION ruvector_dense_to_sparse(v real[])
 RETURNS text
-AS 'MODULE_PATHNAME', 'ruvector_dense_to_sparse_wrapper'
+AS 'MODULE_PATHNAME', 'pg_dense_to_sparse_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Convert sparse to dense
 CREATE OR REPLACE FUNCTION ruvector_sparse_to_dense(v text)
 RETURNS real[]
-AS 'MODULE_PATHNAME', 'ruvector_sparse_to_dense_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_to_dense_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- BM25 scoring
 CREATE OR REPLACE FUNCTION ruvector_sparse_bm25(query text, doc text, doc_len int, avg_doc_len real, k1 real DEFAULT 1.2, b real DEFAULT 0.75)
 RETURNS real
-AS 'MODULE_PATHNAME', 'ruvector_sparse_bm25_wrapper'
+AS 'MODULE_PATHNAME', 'pg_sparse_bm25_wrapper'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- ============================================================================
@@ -573,23 +573,23 @@ RETURNS real[][]
 AS 'MODULE_PATHNAME', 'ruvector_graphsage_forward_wrapper'
 LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- GAT (Graph Attention) forward pass
-CREATE OR REPLACE FUNCTION ruvector_gat_forward(features real[][], src int[], dst int[], out_dim int, num_heads int DEFAULT 4)
-RETURNS real[][]
-AS 'MODULE_PATHNAME', 'ruvector_gat_forward_wrapper'
-LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- GAT (Graph Attention) forward pass - Not yet implemented
+-- CREATE OR REPLACE FUNCTION ruvector_gat_forward(features real[][], src int[], dst int[], out_dim int, num_heads int DEFAULT 4)
+-- RETURNS real[][]
+-- AS 'MODULE_PATHNAME', 'ruvector_gat_forward_wrapper'
+-- LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- Message passing aggregate
 CREATE OR REPLACE FUNCTION ruvector_message_aggregate(messages real[][], aggregation text DEFAULT 'mean')
 RETURNS real[]
-AS 'MODULE_PATHNAME', 'ruvector_message_aggregate_wrapper'
+AS 'MODULE_PATHNAME', 'ruvector_gnn_aggregate_wrapper'
 LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- Readout function
-CREATE OR REPLACE FUNCTION ruvector_gnn_readout(node_embeddings real[][], readout_type text DEFAULT 'mean')
-RETURNS real[]
-AS 'MODULE_PATHNAME', 'ruvector_gnn_readout_wrapper'
-LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- Readout function - Not yet implemented (use ruvector_message_aggregate instead)
+-- CREATE OR REPLACE FUNCTION ruvector_gnn_readout(node_embeddings real[][], readout_type text DEFAULT 'mean')
+-- RETURNS real[]
+-- AS 'MODULE_PATHNAME', 'ruvector_gnn_readout_wrapper'
+-- LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- ============================================================================
 -- Routing/Agent Functions (Tiny Dancer)
@@ -797,27 +797,27 @@ COMMENT ON FUNCTION graph_centroid_update(real[], real[], real) IS 'Update centr
 COMMENT ON FUNCTION graph_bipartite_score(real[], real[], real) IS 'Compute bipartite matching score for RAG';
 
 -- ============================================================================
--- HNSW Index Access Method
+-- HNSW Index Access Method (DISABLED - requires pgrx API stabilization)
 -- ============================================================================
 -- Provides fast approximate nearest neighbor search using HNSW algorithm
+-- NOTE: Access method integration pending. Use manual vector search functions.
 
 -- Register HNSW as a PostgreSQL index access method
-CREATE ACCESS METHOD hnsw TYPE INDEX HANDLER hnsw_handler;
-
-COMMENT ON ACCESS METHOD hnsw IS 'HNSW (Hierarchical Navigable Small World) index for approximate nearest neighbor search';
+-- CREATE ACCESS METHOD hnsw TYPE INDEX HANDLER hnsw_handler;
+-- COMMENT ON ACCESS METHOD hnsw IS 'HNSW (Hierarchical Navigable Small World) index for approximate nearest neighbor search';
 
 -- ============================================================================
--- HNSW Operator Families
+-- HNSW Operator Families (DISABLED)
 -- ============================================================================
 
 -- L2 (Euclidean) distance operator family
-CREATE OPERATOR FAMILY hnsw_l2_ops USING hnsw;
+-- CREATE OPERATOR FAMILY hnsw_l2_ops USING hnsw;
 
 -- Cosine distance operator family
-CREATE OPERATOR FAMILY hnsw_cosine_ops USING hnsw;
+-- CREATE OPERATOR FAMILY hnsw_cosine_ops USING hnsw;
 
 -- Inner product operator family
-CREATE OPERATOR FAMILY hnsw_ip_ops USING hnsw;
+-- CREATE OPERATOR FAMILY hnsw_ip_ops USING hnsw;
 
 -- ============================================================================
 -- Distance Operators for real[] arrays
@@ -854,35 +854,35 @@ CREATE OPERATOR <#> (
 COMMENT ON OPERATOR <#>(real[], real[]) IS 'Negative inner product (for ORDER BY)';
 
 -- ============================================================================
--- HNSW Operator Classes
+-- HNSW Operator Classes (DISABLED - requires access method)
 -- ============================================================================
 
 -- L2 Distance operator class
-CREATE OPERATOR CLASS hnsw_l2_ops
-    FOR TYPE real[] USING hnsw
-    FAMILY hnsw_l2_ops AS
-    OPERATOR 1 <-> (real[], real[]) FOR ORDER BY float_ops,
-    FUNCTION 1 l2_distance_arr(real[], real[]);
-
-COMMENT ON OPERATOR CLASS hnsw_l2_ops USING hnsw IS
-    'HNSW index operator class for L2 (Euclidean) distance on real[] vectors';
+-- CREATE OPERATOR CLASS hnsw_l2_ops
+--     FOR TYPE real[] USING hnsw
+--     FAMILY hnsw_l2_ops AS
+--     OPERATOR 1 <-> (real[], real[]) FOR ORDER BY float_ops,
+--     FUNCTION 1 l2_distance_arr(real[], real[]);
+--
+-- COMMENT ON OPERATOR CLASS hnsw_l2_ops USING hnsw IS
+--     'HNSW index operator class for L2 (Euclidean) distance on real[] vectors';
 
 -- Cosine Distance operator class
-CREATE OPERATOR CLASS hnsw_cosine_ops
-    FOR TYPE real[] USING hnsw
-    FAMILY hnsw_cosine_ops AS
-    OPERATOR 1 <=> (real[], real[]) FOR ORDER BY float_ops,
-    FUNCTION 1 cosine_distance_arr(real[], real[]);
-
-COMMENT ON OPERATOR CLASS hnsw_cosine_ops USING hnsw IS
-    'HNSW index operator class for cosine distance on real[] vectors';
+-- CREATE OPERATOR CLASS hnsw_cosine_ops
+--     FOR TYPE real[] USING hnsw
+--     FAMILY hnsw_cosine_ops AS
+--     OPERATOR 1 <=> (real[], real[]) FOR ORDER BY float_ops,
+--     FUNCTION 1 cosine_distance_arr(real[], real[]);
+--
+-- COMMENT ON OPERATOR CLASS hnsw_cosine_ops USING hnsw IS
+--     'HNSW index operator class for cosine distance on real[] vectors';
 
 -- Inner Product operator class
-CREATE OPERATOR CLASS hnsw_ip_ops
-    FOR TYPE real[] USING hnsw
-    FAMILY hnsw_ip_ops AS
-    OPERATOR 1 <#> (real[], real[]) FOR ORDER BY float_ops,
-    FUNCTION 1 neg_inner_product_arr(real[], real[]);
-
-COMMENT ON OPERATOR CLASS hnsw_ip_ops USING hnsw IS
-    'HNSW index operator class for inner product on real[] vectors';
+-- CREATE OPERATOR CLASS hnsw_ip_ops
+--     FOR TYPE real[] USING hnsw
+--     FAMILY hnsw_ip_ops AS
+--     OPERATOR 1 <#> (real[], real[]) FOR ORDER BY float_ops,
+--     FUNCTION 1 neg_inner_product_arr(real[], real[]);
+--
+-- COMMENT ON OPERATOR CLASS hnsw_ip_ops USING hnsw IS
+--     'HNSW index operator class for inner product on real[] vectors';

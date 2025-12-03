@@ -7,7 +7,7 @@ mod hnsw;
 mod ivfflat;
 mod scan;
 
-// Access Method implementations (disabled until pgrx API stabilizes)
+// Access Method implementations (disabled - requires pgrx API fixes)
 // mod hnsw_am;
 // mod ivfflat_am;
 // mod ivfflat_storage;
