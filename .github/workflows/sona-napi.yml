@@ -89,8 +89,17 @@ jobs:
         run: |
           npx napi build --platform --release -p ruvector-sona --manifest-path ../../../crates/sona/Cargo.toml --output-dir . -F napi --target ${{ matrix.target }} --use-napi-cross
 
-      - name: Build native module (native)
-        if: matrix.target != 'aarch64-unknown-linux-gnu'
+      - name: Build native module (macOS)
+        if: startsWith(matrix.target, 'x86_64-apple-darwin') || startsWith(matrix.target, 'aarch64-apple-darwin')
+        working-directory: npm/packages/sona
+        env:
+          CARGO_BUILD_TARGET: ${{ matrix.target }}
+          RUSTFLAGS: '-C link-arg=-undefined -C link-arg=dynamic_lookup'
+        run: |
+          npx napi build --platform --release -p ruvector-sona --manifest-path ../../../crates/sona/Cargo.toml --output-dir . -F napi --target ${{ matrix.target }}
+
+      - name: Build native module (other)
+        if: "!startsWith(matrix.target, 'x86_64-apple-darwin') && !startsWith(matrix.target, 'aarch64-apple-darwin') && matrix.target != 'aarch64-unknown-linux-gnu'"
         working-directory: npm/packages/sona
         env:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
