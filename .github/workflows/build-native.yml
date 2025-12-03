@@ -82,7 +82,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: npm/packages/core
-        run: npm install --ignore-scripts
+        run: npm install --ignore-scripts --omit=optional
 
       - name: Build native module
         working-directory: npm/packages/core
