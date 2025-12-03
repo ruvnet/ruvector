@@ -37,6 +37,10 @@ pub enum GnnError {
     #[error("Search error: {0}")]
     Search(String),
 
+    /// Attention computation error
+    #[error("Attention error: {0}")]
+    AttentionError(String),
+
     /// Invalid input
     #[error("Invalid input: {0}")]
     InvalidInput(String),
@@ -91,6 +95,11 @@ impl GnnError {
     /// Create a search error
     pub fn search(msg: impl Into<String>) -> Self {
         Self::Search(msg.into())
+    }
+
+    /// Create an attention error
+    pub fn attention(msg: impl Into<String>) -> Self {
+        Self::AttentionError(msg.into())
     }
 
     /// Create a memory mapping error

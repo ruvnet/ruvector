@@ -5655,6 +5655,7 @@ dependencies = [
  "rand 0.8.5",
  "rand_distr",
  "rayon",
+ "ruvector-attention",
  "ruvector-core",
  "serde",
  "serde_json",

@@ -21,6 +21,16 @@ serde_json = { workspace = true }
 [build-dependencies]
 napi-build = "2"
 
+[features]
+default = []
+# Enable attention-enhanced search functions
+attention = ["ruvector-gnn/attention"]
+hyperbolic = ["attention", "ruvector-gnn/hyperbolic"]
+edge-featured = ["attention", "ruvector-gnn/edge-featured"]
+flash-attention = ["attention", "ruvector-gnn/flash-attention"]
+moe = ["attention", "ruvector-gnn/moe"]
+full-attention = ["hyperbolic", "edge-featured", "flash-attention", "moe"]
+
 [profile.release]
 lto = true
 strip = true

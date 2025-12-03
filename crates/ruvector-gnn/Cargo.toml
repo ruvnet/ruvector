@@ -13,6 +13,9 @@ description = "Graph Neural Network layer for Ruvector on HNSW topology"
 # Core
 ruvector-core = { version = "0.1.2", path = "../ruvector-core", default-features = false }
 
+# Attention mechanisms (optional)
+ruvector-attention = { version = "0.1.0", path = "../ruvector-attention", optional = true }
+
 # Math and numerics
 ndarray = { workspace = true, features = ["serde"] }
 rand = { workspace = true }
@@ -49,6 +52,13 @@ simd = []
 wasm = []
 napi = ["dep:napi", "dep:napi-derive"]
 mmap = ["dep:memmap2", "dep:page_size"]
+# Attention integration features
+attention = ["dep:ruvector-attention"]
+hyperbolic = ["attention"]
+edge-featured = ["attention"]
+flash-attention = ["attention"]
+moe = ["attention"]
+full-attention = ["hyperbolic", "edge-featured", "flash-attention", "moe"]
 
 [dev-dependencies]
 criterion = { workspace = true }

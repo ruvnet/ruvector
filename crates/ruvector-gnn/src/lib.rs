@@ -57,6 +57,14 @@ pub mod search;
 pub mod tensor;
 pub mod training;
 
+// Attention integration module
+#[cfg(feature = "attention")]
+pub mod attention_backend;
+
+// Enhanced search with attention
+#[cfg(feature = "attention")]
+pub mod search_v2;
+
 #[cfg(all(not(target_arch = "wasm32"), feature = "mmap"))]
 pub mod mmap;
 
@@ -76,6 +84,32 @@ pub use training::{
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "mmap"))]
 pub use mmap::{AtomicBitmap, MmapGradientAccumulator, MmapManager};
+
+// Attention backend exports
+#[cfg(feature = "attention")]
+pub use attention_backend::{
+    AttentionBackend, AttentionConfig, AttentionMode, StandardAttention,
+    create_backend,
+};
+
+#[cfg(feature = "hyperbolic")]
+pub use attention_backend::{HyperbolicAttentionBackend, DualSpaceAttentionBackend};
+
+#[cfg(feature = "edge-featured")]
+pub use attention_backend::EdgeFeaturedAttentionBackend;
+
+#[cfg(feature = "flash-attention")]
+pub use attention_backend::FlashAttentionBackend;
+
+#[cfg(feature = "moe")]
+pub use attention_backend::MoEAttentionBackend;
+
+// Enhanced search exports
+#[cfg(feature = "attention")]
+pub use search_v2::{
+    differentiable_search_v2, hierarchical_forward_v2,
+    SearchConfig, SearchResult,
+};
 
 #[cfg(test)]
 mod tests {
