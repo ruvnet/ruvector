@@ -47,6 +47,9 @@ byteorder = { version = "1.5", optional = true }
 half = { version = "2.4", features = ["num-traits", "serde"], optional = true }
 dirs = { version = "5.0", optional = true }
 
+# SONA Export (optional - for HuggingFace export)
+ruvector-sona = { path = "../../crates/sona", optional = true }
+
 # Utilities
 uuid = { version = "1.11", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -88,7 +91,9 @@ metrics = ["prometheus"]
 server = ["axum", "tower", "tower-http"]
 # Real LLM inference with CPU SIMD optimization
 real-inference = ["candle-core", "candle-nn", "candle-transformers", "hf-hub", "tokenizers", "memmap2", "byteorder", "half", "dirs"]
-full = ["storage", "metrics", "server", "real-inference"]
+# HuggingFace export for learned patterns and LoRA weights
+hf-export = ["ruvector-sona"]
+full = ["storage", "metrics", "server", "real-inference", "hf-export"]
 
 [[bench]]
 name = "pipeline"
@@ -138,6 +143,11 @@ path = "src/bin/simd_demo.rs"
 [[bin]]
 name = "ruvllm-pretrain"
 path = "src/bin/pretrain.rs"
+
+[[bin]]
+name = "ruvllm-export"
+path = "src/bin/export.rs"
+required-features = ["hf-export"]
 
 [[test]]
 name = "integration"

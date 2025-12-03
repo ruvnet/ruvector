@@ -117,6 +117,15 @@ impl TrajectoryBuffer {
         self.dropped.store(0, Ordering::Relaxed);
         self.total_seen.store(0, Ordering::Relaxed);
     }
+
+    /// Get all trajectories (drains buffer - use for export)
+    ///
+    /// Note: This drains the buffer, so trajectories are removed after this call.
+    /// For export purposes, this is usually what you want since you'll re-record
+    /// new trajectories during continued operation.
+    pub fn get_all(&self) -> Vec<QueryTrajectory> {
+        self.drain()
+    }
 }
 
 /// Builder for constructing trajectories during inference

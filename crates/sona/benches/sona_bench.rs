@@ -1,11 +1,11 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use sona::{SonaEngine, SonaConfig};
+use ruvector_sona::{SonaEngine, SonaConfig};
 
 fn trajectory_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("trajectory");
 
     for dim in [64, 128, 256, 512].iter() {
-        let engine = SonaEngine::new(SonaConfig {
+        let engine = SonaEngine::with_config(SonaConfig {
             hidden_dim: *dim,
             embedding_dim: *dim,
             ..Default::default()
@@ -28,7 +28,7 @@ fn lora_application_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lora");
 
     for dim in [64, 128, 256, 512].iter() {
-        let engine = SonaEngine::new(SonaConfig {
+        let engine = SonaEngine::with_config(SonaConfig {
             hidden_dim: *dim,
             embedding_dim: *dim,
             ..Default::default()
@@ -66,7 +66,7 @@ fn background_learning_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("learning");
     group.sample_size(10); // Fewer samples for expensive operation
 
-    let engine = SonaEngine::new(SonaConfig {
+    let engine = SonaEngine::with_config(SonaConfig {
         hidden_dim: 256,
         embedding_dim: 256,
         ..Default::default()

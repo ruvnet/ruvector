@@ -136,6 +136,11 @@ impl LoopCoordinator {
         &self.ewc
     }
 
+    /// Get trajectory buffer for export
+    pub fn trajectory_buffer(&self) -> &Arc<crate::trajectory::TrajectoryBuffer> {
+        self.instant.buffer()
+    }
+
     /// Enable/disable instant loop
     pub fn set_instant_enabled(&mut self, enabled: bool) {
         self.instant_enabled = enabled;

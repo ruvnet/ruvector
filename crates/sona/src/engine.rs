@@ -3,9 +3,15 @@
 use crate::loops::coordinator::{CoordinatorStats, LoopCoordinator};
 use crate::lora::MicroLoRA;
 use crate::trajectory::TrajectoryBuilder;
-use crate::types::{QueryTrajectory, SonaConfig};
+use crate::types::{QueryTrajectory, SonaConfig, LearnedPattern};
 use parking_lot::RwLock;
 use std::sync::Arc;
+
+#[cfg(feature = "serde-support")]
+use crate::export::safetensors::{LoRAState, LoRALayerState};
+
+#[cfg(feature = "serde-support")]
+use crate::export::dataset::{QualityTrajectory, RoutingDecision};
 
 /// Main SONA engine integrating all components
 pub struct SonaEngine {
@@ -144,6 +150,84 @@ impl SonaEngine {
     /// Get config
     pub fn config(&self) -> &SonaConfig {
         &self.config
+    }
+
+    /// Get all learned patterns from ReasoningBank
+    pub fn get_all_patterns(&self) -> Vec<LearnedPattern> {
+        self.coordinator
+            .reasoning_bank()
+            .read()
+            .get_all_patterns()
+    }
+
+    /// Export LoRA state for SafeTensors serialization
+    #[cfg(feature = "serde-support")]
+    pub fn export_lora_state(&self) -> LoRAState {
+        let mut state = LoRAState::default();
+
+        // Export MicroLoRA weights
+        if let Some(micro_lora) = self.coordinator.micro_lora().try_read() {
+            let (lora_a, lora_b) = micro_lora.get_weights();
+            state.micro_lora_layers.push(LoRALayerState {
+                lora_a: lora_a.clone(),
+                lora_b: lora_b.clone(),
+                rank: self.config.micro_lora_rank,
+                input_dim: self.config.hidden_dim,
+                output_dim: self.config.hidden_dim,
+            });
+        }
+
+        // Export BaseLoRA weights
+        if let Some(base_lora) = self.coordinator.base_lora().try_read() {
+            for layer_idx in 0..base_lora.num_layers() {
+                if let Some((lora_a, lora_b)) = base_lora.get_layer_weights(layer_idx) {
+                    state.base_lora_layers.push(LoRALayerState {
+                        lora_a: lora_a.clone(),
+                        lora_b: lora_b.clone(),
+                        rank: self.config.base_lora_rank,
+                        input_dim: self.config.hidden_dim,
+                        output_dim: self.config.hidden_dim,
+                    });
+                }
+            }
+        }
+
+        state
+    }
+
+    /// Get quality trajectories for preference learning export
+    #[cfg(feature = "serde-support")]
+    pub fn get_quality_trajectories(&self) -> Vec<QualityTrajectory> {
+        self.coordinator
+            .trajectory_buffer()
+            .get_all()
+            .iter()
+            .map(|t| QualityTrajectory {
+                query_embedding: t.query_embedding.clone(),
+                response_embedding: t.steps.last()
+                    .map(|s| s.activations.clone())
+                    .unwrap_or_default(),
+                route: t.model_route.clone().unwrap_or_default(),
+                quality: t.final_quality,
+                context_ids: t.context_ids.clone(),
+            })
+            .collect()
+    }
+
+    /// Get routing decisions for distillation export
+    #[cfg(feature = "serde-support")]
+    pub fn get_routing_decisions(&self) -> Vec<RoutingDecision> {
+        // Extract routing decisions from learned patterns
+        self.get_all_patterns()
+            .iter()
+            .map(|p| RoutingDecision {
+                query_embedding: p.centroid.clone(),
+                routing_logits: vec![p.avg_quality; 4], // Placeholder logits
+                selected_route: p.pattern_type.to_string(),
+                confidence: p.avg_quality,
+                quality: p.avg_quality,
+            })
+            .collect()
     }
 }
 
