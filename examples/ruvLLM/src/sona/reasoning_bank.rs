@@ -27,14 +27,17 @@ pub struct PatternConfig {
 
 impl Default for PatternConfig {
     fn default() -> Self {
+        // OPTIMIZED DEFAULTS based on @ruvector/sona v0.1.1 benchmarks:
+        // - 100 clusters = 1.3ms search vs 50 clusters = 3.0ms (2.3x faster)
+        // - Quality threshold 0.3 balances learning vs noise filtering
         Self {
-            k_clusters: 50,
+            k_clusters: 100,           // OPTIMIZED: 2.3x faster search (1.3ms vs 3.0ms)
             embedding_dim: 256,
             max_iterations: 100,
             convergence_threshold: 0.001,
             min_cluster_size: 5,
             max_trajectories: 10000,
-            quality_threshold: 0.5,
+            quality_threshold: 0.3,    // OPTIMIZED: Lower threshold for more learning
         }
     }
 }

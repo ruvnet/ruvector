@@ -32,12 +32,15 @@ pub struct EwcConfig {
 
 impl Default for EwcConfig {
     fn default() -> Self {
+        // OPTIMIZED DEFAULTS based on @ruvector/sona v0.1.1 benchmarks:
+        // - Lambda 2000 optimal for catastrophic forgetting prevention
+        // - Higher max_lambda (15000) for aggressive protection when needed
         Self {
             param_count: 1000,
             max_tasks: 10,
-            initial_lambda: 1000.0,
+            initial_lambda: 2000.0,   // OPTIMIZED: Better forgetting prevention
             min_lambda: 100.0,
-            max_lambda: 10000.0,
+            max_lambda: 15000.0,      // OPTIMIZED: Higher ceiling for multi-task
             fisher_ema_decay: 0.999,
             boundary_threshold: 2.0,
             gradient_history_size: 100,

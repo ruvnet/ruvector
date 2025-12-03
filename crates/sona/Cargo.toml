@@ -1,6 +1,6 @@
 [package]
 name = "ruvector-sona"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.70"
 authors = ["RuVector Team <team@ruvector.dev>"]
@@ -66,3 +66,7 @@ features = [
 criterion = "0.5"
 rand = "0.8"
 once_cell = "1.19"
+
+[[bench]]
+name = "sona_bench"
+harness = false
