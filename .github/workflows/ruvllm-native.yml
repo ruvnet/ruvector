@@ -59,6 +59,9 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Install napi-rs CLI
+        run: npm install -g @napi-rs/cli
+
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
@@ -72,24 +75,26 @@ jobs:
           echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
           echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
 
-      - name: Build native library
+      - name: Build native library with napi
+        shell: bash
         run: |
           cd examples/ruvLLM
-          cargo build --release --lib --features napi --target ${{ matrix.target }}
+          napi build --platform --release --target ${{ matrix.target }} --features napi
 
       - name: Copy artifact (Unix)
         if: runner.os != 'Windows'
+        shell: bash
         run: |
-          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ] || [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
-            cp target/${{ matrix.target }}/release/libruvllm.so npm/packages/${{ matrix.npm_package }}/${{ matrix.node_file }}
-          else
-            cp target/${{ matrix.target }}/release/libruvllm.dylib npm/packages/${{ matrix.npm_package }}/${{ matrix.node_file }}
-          fi
+          mkdir -p npm/packages/${{ matrix.npm_package }}
+          cp examples/ruvLLM/ruvllm.*.node npm/packages/${{ matrix.npm_package }}/${{ matrix.node_file }} || \
+          cp examples/ruvLLM/*.node npm/packages/${{ matrix.npm_package }}/${{ matrix.node_file }}
 
       - name: Copy artifact (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          copy target\${{ matrix.target }}\release\ruvllm.dll npm\packages\${{ matrix.npm_package }}\${{ matrix.node_file }}
+          New-Item -ItemType Directory -Force -Path npm/packages/${{ matrix.npm_package }}
+          Copy-Item examples/ruvLLM/*.node npm/packages/${{ matrix.npm_package }}/${{ matrix.node_file }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
