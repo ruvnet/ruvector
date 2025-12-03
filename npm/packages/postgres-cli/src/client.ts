@@ -267,27 +267,23 @@ export class RuVectorClient {
     dimensions: number,
     indexType: 'hnsw' | 'ivfflat' = 'hnsw'
   ): Promise<void> {
+    // Use ruvector type (native RuVector extension type)
+    // ruvector is a variable-length type, dimensions stored in metadata
     await this.execute(`
       CREATE TABLE IF NOT EXISTS ${name} (
         id SERIAL PRIMARY KEY,
-        embedding vector(${dimensions}),
+        embedding ruvector,
+        dimensions INT DEFAULT ${dimensions},
         metadata JSONB,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
 
-    if (indexType === 'hnsw') {
-      await this.execute(`
-        CREATE INDEX IF NOT EXISTS ${name}_embedding_idx
-        ON ${name} USING hnsw (embedding vector_cosine_ops)
-      `);
-    } else {
-      await this.execute(`
-        CREATE INDEX IF NOT EXISTS ${name}_embedding_idx
-        ON ${name} USING ivfflat (embedding vector_cosine_ops)
-        WITH (lists = 100)
-      `);
-    }
+    // Note: HNSW/IVFFlat indexes require additional index implementation
+    // For now, create a simple btree index on id for fast lookups
+    await this.execute(`
+      CREATE INDEX IF NOT EXISTS ${name}_id_idx ON ${name} (id)
+    `);
   }
 
   async insertVector(
