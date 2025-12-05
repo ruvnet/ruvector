@@ -68,6 +68,7 @@
     "self-improve:v3:full": "npx ts-node --project benchmarks/tsconfig.json benchmarks/ruvllm-self-improvement-bench-v3.ts --full",
     "benchmark:real": "npx ts-node --project benchmarks/tsconfig.json benchmarks/real-sona-benchmark.ts",
     "swe-bench:real": "npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-real-sona.ts",
+    "swe-bench:real:v2": "npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-real-sona-v2.ts",
     "verify-checkpoint": "npx ts-node --project benchmarks/tsconfig.json benchmarks/verify-checkpoint.ts"
   },
   "devDependencies": {

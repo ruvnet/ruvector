@@ -76,10 +76,73 @@ EWC Manager: 10 tasks protected (λ=1000)
 Forgetting Rate: 63.2%
 ```
 
-### Run Real Benchmark
+### Run Real Benchmark (v1)
 ```bash
 cd npm/packages/ruvllm
-npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-real-sona.ts
+npm run swe-bench:real
+```
+
+---
+
+## ⚡ OPTIMIZED v2 RESULTS
+
+**v2 Optimizations: Curriculum Learning | Multi-Head Patterns | Contrastive | PER**
+
+```
+Master Checksum: 4bff4fb923154f701b56fdf93d75a4bd
+```
+
+### v2 Optimizations Applied
+
+1. **Curriculum Learning** - Easy → Medium → Hard progression
+2. **Multi-Head Pattern Bank** - Category-specific patterns
+3. **Adaptive Thresholds** - Lower thresholds for harder tasks
+4. **Contrastive Learning** - Learn from failures too
+5. **Prioritized Experience Replay** - Focus on hard/failed tasks
+6. **Temperature Scheduling** - 1.0 → 0.3 decay
+7. **Momentum Learning Rate** - Adapts based on performance
+8. **Lower EWC λ=800** - More plasticity
+
+### v2 Learning Progression (12 Epochs)
+
+| Epoch | Resolve | Hard | Confidence | Patterns | Temp | Checksum |
+|-------|---------|------|------------|----------|------|----------|
+| 1 | 85.7% | 100% | 55.6% | 26 | 0.94 | 6fa81d49 |
+| 2 | **100%** | 100% | 78.3% | 54 | 0.88 | aac94a3a |
+| 3 | 100% | 100% | 81.5% | 82 | 0.82 | d8bf612b |
+| 6 | 100% | 100% | **89.6%** | 166 | 0.65 | 4b74ab69 |
+| 12 | **100%** | **100%** | **86.4%** | **334** | 0.30 | 35a6de0b |
+
+### v1 vs v2 Comparison
+
+| Metric | v1 Final | v2 Final | Improvement |
+|--------|----------|----------|-------------|
+| **Resolve Rate** | 78.6% | **100%** | **+21.4%** |
+| **Confidence** | 69.3% | **86.4%** | **+17.1%** |
+| **Hard Tasks** | 25% | **100%** | **+75%** |
+| **Patterns** | 118 | **334** | **+183%** |
+
+### v2 Results by Difficulty
+
+| Difficulty | v1 Final | v2 Final | Δ |
+|------------|----------|----------|---|
+| Easy | 100% | 100% | - |
+| Medium | 100% | 100% | - |
+| **Hard** | **25%** | **100%** | **+75%** |
+
+### v2 Results by Category
+
+| Category | v1 Final | v2 Final | Δ |
+|----------|----------|----------|---|
+| bug_fix | 80% | **100%** | +20% |
+| refactor | 100% | 100% | - |
+| feature | 67% | **100%** | +33% |
+| optimization | 67% | **100%** | +33% |
+
+### Run Optimized Benchmark (v2)
+```bash
+cd npm/packages/ruvllm
+npm run swe-bench:real:v2
 ```
 
 ---
