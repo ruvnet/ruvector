@@ -72,6 +72,7 @@
     "swe-bench:exotic": "npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-exotic-ed25519.ts",
     "swe-bench:real-ruvllm": "npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-real-ruvllm.ts",
     "swe-bench:small-models": "npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-small-models-optimized.ts",
+    "swe-bench:targeted": "npx ts-node --project benchmarks/tsconfig.json benchmarks/swe-bench-targeted-training.ts",
     "verify-checkpoint": "npx ts-node --project benchmarks/tsconfig.json benchmarks/verify-checkpoint.ts"
   },
   "devDependencies": {
