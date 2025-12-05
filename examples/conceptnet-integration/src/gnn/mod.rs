@@ -31,7 +31,7 @@ pub use layer::{
 };
 pub use reasoning::{
     CommonsenseReasoner, ReasoningQuery, ReasoningResult,
-    InferenceChain, ConfidenceScore,
+    InferenceChain, InferenceStep, ConfidenceScore, QueryType,
 };
 pub use training::{
     GNNTrainer, TrainingConfig, TrainingMetrics,

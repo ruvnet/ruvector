@@ -24,7 +24,7 @@ mod query;
 mod hybrid;
 mod sync;
 
-pub use builder::{ConceptNetGraphBuilder, GraphBuildConfig};
+pub use builder::{ConceptNetGraphBuilder, GraphBuildConfig, GraphBuildError, GraphNode, GraphEdge};
 pub use query::{CommonsenseQuery, QueryResult, ReasoningPath};
 pub use hybrid::{HybridQueryEngine, HybridQueryConfig};
 pub use sync::{GraphSync, SyncConfig, SyncStats};

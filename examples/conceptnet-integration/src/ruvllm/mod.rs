@@ -10,10 +10,11 @@
 //! - Multi-hop question answering
 
 use crate::api::RelationType;
-use crate::gnn::reasoning::{CommonsenseReasoner, ReasoningQuery, ReasoningResult};
-use crate::graph::builder::ConceptNetGraphBuilder;
+use crate::gnn::{CommonsenseReasoner, ReasoningQuery, ReasoningResult};
+use crate::graph::ConceptNetGraphBuilder;
 use crate::numberbatch::Numberbatch;
 use crate::sona::CommonsenseSona;
+#[allow(unused_imports)]
 use std::collections::HashMap;
 
 /// Configuration for RuvLLM commonsense integration
@@ -298,8 +299,8 @@ impl<'a> CommonsenseAugmenter<'a> {
     // Private methods
 
     fn extract_concepts(&self, text: &str) -> Vec<String> {
-        let words: Vec<&str> = text
-            .to_lowercase()
+        let lowercase_text = text.to_lowercase();
+        let words: Vec<&str> = lowercase_text
             .split(|c: char| !c.is_alphanumeric() && c != '_')
             .filter(|w| w.len() > 2)
             .collect();

@@ -220,7 +220,7 @@ impl GraphSync {
 
     /// Get seed concepts for common domains
     fn domain_seeds(domain: &str) -> Vec<String> {
-        match domain.to_lowercase().as_str() {
+        let seeds: Vec<&str> = match domain.to_lowercase().as_str() {
             "science" => vec![
                 "/c/en/science",
                 "/c/en/physics",
@@ -307,13 +307,12 @@ impl GraphSync {
                 "/c/en/mental_health",
                 "/c/en/wellness",
             ],
-            _ => vec![
-                format!("/c/en/{}", domain.replace(' ', "_")),
-            ],
-        }
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect()
+            _ => {
+                // Handle unknown domains by constructing the URI dynamically
+                return vec![format!("/c/en/{}", domain.replace(' ', "_"))];
+            }
+        };
+        seeds.into_iter().map(|s| s.to_string()).collect()
     }
 }
 

@@ -4,7 +4,7 @@
 
 use super::layer::{CommonsenseGNN, GNNConfig};
 use crate::api::RelationType;
-use crate::graph::builder::ConceptNetGraphBuilder;
+use crate::graph::{ConceptNetGraphBuilder, GraphEdge};
 use std::collections::{HashMap, HashSet, VecDeque};
 
 /// A commonsense reasoning query
@@ -706,7 +706,7 @@ impl<'a> CommonsenseReasoner<'a> {
         None
     }
 
-    fn compute_edge_confidence(&self, edge: &crate::graph::builder::GraphEdge) -> f32 {
+    fn compute_edge_confidence(&self, edge: &crate::graph::GraphEdge) -> f32 {
         (edge.confidence as f32).min(1.0)
     }
 

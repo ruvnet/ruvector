@@ -10,7 +10,7 @@
 //! - Export learned patterns for transfer
 
 use crate::api::RelationType;
-use crate::gnn::reasoning::{InferenceChain, ReasoningResult};
+use crate::gnn::{InferenceChain, ReasoningResult};
 use std::collections::{HashMap, VecDeque};
 
 /// Configuration for SONA commonsense learning
@@ -62,7 +62,7 @@ pub struct CommonsensePattern {
 }
 
 /// Type of commonsense pattern
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PatternType {
     /// A → IsA → B → IsA → C (taxonomic chain)
     TaxonomicChain,

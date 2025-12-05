@@ -5,8 +5,9 @@
 use super::layer::{CommonsenseGNN, GNNConfig};
 use super::reasoning::{CommonsenseReasoner, ReasoningQuery, ReasoningResult};
 use crate::api::RelationType;
-use crate::graph::builder::ConceptNetGraphBuilder;
+use crate::graph::ConceptNetGraphBuilder;
 use std::collections::HashMap;
+#[allow(unused_imports)]
 use std::sync::Arc;
 
 /// Inference configuration

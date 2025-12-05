@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "conceptnet-integration"
 version = "0.1.0"
@@ -15,7 +17,7 @@ ruvector-core = { path = "../../crates/ruvector-core" }
 ruvector-graph = { path = "../../crates/ruvector-graph" }
 ruvector-gnn = { path = "../../crates/ruvector-gnn" }
 ruvector-attention = { path = "../../crates/ruvector-attention" }
-sona = { path = "../../crates/sona" }
+ruvector-sona = { path = "../../crates/sona" }
 
 # Async runtime & HTTP
 tokio = { version = "1.40", features = ["full"] }
@@ -41,6 +43,9 @@ memmap2 = "0.9"
 
 # Rate limiting
 governor = "0.7"
+
+# Async utilities
+futures = "0.3"
 
 # Hashing for deduplication
 xxhash-rust = { version = "0.8", features = ["xxh3"] }

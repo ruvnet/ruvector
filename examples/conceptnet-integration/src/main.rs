@@ -3,18 +3,17 @@
 //! Demonstrates all features of the ConceptNet-RuVector integration.
 
 use conceptnet_integration::prelude::*;
+#[allow(unused_imports)]
 use conceptnet_integration::api::ConceptNetClient;
-use conceptnet_integration::graph::builder::{ConceptNetGraphBuilder, GraphBuildConfig};
-use conceptnet_integration::graph::sync::{GraphSync, SyncConfig};
-use conceptnet_integration::gnn::layer::{CommonsenseGNN, GNNConfig};
-use conceptnet_integration::gnn::reasoning::{CommonsenseReasoner, ReasoningQuery, QueryType};
-use conceptnet_integration::gnn::inference::{CommonsenseInference, InferenceConfig};
+use conceptnet_integration::graph::{ConceptNetGraphBuilder, GraphBuildConfig, GraphSync, SyncConfig};
+use conceptnet_integration::gnn::{CommonsenseGNN, GNNConfig, CommonsenseReasoner, ReasoningQuery, QueryType, CommonsenseInference, InferenceConfig};
 use conceptnet_integration::attention::{RelationAttention, CommonsenseAttentionConfig};
-use conceptnet_integration::numberbatch::{Numberbatch, MockNumberbatch};
+use conceptnet_integration::numberbatch::MockNumberbatch;
 use conceptnet_integration::sona::{CommonsenseSona, CommonsenseSonaConfig};
 use conceptnet_integration::ruvllm::{CommonsenseAugmenter, RuvLLMConfig};
+#[allow(unused_imports)]
 use std::sync::Arc;
-use tracing::{info, Level};
+use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
