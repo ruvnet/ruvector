@@ -153,7 +153,7 @@ function extractCandidates(
 
     const add = (file: string, source: string, score: number) => {
         let normalized = file.split('/').pop() || file;
-        normalized = normalized.replace(/^['"`]|['"`]$/g, '');
+        normalized = normalized.replace(/^['"`]|['"`]$/g, '').toLowerCase();  // Normalize to lowercase
         if (!seen.has(normalized) && normalized.endsWith('.py') && normalized !== '.py' && normalized.length > 3) {
             const isPackage = PACKAGE_NAMES.has(normalized.replace('.py', ''));
             seen.add(normalized);
@@ -189,11 +189,22 @@ function extractCandidates(
         add(f, 'traceback-path', 0.90);
     });
 
+    // Common method names to filter out from package-ref
+    const COMMON_METHODS = new Set([
+        'from_file', 'to_file', 'from_dict', 'to_dict', 'from_json', 'to_json',
+        'from_mapping', 'to_mapping', 'from_string', 'to_string',
+        'load', 'save', 'read', 'write', 'open', 'close', 'join', 'split',
+        'get', 'set', 'add', 'remove', 'update', 'delete', 'create', 'destroy',
+        'init', 'setup', 'teardown', 'run', 'start', 'stop', 'execute',
+        'parse', 'format', 'encode', 'decode', 'serialize', 'deserialize',
+        'root_path', 'base_path', 'file_path', 'dir_path',
+    ]);
+
     // Package refs
     (problem.match(/[\w]+\.[\w]+(?:\.[a-z_]+)*/g) || []).forEach(ref => {
         const parts = ref.split('.');
         for (let i = parts.length - 1; i >= 1; i--) {
-            if (!PACKAGE_NAMES.has(parts[i]) && parts[i].length > 2) {
+            if (!PACKAGE_NAMES.has(parts[i]) && parts[i].length > 2 && !COMMON_METHODS.has(parts[i])) {
                 add(parts[i] + '.py', 'package-ref', 0.75);
                 break;
             }
@@ -206,9 +217,42 @@ function extractCandidates(
         if (parts.length > 1) add(parts[parts.length - 1] + '.py', 'import', 0.72);
     });
 
-    // Simple .py
-    (problem.match(/[\w\/]+\.py/g) || []).forEach(f => {
-        if (!f.includes('site-packages') && f.length < 60) add(f, 'regex', 0.60);
+    // V20: Class names to file names (Config -> config.py)
+    // Matches patterns like "flask.Config" or "class Config"
+    const classPatterns = [
+        /(?:class|\.)\s*([A-Z][a-zA-Z]+)(?:\s*\(|\.|\s*:|\s+)/g,  // class Foo or module.Foo
+        /\b([A-Z][a-z]+(?:[A-Z][a-z]+)+)\b/g,  // CamelCase names
+    ];
+    for (const pattern of classPatterns) {
+        const matches = problem.matchAll(pattern);
+        for (const m of matches) {
+            const className = m[1];
+            // Convert to snake_case and add .py
+            const snakeName = className.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+            if (snakeName.length >= 3 && !PACKAGE_NAMES.has(snakeName)) {
+                add(snakeName + '.py', 'class-inferred', 0.55);
+            }
+        }
+    }
+
+    // Module.Class refs (flask.Config -> config.py)
+    (problem.match(/\b([a-z][a-z0-9_]*\.[A-Z][a-zA-Z]+)\b/g) || []).forEach(ref => {
+        const parts = ref.split('.');
+        if (parts.length === 2 && !PACKAGE_NAMES.has(parts[1].toLowerCase())) {
+            const className = parts[1];
+            const fileName = className.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '') + '.py';
+            if (fileName.length >= 5) {  // At least x.py
+                add(fileName, 'module-class', 0.75);
+            }
+        }
+    });
+
+    // Simple .py (filter invalid patterns)
+    (problem.match(/\b([a-z][a-z0-9_\/]*\.py)\b/gi) || []).forEach(f => {
+        // Filter out obviously wrong patterns
+        if (!f.includes('site-packages') && f.length < 60 && !f.startsWith('/') && !f.startsWith('//')) {
+            add(f, 'regex', 0.60);
+        }
     });
 
     // Error locations
