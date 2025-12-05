@@ -1,0 +1,1035 @@
+{
+  "timestamp": "2025-12-05T01:27:36.696Z",
+  "config": {
+    "models": [
+      {
+        "name": "Qwen2.5-Coder-1.5B",
+        "parametersB": 1.5,
+        "contextLength": 32768,
+        "embeddingDim": 1536,
+        "hiddenDim": 8960,
+        "numLayers": 28,
+        "numHeads": 12,
+        "vocabSize": 151936,
+        "quantization": "int4",
+        "provider": "alibaba"
+      },
+      {
+        "name": "DeepSeek-Coder-1.3B",
+        "parametersB": 1.3,
+        "contextLength": 16384,
+        "embeddingDim": 2048,
+        "hiddenDim": 5504,
+        "numLayers": 24,
+        "numHeads": 16,
+        "vocabSize": 32256,
+        "quantization": "int4",
+        "provider": "deepseek"
+      },
+      {
+        "name": "StarCoder2-3B",
+        "parametersB": 3,
+        "contextLength": 16384,
+        "embeddingDim": 2560,
+        "hiddenDim": 10240,
+        "numLayers": 30,
+        "numHeads": 20,
+        "vocabSize": 49152,
+        "quantization": "int8",
+        "provider": "bigcode"
+      },
+      {
+        "name": "Phi-3-mini-4k",
+        "parametersB": 3.8,
+        "contextLength": 4096,
+        "embeddingDim": 3072,
+        "hiddenDim": 8192,
+        "numLayers": 32,
+        "numHeads": 32,
+        "vocabSize": 32064,
+        "quantization": "int4",
+        "provider": "microsoft"
+      },
+      {
+        "name": "Qwen2.5-Coder-7B",
+        "parametersB": 7,
+        "contextLength": 32768,
+        "embeddingDim": 3584,
+        "hiddenDim": 18944,
+        "numLayers": 28,
+        "numHeads": 28,
+        "vocabSize": 151936,
+        "quantization": "int4",
+        "provider": "alibaba"
+      },
+      {
+        "name": "CodeLlama-7B",
+        "parametersB": 7,
+        "contextLength": 16384,
+        "embeddingDim": 4096,
+        "hiddenDim": 11008,
+        "numLayers": 32,
+        "numHeads": 32,
+        "vocabSize": 32016,
+        "quantization": "int4",
+        "provider": "meta"
+      }
+    ],
+    "tasksPerEpoch": 50,
+    "epochs": 5,
+    "saveCheckpoints": true,
+    "outputDir": "./benchmarks/results"
+  },
+  "modelResults": [
+    {
+      "model": {
+        "name": "Qwen2.5-Coder-1.5B",
+        "parametersB": 1.5,
+        "contextLength": 32768,
+        "embeddingDim": 1536,
+        "hiddenDim": 8960,
+        "numLayers": 28,
+        "numHeads": 12,
+        "vocabSize": 151936,
+        "quantization": "int4",
+        "provider": "alibaba"
+      },
+      "epochs": [
+        {
+          "epoch": 1,
+          "resolveRate": 0,
+          "avgConfidence": 0.32526136497555036,
+          "avgLatencyMs": 0.3690863200000149,
+          "metrics": {
+            "epoch": 1,
+            "timestamp": 1764898055487,
+            "trajectoryCount": 50,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.32526136497555036,
+            "avgLatencyMs": 0.3690863200000149,
+            "hnswNodes": 50,
+            "cacheHitRate": 0.9417547583225108,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 724567572.082087
+          }
+        },
+        {
+          "epoch": 2,
+          "resolveRate": 0,
+          "avgConfidence": 0.3373044418641831,
+          "avgLatencyMs": 0.11013196000000335,
+          "metrics": {
+            "epoch": 2,
+            "timestamp": 1764898055515,
+            "trajectoryCount": 100,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3373044418641831,
+            "avgLatencyMs": 0.11013196000000335,
+            "hnswNodes": 100,
+            "cacheHitRate": 0.9275541656286268,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 906820208.9606586
+          }
+        },
+        {
+          "epoch": 3,
+          "resolveRate": 0,
+          "avgConfidence": 0.3392934833605184,
+          "avgLatencyMs": 0.04166848000000755,
+          "metrics": {
+            "epoch": 3,
+            "timestamp": 1764898055534,
+            "trajectoryCount": 150,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3392934833605184,
+            "avgLatencyMs": 0.04166848000000755,
+            "hnswNodes": 150,
+            "cacheHitRate": 0.9413787953674395,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 942541249.526203
+          }
+        },
+        {
+          "epoch": 4,
+          "resolveRate": 0,
+          "avgConfidence": 0.3589563971129403,
+          "avgLatencyMs": 0.03893262000000959,
+          "metrics": {
+            "epoch": 4,
+            "timestamp": 1764898055553,
+            "trajectoryCount": 200,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3589563971129403,
+            "avgLatencyMs": 0.03893262000000959,
+            "hnswNodes": 200,
+            "cacheHitRate": 0.911654402973047,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 940292699.15978
+          }
+        },
+        {
+          "epoch": 5,
+          "resolveRate": 0,
+          "avgConfidence": 0.36355948353003087,
+          "avgLatencyMs": 0.03975713999998789,
+          "metrics": {
+            "epoch": 5,
+            "timestamp": 1764898055572,
+            "trajectoryCount": 250,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.36355948353003087,
+            "avgLatencyMs": 0.03975713999998789,
+            "hnswNodes": 250,
+            "cacheHitRate": 0.918869140169489,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 896125569.5954291
+          }
+        }
+      ],
+      "finalCheckpoint": "benchmarks/results/checkpoints/Qwen2_5_Coder_1_5B_6bcb711de80bf48b.json",
+      "improvementCurve": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "model": {
+        "name": "DeepSeek-Coder-1.3B",
+        "parametersB": 1.3,
+        "contextLength": 16384,
+        "embeddingDim": 2048,
+        "hiddenDim": 5504,
+        "numLayers": 24,
+        "numHeads": 16,
+        "vocabSize": 32256,
+        "quantization": "int4",
+        "provider": "deepseek"
+      },
+      "epochs": [
+        {
+          "epoch": 1,
+          "resolveRate": 0,
+          "avgConfidence": 0.3153846796146214,
+          "avgLatencyMs": 0.05079067999999097,
+          "metrics": {
+            "epoch": 1,
+            "timestamp": 1764898055599,
+            "trajectoryCount": 50,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3153846796146214,
+            "avgLatencyMs": 0.05079067999999097,
+            "hnswNodes": 50,
+            "cacheHitRate": 0.8650238233124138,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 922271847.3726537
+          }
+        },
+        {
+          "epoch": 2,
+          "resolveRate": 0,
+          "avgConfidence": 0.3235581269415382,
+          "avgLatencyMs": 0.0626632600000039,
+          "metrics": {
+            "epoch": 2,
+            "timestamp": 1764898055625,
+            "trajectoryCount": 100,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3235581269415382,
+            "avgLatencyMs": 0.0626632600000039,
+            "hnswNodes": 100,
+            "cacheHitRate": 0.9058618572655232,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 928421301.6294392
+          }
+        },
+        {
+          "epoch": 3,
+          "resolveRate": 0,
+          "avgConfidence": 0.33927921223651536,
+          "avgLatencyMs": 0.10505852000000232,
+          "metrics": {
+            "epoch": 3,
+            "timestamp": 1764898055653,
+            "trajectoryCount": 150,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.33927921223651536,
+            "avgLatencyMs": 0.10505852000000232,
+            "hnswNodes": 150,
+            "cacheHitRate": 0.9182380446352292,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 928548214.866058
+          }
+        },
+        {
+          "epoch": 4,
+          "resolveRate": 0,
+          "avgConfidence": 0.3401777342518468,
+          "avgLatencyMs": 0.056851080000001275,
+          "metrics": {
+            "epoch": 4,
+            "timestamp": 1764898055679,
+            "trajectoryCount": 200,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3401777342518468,
+            "avgLatencyMs": 0.056851080000001275,
+            "hnswNodes": 200,
+            "cacheHitRate": 0.9264595747939303,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 895483244.603388
+          }
+        },
+        {
+          "epoch": 5,
+          "resolveRate": 0,
+          "avgConfidence": 0.3576698292394579,
+          "avgLatencyMs": 0.09448010000000068,
+          "metrics": {
+            "epoch": 5,
+            "timestamp": 1764898055707,
+            "trajectoryCount": 250,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.3576698292394579,
+            "avgLatencyMs": 0.09448010000000068,
+            "hnswNodes": 250,
+            "cacheHitRate": 0.9020903291519502,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 911807389.237224
+          }
+        }
+      ],
+      "finalCheckpoint": "benchmarks/results/checkpoints/DeepSeek_Coder_1_3B_019665fb075f6c63.json",
+      "improvementCurve": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "model": {
+        "name": "StarCoder2-3B",
+        "parametersB": 3,
+        "contextLength": 16384,
+        "embeddingDim": 2560,
+        "hiddenDim": 10240,
+        "numLayers": 30,
+        "numHeads": 20,
+        "vocabSize": 49152,
+        "quantization": "int8",
+        "provider": "bigcode"
+      },
+      "epochs": [
+        {
+          "epoch": 1,
+          "resolveRate": 0,
+          "avgConfidence": 0.40451997198103196,
+          "avgLatencyMs": 0.0951523600000155,
+          "metrics": {
+            "epoch": 1,
+            "timestamp": 1764898055741,
+            "trajectoryCount": 50,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.40451997198103196,
+            "avgLatencyMs": 0.0951523600000155,
+            "hnswNodes": 50,
+            "cacheHitRate": 0.8844020613524143,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 920352513.7074106
+          }
+        },
+        {
+          "epoch": 2,
+          "resolveRate": 0,
+          "avgConfidence": 0.4028795669717671,
+          "avgLatencyMs": 0.06316055999999208,
+          "metrics": {
+            "epoch": 2,
+            "timestamp": 1764898055772,
+            "trajectoryCount": 100,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.4028795669717671,
+            "avgLatencyMs": 0.06316055999999208,
+            "hnswNodes": 100,
+            "cacheHitRate": 0.9095051836863048,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 925969297.2453642
+          }
+        },
+        {
+          "epoch": 3,
+          "resolveRate": 0,
+          "avgConfidence": 0.42564350844808646,
+          "avgLatencyMs": 0.08761534000001575,
+          "metrics": {
+            "epoch": 3,
+            "timestamp": 1764898055805,
+            "trajectoryCount": 150,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.42564350844808646,
+            "avgLatencyMs": 0.08761534000001575,
+            "hnswNodes": 150,
+            "cacheHitRate": 0.8781011786842539,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 917932693.6609415
+          }
+        },
+        {
+          "epoch": 4,
+          "resolveRate": 0,
+          "avgConfidence": 0.4262483591678638,
+          "avgLatencyMs": 0.06522353999998813,
+          "metrics": {
+            "epoch": 4,
+            "timestamp": 1764898055836,
+            "trajectoryCount": 200,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.4262483591678638,
+            "avgLatencyMs": 0.06522353999998813,
+            "hnswNodes": 200,
+            "cacheHitRate": 0.9254000770575771,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 934354071.3584424
+          }
+        },
+        {
+          "epoch": 5,
+          "resolveRate": 0,
+          "avgConfidence": 0.44264740175114375,
+          "avgLatencyMs": 0.0757915400000229,
+          "metrics": {
+            "epoch": 5,
+            "timestamp": 1764898055868,
+            "trajectoryCount": 250,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.44264740175114375,
+            "avgLatencyMs": 0.0757915400000229,
+            "hnswNodes": 250,
+            "cacheHitRate": 0.8962832767543735,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 929894863.0355681
+          }
+        }
+      ],
+      "finalCheckpoint": "benchmarks/results/checkpoints/StarCoder2_3B_9b5c545c92305681.json",
+      "improvementCurve": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "model": {
+        "name": "Phi-3-mini-4k",
+        "parametersB": 3.8,
+        "contextLength": 4096,
+        "embeddingDim": 3072,
+        "hiddenDim": 8192,
+        "numLayers": 32,
+        "numHeads": 32,
+        "vocabSize": 32064,
+        "quantization": "int4",
+        "provider": "microsoft"
+      },
+      "epochs": [
+        {
+          "epoch": 1,
+          "resolveRate": 0,
+          "avgConfidence": 0.437065023206062,
+          "avgLatencyMs": 0.12937995999998747,
+          "metrics": {
+            "epoch": 1,
+            "timestamp": 1764898055911,
+            "trajectoryCount": 50,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.437065023206062,
+            "avgLatencyMs": 0.12937995999998747,
+            "hnswNodes": 50,
+            "cacheHitRate": 0.919845393178006,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 930288024.9855021
+          }
+        },
+        {
+          "epoch": 2,
+          "resolveRate": 0,
+          "avgConfidence": 0.45804876050518933,
+          "avgLatencyMs": 0.1514262000000008,
+          "metrics": {
+            "epoch": 2,
+            "timestamp": 1764898055952,
+            "trajectoryCount": 100,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.45804876050518933,
+            "avgLatencyMs": 0.1514262000000008,
+            "hnswNodes": 100,
+            "cacheHitRate": 0.938517766631438,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 890225205.5327739
+          }
+        },
+        {
+          "epoch": 3,
+          "resolveRate": 0.02,
+          "avgConfidence": 0.45790796438262094,
+          "avgLatencyMs": 0.10151293999997506,
+          "metrics": {
+            "epoch": 3,
+            "timestamp": 1764898055995,
+            "trajectoryCount": 150,
+            "patternsLearned": 0,
+            "loraUpdates": 1,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.02,
+            "avgConfidence": 0.45790796438262094,
+            "avgLatencyMs": 0.10151293999997506,
+            "hnswNodes": 150,
+            "cacheHitRate": 0.9284373013063201,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 918756641.134585
+          }
+        },
+        {
+          "epoch": 4,
+          "resolveRate": 0.02,
+          "avgConfidence": 0.4689889552864618,
+          "avgLatencyMs": 0.1440180199999986,
+          "metrics": {
+            "epoch": 4,
+            "timestamp": 1764898056038,
+            "trajectoryCount": 200,
+            "patternsLearned": 0,
+            "loraUpdates": 2,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.02,
+            "avgConfidence": 0.4689889552864618,
+            "avgLatencyMs": 0.1440180199999986,
+            "hnswNodes": 200,
+            "cacheHitRate": 0.9177273979090133,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 919081816.9206371
+          }
+        },
+        {
+          "epoch": 5,
+          "resolveRate": 0,
+          "avgConfidence": 0.4786022091206483,
+          "avgLatencyMs": 0.13245335999999042,
+          "metrics": {
+            "epoch": 5,
+            "timestamp": 1764898056079,
+            "trajectoryCount": 250,
+            "patternsLearned": 0,
+            "loraUpdates": 2,
+            "ewcTaskCount": 0,
+            "resolveRate": 0,
+            "avgConfidence": 0.4786022091206483,
+            "avgLatencyMs": 0.13245335999999042,
+            "hnswNodes": 250,
+            "cacheHitRate": 0.8937572959303528,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 927458327.624771
+          }
+        }
+      ],
+      "finalCheckpoint": "benchmarks/results/checkpoints/Phi_3_mini_4k_095548decb649181.json",
+      "improvementCurve": [
+        0,
+        0,
+        0.02,
+        0.02,
+        0
+      ]
+    },
+    {
+      "model": {
+        "name": "Qwen2.5-Coder-7B",
+        "parametersB": 7,
+        "contextLength": 32768,
+        "embeddingDim": 3584,
+        "hiddenDim": 18944,
+        "numLayers": 28,
+        "numHeads": 28,
+        "vocabSize": 151936,
+        "quantization": "int4",
+        "provider": "alibaba"
+      },
+      "epochs": [
+        {
+          "epoch": 1,
+          "resolveRate": 0.42,
+          "avgConfidence": 0.6050386463297633,
+          "avgLatencyMs": 0.18469061999998757,
+          "metrics": {
+            "epoch": 1,
+            "timestamp": 1764898056138,
+            "trajectoryCount": 50,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.42,
+            "avgConfidence": 0.6050386463297633,
+            "avgLatencyMs": 0.18469061999998757,
+            "hnswNodes": 50,
+            "cacheHitRate": 0.9279204714322442,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 927130995.9784949
+          }
+        },
+        {
+          "epoch": 2,
+          "resolveRate": 0.36,
+          "avgConfidence": 0.6031073700916636,
+          "avgLatencyMs": 0.1723014799999828,
+          "metrics": {
+            "epoch": 2,
+            "timestamp": 1764898056189,
+            "trajectoryCount": 100,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.36,
+            "avgConfidence": 0.6031073700916636,
+            "avgLatencyMs": 0.1723014799999828,
+            "hnswNodes": 100,
+            "cacheHitRate": 0.8698031990688146,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 939977505.5829561
+          }
+        },
+        {
+          "epoch": 3,
+          "resolveRate": 0.5,
+          "avgConfidence": 0.6283285515918969,
+          "avgLatencyMs": 0.1692216599999847,
+          "metrics": {
+            "epoch": 3,
+            "timestamp": 1764898056241,
+            "trajectoryCount": 150,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.5,
+            "avgConfidence": 0.6283285515918969,
+            "avgLatencyMs": 0.1692216599999847,
+            "hnswNodes": 150,
+            "cacheHitRate": 0.8828454285272812,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 943440405.4835328
+          }
+        },
+        {
+          "epoch": 4,
+          "resolveRate": 0.48,
+          "avgConfidence": 0.6279704752291896,
+          "avgLatencyMs": 0.14032259999999042,
+          "metrics": {
+            "epoch": 4,
+            "timestamp": 1764898056292,
+            "trajectoryCount": 200,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.48,
+            "avgConfidence": 0.6279704752291896,
+            "avgLatencyMs": 0.14032259999999042,
+            "hnswNodes": 200,
+            "cacheHitRate": 0.8917525490992523,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 913570123.1981442
+          }
+        },
+        {
+          "epoch": 5,
+          "resolveRate": 0.5,
+          "avgConfidence": 0.6368953162477288,
+          "avgLatencyMs": 0.13894756000001507,
+          "metrics": {
+            "epoch": 5,
+            "timestamp": 1764898056342,
+            "trajectoryCount": 250,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.5,
+            "avgConfidence": 0.6368953162477288,
+            "avgLatencyMs": 0.13894756000001507,
+            "hnswNodes": 250,
+            "cacheHitRate": 0.8685936635158132,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 891063707.5495102
+          }
+        }
+      ],
+      "finalCheckpoint": "benchmarks/results/checkpoints/Qwen2_5_Coder_7B_097b0b62d3d1f062.json",
+      "improvementCurve": [
+        0.42,
+        0.36,
+        0.5,
+        0.48,
+        0.5
+      ]
+    },
+    {
+      "model": {
+        "name": "CodeLlama-7B",
+        "parametersB": 7,
+        "contextLength": 16384,
+        "embeddingDim": 4096,
+        "hiddenDim": 11008,
+        "numLayers": 32,
+        "numHeads": 32,
+        "vocabSize": 32016,
+        "quantization": "int4",
+        "provider": "meta"
+      },
+      "epochs": [
+        {
+          "epoch": 1,
+          "resolveRate": 0.38,
+          "avgConfidence": 0.6069143226050283,
+          "avgLatencyMs": 0.15547215999997208,
+          "metrics": {
+            "epoch": 1,
+            "timestamp": 1764898056408,
+            "trajectoryCount": 50,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.38,
+            "avgConfidence": 0.6069143226050283,
+            "avgLatencyMs": 0.15547215999997208,
+            "hnswNodes": 50,
+            "cacheHitRate": 0.9260574635972695,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 925015000.441621
+          }
+        },
+        {
+          "epoch": 2,
+          "resolveRate": 0.42,
+          "avgConfidence": 0.6117378818952531,
+          "avgLatencyMs": 0.15006778000001758,
+          "metrics": {
+            "epoch": 2,
+            "timestamp": 1764898056465,
+            "trajectoryCount": 100,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.42,
+            "avgConfidence": 0.6117378818952531,
+            "avgLatencyMs": 0.15006778000001758,
+            "hnswNodes": 100,
+            "cacheHitRate": 0.8839303296825165,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 940791139.6584489
+          }
+        },
+        {
+          "epoch": 3,
+          "resolveRate": 0.4,
+          "avgConfidence": 0.6169648500735548,
+          "avgLatencyMs": 0.1422626599999694,
+          "metrics": {
+            "epoch": 3,
+            "timestamp": 1764898056521,
+            "trajectoryCount": 150,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.4,
+            "avgConfidence": 0.6169648500735548,
+            "avgLatencyMs": 0.1422626599999694,
+            "hnswNodes": 150,
+            "cacheHitRate": 0.8544889514679885,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 906457603.0791241
+          }
+        },
+        {
+          "epoch": 4,
+          "resolveRate": 0.52,
+          "avgConfidence": 0.6363311430907108,
+          "avgLatencyMs": 0.17043180000001484,
+          "metrics": {
+            "epoch": 4,
+            "timestamp": 1764898056580,
+            "trajectoryCount": 200,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.52,
+            "avgConfidence": 0.6363311430907108,
+            "avgLatencyMs": 0.17043180000001484,
+            "hnswNodes": 200,
+            "cacheHitRate": 0.9305978437789948,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 905344707.7871758
+          }
+        },
+        {
+          "epoch": 5,
+          "resolveRate": 0.52,
+          "avgConfidence": 0.6451166937771666,
+          "avgLatencyMs": 0.1690028799999982,
+          "metrics": {
+            "epoch": 5,
+            "timestamp": 1764898056639,
+            "trajectoryCount": 250,
+            "patternsLearned": 0,
+            "loraUpdates": 0,
+            "ewcTaskCount": 0,
+            "resolveRate": 0.52,
+            "avgConfidence": 0.6451166937771666,
+            "avgLatencyMs": 0.1690028799999982,
+            "hnswNodes": 250,
+            "cacheHitRate": 0.9465701007628488,
+            "simdEnabled": true,
+            "simdCapabilities": [
+              "SSE4.1",
+              "AVX2",
+              "FMA"
+            ],
+            "vectorOpsPerSec": 938257115.4810628
+          }
+        }
+      ],
+      "finalCheckpoint": "benchmarks/results/checkpoints/CodeLlama_7B_3a3a62d7f5f1fc50.json",
+      "improvementCurve": [
+        0.38,
+        0.42,
+        0.4,
+        0.52,
+        0.52
+      ]
+    }
+  ],
+  "rankings": {
+    "byResolveRate": [
+      "CodeLlama-7B",
+      "Qwen2.5-Coder-7B",
+      "Qwen2.5-Coder-1.5B",
+      "DeepSeek-Coder-1.3B",
+      "StarCoder2-3B",
+      "Phi-3-mini-4k"
+    ],
+    "byImprovement": [
+      "CodeLlama-7B",
+      "Qwen2.5-Coder-7B",
+      "Qwen2.5-Coder-1.5B",
+      "DeepSeek-Coder-1.3B",
+      "StarCoder2-3B",
+      "Phi-3-mini-4k"
+    ],
+    "byEfficiency": [
+      "CodeLlama-7B",
+      "Qwen2.5-Coder-7B",
+      "Qwen2.5-Coder-1.5B",
+      "DeepSeek-Coder-1.3B",
+      "StarCoder2-3B",
+      "Phi-3-mini-4k"
+    ]
+  }
+}

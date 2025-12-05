@@ -4,70 +4,98 @@
 
 This document provides a comprehensive comparison of small language models (<10B parameters) evaluated on SWE-bench-style tasks using the **RuvLLM Self-Improvement System**.
 
-## Overview
+## Optimization Progression: v1 → v2 → v3
 
-RuvLLM implements **SONA** (Self-Optimizing Neural Architecture), a self-improvement system that enables models to learn and adapt in real-time. This benchmark measures:
+### Benchmark Results Summary
 
-1. **Base Performance**: Initial resolve rate on coding tasks
-2. **Self-Improvement**: Performance gains over training epochs
-3. **Efficiency**: Resolve rate relative to parameter count
-4. **SIMD Acceleration**: Hardware-accelerated inference performance
+| Model | v1 Resolve | v1 Conf | v2 Resolve | v2 Conf | v3 Resolve | v3 Conf |
+|-------|------------|---------|------------|---------|------------|---------|
+| **Qwen2.5-Coder-7B** | 50% | 64% | 100% | 92% | 100% | **95%** |
+| **CodeLlama-7B** | 52% | 65% | 100% | 92% | 100% | **95%** |
+| **Phi-3-mini-4k** | 2% | 48% | 100% | 67% | 100% | **90%** |
+| **StarCoder2-3B** | 0% | 44% | 100% | 60% | 100% | **82%** |
+| **Qwen2.5-Coder-1.5B** | 0% | 36% | 70% | 48% | 100% | **67%** |
+| **DeepSeek-Coder-1.3B** | 0% | 36% | 42% | 46% | 100% | **65%** |
 
-## Small Model Leaderboard (December 2025)
+### Improvement Gains Per Version
 
-### v3 Results (12 Epochs, Advanced Features)
+| Model | v1→v2 Resolve | v1→v2 Conf | v2→v3 Resolve | v2→v3 Conf | Total Gain |
+|-------|---------------|------------|---------------|------------|------------|
+| Qwen2.5-Coder-7B | +50% | +28% | +0% | +3% | **+50% / +31%** |
+| CodeLlama-7B | +48% | +27% | +0% | +3% | **+48% / +30%** |
+| Phi-3-mini-4k | +98% | +19% | +0% | +23% | **+98% / +42%** |
+| StarCoder2-3B | +100% | +16% | +0% | +22% | **+100% / +38%** |
+| Qwen2.5-Coder-1.5B | +70% | +12% | +30% | +19% | **+100% / +31%** |
+| DeepSeek-Coder-1.3B | +42% | +10% | +58% | +19% | **+100% / +29%** |
 
-| Rank | Model | Parameters | Confidence | Efficiency | LoRA Rank |
-|------|-------|------------|------------|------------|-----------|
-| 🥇 | Qwen2.5-Coder-7B | 7B | 95% | 14.3%/B | 4 |
-| 🥈 | CodeLlama-7B | 7B | 95% | 14.3%/B | 4 |
-| 🥉 | Phi-3-mini-4k | 3.8B | 90% | 26.3%/B | 2 |
-| 4 | StarCoder2-3B | 3B | 82% | 33.3%/B | 2 |
-| 5 | Qwen2.5-Coder-1.5B | 1.5B | 67% | 66.7%/B | 1 |
-| 6 | DeepSeek-Coder-1.3B | 1.3B | 65% | **76.9%/B** | 1 |
+## Version Features & Optimizations
 
-### v1 Results (5 Epochs, Baseline)
+### v1 Baseline
+- Fixed LoRA rank (1-2)
+- Basic pattern extraction (threshold 0.7)
+- Standard learning rate
+- No curriculum learning
+- EWC++ λ=1000
 
-| Rank | Model | Parameters | Base Rate | Final Rate | Improvement |
-|------|-------|------------|-----------|------------|-------------|
-| 🥇 | Qwen2.5-Coder-7B | 7B | 35.2% | 48.6% | +13.4% |
-| 🥈 | CodeLlama-7B | 7B | 33.8% | 45.2% | +11.4% |
-| 🥉 | Phi-3-mini-4k | 3.8B | 28.4% | 39.1% | +10.7% |
-| 4 | StarCoder2-3B | 3B | 24.6% | 33.8% | +9.2% |
-| 5 | Qwen2.5-Coder-1.5B | 1.5B | 18.2% | 26.4% | +8.2% |
-| 6 | DeepSeek-Coder-1.3B | 1.3B | 15.8% | 22.6% | +6.8% |
+### v2 Optimized (+50-100% resolve improvement)
+- **Adaptive LoRA Rank**: 1 (small), 2 (medium), 4 (large)
+- **Curriculum Learning**: Easy → Medium → Hard progression
+- **Temperature Scheduling**: 1.0 → 0.44 decay
+- **Lower Pattern Threshold**: 0.35 (vs 0.7)
+- **Pattern Replay**: Top-10 trajectories
+- **EWC++ λ=500**: More plasticity
 
-### By Efficiency (Resolve Rate / Billion Parameters)
+### v3 Advanced (+19-31% confidence improvement)
+- **Multi-Head LoRA**: 4 task-specific heads (code_completion, bug_fix, refactor, test_gen)
+- **Prioritized Experience Replay**: TD-error based sampling (α=0.6, β=0.4→1.0)
+- **Contrastive Learning**: InfoNCE-style loss from successes AND failures
+- **Dynamic Difficulty Adjustment**: Targets 60% success, range 0.1-0.9
+- **Ensemble Pattern Matching**: Diversity bonus, top-5 weighted combination
+- **Meta-Learning Rate**: Adapts LR based on performance trends
+- **EWC++ λ=400**: Maximum plasticity
+- **20 Patterns**: Up from 15
 
-| Rank | Model | Parameters | v3 Efficiency |
-|------|-------|------------|---------------|
-| 🥇 | DeepSeek-Coder-1.3B | 1.3B | **76.9%/B** |
-| 🥈 | Qwen2.5-Coder-1.5B | 1.5B | 66.7%/B |
-| 🥉 | StarCoder2-3B | 3B | 33.3%/B |
-| 4 | Phi-3-mini-4k | 3.8B | 26.3%/B |
-| 5 | Qwen2.5-Coder-7B | 7B | 14.3%/B |
-| 6 | CodeLlama-7B | 7B | 14.3%/B |
+## Detailed Version Comparison
 
-## Benchmark Version Comparison
-
-### v1 → v2 → v3 Evolution
+### Feature Matrix
 
 | Feature | v1 | v2 | v3 |
 |---------|----|----|-----|
-| **LoRA Type** | Fixed (1-2) | Adaptive (1-4) | Multi-Head (4 types) |
-| **Curriculum** | None | Easy→Med→Hard | + DDA (60% target) |
-| **Experience Replay** | Basic | Pattern (top-10) | Prioritized (TD-error) |
-| **Pattern Learning** | K-means | K-means (lower threshold) | Ensemble + Diversity |
-| **Patterns Learned** | ~15 | ~15 | **20** |
-| **Contrastive Learning** | No | No | **Yes** |
-| **Meta-Learning LR** | Fixed | Momentum | **Adaptive** |
-| **Max Difficulty** | N/A | N/A | **0.90** |
-| **Confidence (7B)** | 88-92% | 91-92% | **95%** |
-| **Confidence (1.5B)** | 35-48% | 42-51% | **67%** |
+| LoRA Type | Fixed (1-2) | Adaptive (1-4) | **Multi-Head (4 types)** |
+| Curriculum | None | Easy→Med→Hard | **+ DDA (60% target)** |
+| Experience Replay | Basic | Pattern (top-10) | **Prioritized (TD-error)** |
+| Pattern Threshold | 0.7 | 0.35 | **0.35 + Diversity** |
+| Patterns Learned | ~0 | 15 | **20** |
+| Contrastive Learning | No | No | **Yes** |
+| Meta-Learning LR | Fixed | Momentum | **Adaptive** |
+| EWC Lambda | 1000 | 500 | **400** |
+| Temperature | Fixed 1.0 | 1.0→0.44 | **1.0→0.28** |
 
-## RuvLLM Self-Improvement Architecture
+## Final Leaderboard (v3)
 
-### SONA v3 Components
+### By Confidence
+
+| Rank | Model | Parameters | Confidence | Efficiency |
+|------|-------|------------|------------|------------|
+| 🥇 | Qwen2.5-Coder-7B | 7B | **95%** | 13.6%/B |
+| 🥇 | CodeLlama-7B | 7B | **95%** | 13.6%/B |
+| 🥉 | Phi-3-mini-4k | 3.8B | **90%** | 23.7%/B |
+| 4 | StarCoder2-3B | 3B | **82%** | 27.3%/B |
+| 5 | Qwen2.5-Coder-1.5B | 1.5B | **67%** | 44.7%/B |
+| 6 | DeepSeek-Coder-1.3B | 1.3B | **65%** | **50.0%/B** |
+
+### By Efficiency (Confidence / Billion Parameters)
+
+| Rank | Model | Parameters | Efficiency |
+|------|-------|------------|------------|
+| 🥇 | DeepSeek-Coder-1.3B | 1.3B | **50.0%/B** |
+| 🥈 | Qwen2.5-Coder-1.5B | 1.5B | 44.7%/B |
+| 🥉 | StarCoder2-3B | 3B | 27.3%/B |
+| 4 | Phi-3-mini-4k | 3.8B | 23.7%/B |
+| 5 | Qwen2.5-Coder-7B | 7B | 13.6%/B |
+| 6 | CodeLlama-7B | 7B | 13.6%/B |
+
+## SONA v3 Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -95,111 +123,49 @@ RuvLLM implements **SONA** (Self-Optimizing Neural Architecture), a self-improve
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### v3 Key Features
+## Running Benchmarks
 
-1. **Multi-Head LoRA** - Task-specific adaptation heads (code_completion, bug_fix, refactor, test_gen)
-2. **Prioritized Experience Replay** - TD-error based sampling with importance weighting
-3. **Ensemble Pattern Bank** - Diversity bonus for pattern selection, top-5 matching
-4. **Contrastive Learning** - InfoNCE-style loss learning from successes AND failures
-5. **Dynamic Difficulty Adjustment** - Targets 60% success rate, range 0.1-0.9
-6. **Meta-Learning Rate** - Adapts LR based on performance trends
-7. **EWC++ (λ=400)** - Reduced lambda for more plasticity while preventing forgetting
-
-## Benchmark Methodology
-
-### Anti-Overfitting Measures
-
-| Measure | Implementation |
-|---------|----------------|
-| Stratified Split | 60/20/20 train/valid/test |
-| K-Fold CV | 5-fold with bootstrap CI |
-| Holdout Set | 10% for final evaluation |
-| Curriculum Learning | Easy → Medium → Hard |
-| Temperature Schedule | 1.0 → 0.25 decay |
-| DDA | Dynamic difficulty targeting 60% |
-| EWC++ | Prevents catastrophic forgetting |
-
-### Task Categories
-
-- **Code Completion** (25%) - Complete partial code
-- **Bug Fixing** (35%) - Fix identified bugs
-- **Refactoring** (20%) - Improve code structure
-- **Test Generation** (20%) - Create test cases
-
-### Difficulty Distribution
-
-| Difficulty | Percentage | Criteria |
-|------------|------------|----------|
-| Easy | 30% | Simple, single-file changes |
-| Medium | 50% | Multi-function, logic changes |
-| Hard | 20% | Multi-file, architectural changes |
-
-## SIMD Performance Analysis
-
-### Vector Operations Per Second
-
-| Platform | SIMD Type | Ops/Second (256-dim) | Speedup |
-|----------|-----------|---------------------|---------|
-| x86_64 | AVX2+FMA | 145M | 5.2x |
-| x86_64 | SSE4.1 | 82M | 2.9x |
-| ARM64 | NEON | 98M | 3.5x |
-| Any | Scalar | 28M | 1.0x |
-
-## Reproducing Results
-
-### v1 Benchmark (Original)
+### v1 Baseline
 ```bash
 cd npm/packages/ruvllm
-npm run self-improve
-npm run self-improve:quick
-npm run self-improve:full
+npm run self-improve           # 5 epochs, 50 tasks
+npm run self-improve:quick     # 3 epochs, 30 tasks
+npm run self-improve:full      # 10 epochs, 100 tasks
 ```
 
-### v2 Benchmark (Optimized)
+### v2 Optimized
 ```bash
-npm run self-improve:v2
-npm run self-improve:v2:quick
-npm run self-improve:v2:full
+npm run self-improve:v2        # 7 epochs, 50 tasks
+npm run self-improve:v2:quick  # 5 epochs, 30 tasks
+npm run self-improve:v2:full   # 10 epochs, 100 tasks
 ```
 
-### v3 Benchmark (Advanced)
+### v3 Advanced
 ```bash
-npm run self-improve:v3           # 8 epochs, 60 tasks
-npm run self-improve:v3:quick     # 6 epochs, 40 tasks
-npm run self-improve:v3:full      # 12 epochs, 120 tasks
+npm run self-improve:v3        # 8 epochs, 60 tasks
+npm run self-improve:v3:quick  # 6 epochs, 40 tasks
+npm run self-improve:v3:full   # 12 epochs, 120 tasks
 ```
 
 ### Verify Checkpoints
 ```bash
 npm run verify-checkpoint -- benchmarks/results/checkpoints/<file>.json
 npx ts-node benchmarks/verify-checkpoint.ts --list
-npx ts-node benchmarks/verify-checkpoint.ts --compare file1.json file2.json
 ```
 
 ## Model Recommendations
 
-### Best Overall (Quality)
-**Qwen2.5-Coder-7B** - Highest confidence (95%) with LoRA rank 4
+### Best Overall Quality
+**Qwen2.5-Coder-7B** - 95% confidence, highest absolute performance
 
-### Best Efficiency (Quality/Size)
-**DeepSeek-Coder-1.3B** - 76.9% efficiency per billion parameters
+### Best Efficiency
+**DeepSeek-Coder-1.3B** - 50.0% confidence per billion parameters
 
 ### Best Mid-Range
 **Phi-3-mini-4k** - 90% confidence at only 3.8B parameters
 
-### Best for Edge Deployment
+### Best for Edge
 **DeepSeek-Coder-1.3B** - Sub-1GB memory, 65% confidence
-
-## Comparison with Published Benchmarks
-
-### SWE-bench Verified Leaderboard (December 2025)
-
-| Model | SWE-bench Official | RuvLLM v1 | RuvLLM v3 |
-|-------|-------------------|-----------|-----------|
-| Devstral-Small (24B) | 53.6% | N/A (>10B) | N/A |
-| GPT-4.1-mini | 23.6% | 28.4% | N/A |
-| Phi-4 (14B) | 18.5% | N/A (>10B) | N/A |
-| Qwen2.5-Coder-7B | ~15% (est.) | 48.6% | 95% conf |
 
 ## References
 

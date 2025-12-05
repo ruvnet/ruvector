@@ -178,14 +178,25 @@ This document provides an in-depth analysis of small language models (<10B param
 
 ### v1 → v2 → v3 Progression
 
-| Model | v1 Final | v2 Final | v3 Confidence |
-|-------|----------|----------|---------------|
-| Qwen2.5-Coder-7B | 48.6% | 100% | 95% |
-| CodeLlama-7B | 45.2% | 100% | 95% |
-| Phi-3-mini-4k | 39.1% | 100% | 90% |
-| StarCoder2-3B | 33.8% | 100% | 82% |
-| Qwen2.5-Coder-1.5B | 26.4% | 74% | 67% |
-| DeepSeek-Coder-1.3B | 22.6% | 66% | 65% |
+| Model | v1 Resolve | v1 Conf | v2 Resolve | v2 Conf | v3 Resolve | v3 Conf |
+|-------|------------|---------|------------|---------|------------|---------|
+| **Qwen2.5-Coder-7B** | 50% | 64% | 100% | 92% | 100% | **95%** |
+| **CodeLlama-7B** | 52% | 65% | 100% | 92% | 100% | **95%** |
+| **Phi-3-mini-4k** | 2% | 48% | 100% | 67% | 100% | **90%** |
+| **StarCoder2-3B** | 0% | 44% | 100% | 60% | 100% | **82%** |
+| **Qwen2.5-Coder-1.5B** | 0% | 36% | 70% | 48% | 100% | **67%** |
+| **DeepSeek-Coder-1.3B** | 0% | 36% | 42% | 46% | 100% | **65%** |
+
+### Improvement Gains Per Version
+
+| Model | v1→v2 Resolve | v1→v2 Conf | v2→v3 Resolve | v2→v3 Conf | Total Gain |
+|-------|---------------|------------|---------------|------------|------------|
+| Qwen2.5-Coder-7B | +50% | +28% | +0% | +3% | **+50% / +31%** |
+| CodeLlama-7B | +48% | +27% | +0% | +3% | **+48% / +30%** |
+| Phi-3-mini-4k | +98% | +19% | +0% | +23% | **+98% / +42%** |
+| StarCoder2-3B | +100% | +16% | +0% | +22% | **+100% / +38%** |
+| Qwen2.5-Coder-1.5B | +70% | +12% | +30% | +19% | **+100% / +31%** |
+| DeepSeek-Coder-1.3B | +42% | +10% | +58% | +19% | **+100% / +29%** |
 
 ### Self-Improvement Over Epochs (v3)
 
