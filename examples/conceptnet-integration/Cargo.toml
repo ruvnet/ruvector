@@ -89,6 +89,14 @@ path = "src/bin/load_real_conceptnet.rs"
 name = "conceptnet-optimized"
 path = "src/bin/conceptnet_optimized.rs"
 
+[[bin]]
+name = "ruvector-conceptnet"
+path = "src/bin/ruvector_conceptnet.rs"
+
+[[bin]]
+name = "ruvector-deep"
+path = "src/bin/ruvector_deep.rs"
+
 [[bench]]
 name = "conceptnet_benchmarks"
 harness = false
