@@ -54,9 +54,13 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "benchmark": "node test/benchmark.js",
-    "swe-bench": "npx ts-node benchmarks/run-swe-bench.ts",
-    "swe-bench:quick": "npx ts-node benchmarks/run-swe-bench.ts --quick",
-    "swe-bench:full": "npx ts-node benchmarks/run-swe-bench.ts --tasks 200 --folds 10"
+    "swe-bench": "npx ts-node --project benchmarks/tsconfig.json benchmarks/run-swe-bench.ts",
+    "swe-bench:quick": "npx ts-node --project benchmarks/tsconfig.json benchmarks/run-swe-bench.ts --quick",
+    "swe-bench:full": "npx ts-node --project benchmarks/tsconfig.json benchmarks/run-swe-bench.ts --tasks 200 --folds 10",
+    "self-improve": "npx ts-node --project benchmarks/tsconfig.json benchmarks/ruvllm-self-improvement-bench.ts",
+    "self-improve:quick": "npx ts-node --project benchmarks/tsconfig.json benchmarks/ruvllm-self-improvement-bench.ts --quick",
+    "self-improve:full": "npx ts-node --project benchmarks/tsconfig.json benchmarks/ruvllm-self-improvement-bench.ts --full",
+    "verify-checkpoint": "npx ts-node --project benchmarks/tsconfig.json benchmarks/verify-checkpoint.ts"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0",
