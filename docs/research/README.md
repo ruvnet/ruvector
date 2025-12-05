@@ -1,3 +1,33 @@
+# RuVector Research Documentation
+## Comprehensive Analysis for AI/ML Architectures, Algorithms, and Benchmarks
+
+**Last Updated:** 2024-12-05
+**Status:** ✅ Active Research
+
+---
+
+## 📁 New Research (2024-12-05)
+
+### Architecture & Algorithm Analysis
+
+| Document | Description |
+|----------|-------------|
+| [Small Model Architectures](./architectures/small-models.md) | FastGRNN, MicroLoRA, SNN, Attention, MoE |
+| [Vector & Graph Algorithms](./algorithms/vector-graph-algorithms.md) | HNSW, Neuromorphic Search, EWC, GNN |
+| [Anti-Forgetting Methods](./training-methods/anti-forgetting.md) | EWC, Replay, Curriculum, Temperature |
+| [SWE-bench Comparison](./benchmarks/swe-bench-comparison.md) | V1 vs V2 results, +75% hard task improvement |
+
+### Key Findings Summary
+
+| Technique | Hard Task Impact | Forgetting Reduction |
+|-----------|------------------|---------------------|
+| EWC (λ=1000) | +10% | -50% |
+| Curriculum Learning | +35% | -30% |
+| Multi-Head Patterns | +20% | -40% |
+| All Combined (SONA v2) | **+75%** | **-87%** |
+
+---
+
 # DSPy.ts Research Summary
 ## Comprehensive Analysis for Claude-Flow Integration
 
