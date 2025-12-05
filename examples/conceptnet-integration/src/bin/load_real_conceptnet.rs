@@ -226,7 +226,7 @@ fn build_graph_from_embeddings(nb: &Numberbatch) -> anyhow::Result<ConceptNetGra
             !c.starts_with('#') && !c.starts_with('_') && c.chars().next().map(|ch| ch.is_alphabetic()).unwrap_or(false)
         })
         .cloned()
-        .take(10000)
+        .take(1000) // Reduced for faster demo; use 10000+ for production
         .collect();
 
     println!("  Building graph from {} filtered concepts...", concepts.len());
