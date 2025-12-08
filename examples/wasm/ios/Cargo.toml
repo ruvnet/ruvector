@@ -62,3 +62,11 @@ debug = true
 [profile.bench]
 inherits = "release"
 debug = false
+
+# ============================================
+# Benchmarks
+# ============================================
+
+[[bin]]
+name = "benchmark"
+path = "benches/performance.rs"

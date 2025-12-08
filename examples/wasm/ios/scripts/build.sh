@@ -78,35 +78,25 @@ optimize_wasm() {
     if [ "$WASM_OPT_AVAILABLE" = true ]; then
         echo "Running wasm-opt with aggressive size optimization (-Oz)..."
 
-        # Stage 1: Basic optimization
+        # Single-pass maximum optimization
+        # Enable all required WASM features for wasip1 target
         wasm-opt -Oz \
             --enable-bulk-memory \
             --enable-mutable-globals \
+            --enable-nontrapping-float-to-int \
+            --enable-sign-ext \
             --strip-debug \
             --strip-dwarf \
             --strip-producers \
-            --vacuum \
-            -o "$OUTPUT_DIR/recommendation.stage1.wasm" \
-            "$WASM_INPUT"
-
-        # Stage 2: Additional size reduction passes
-        wasm-opt -Oz \
-            --enable-bulk-memory \
-            --enable-mutable-globals \
             --coalesce-locals \
             --reorder-locals \
             --reorder-functions \
-            --merge-locals \
             --remove-unused-names \
-            --remove-unused-module-elements \
             --simplify-locals \
             --vacuum \
             --dce \
             -o "$WASM_OUTPUT" \
-            "$OUTPUT_DIR/recommendation.stage1.wasm"
-
-        # Cleanup intermediate
-        rm -f "$OUTPUT_DIR/recommendation.stage1.wasm"
+            "$WASM_INPUT"
 
         echo -e "${GREEN}✓ wasm-opt optimization completed${NC}"
     else
