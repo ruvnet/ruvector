@@ -70,3 +70,7 @@ debug = false
 [[bin]]
 name = "benchmark"
 path = "benches/performance.rs"
+
+[[bin]]
+name = "ios_simulation"
+path = "benches/ios_simulation.rs"
