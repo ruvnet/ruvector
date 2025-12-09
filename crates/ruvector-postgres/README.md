@@ -7,7 +7,7 @@
 [![Docker](https://img.shields.io/badge/Docker-available-blue.svg)](https://hub.docker.com/r/ruvnet/ruvector-postgres)
 [![npm](https://img.shields.io/npm/v/@ruvector/core.svg)](https://www.npmjs.com/package/@ruvector/core)
 
-**The most advanced PostgreSQL vector database extension.** A drop-in pgvector replacement with 59+ SQL functions, SIMD acceleration, local embedding generation, 39 attention mechanisms, GNN layers, hyperbolic embeddings, and self-learning capabilities.
+**The most advanced PostgreSQL vector database extension.** A drop-in pgvector replacement with 77+ SQL functions, SIMD acceleration, 39 attention mechanisms, GNN layers, hyperbolic embeddings, SPARQL/RDF support, and self-learning capabilities.
 
 ## Why RuVector?
 
@@ -23,6 +23,7 @@
 | **Self-Learning** | - | **ReasoningBank** |
 | **Agent Routing** | - | **Tiny Dancer** |
 | **Graph/Cypher** | - | **Full support** |
+| **SPARQL/RDF** | - | **W3C SPARQL 1.1** |
 | AVX-512/NEON SIMD | Partial | **Full** |
 | Quantization | No | **Scalar, Product, Binary** |
 
@@ -102,7 +103,7 @@ ORDER BY distance
 LIMIT 10;
 ```
 
-## 53+ SQL Functions
+## 67+ SQL Functions
 
 RuVector exposes all advanced AI capabilities as native PostgreSQL functions.
 
@@ -360,6 +361,72 @@ SELECT ruvector_graph_traverse(start_node, direction, max_depth);
 -- Similarity search on graph
 SELECT ruvector_graph_similarity_search(query_embedding, node_type, top_k);
 ```
+
+### SPARQL & RDF (14 functions)
+
+W3C-standard SPARQL 1.1 query language for RDF data.
+
+```sql
+-- Create RDF triple store
+SELECT ruvector_create_rdf_store('knowledge_graph');
+
+-- Insert triples
+SELECT ruvector_insert_triple(
+    'knowledge_graph',
+    '<http://example.org/person/1>',
+    '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>',
+    '<http://example.org/Person>'
+);
+
+-- Bulk load N-Triples
+SELECT ruvector_load_ntriples('knowledge_graph', '
+    <http://example.org/person/1> <http://xmlns.com/foaf/0.1/name> "Alice" .
+    <http://example.org/person/1> <http://xmlns.com/foaf/0.1/knows> <http://example.org/person/2> .
+');
+
+-- SPARQL SELECT query
+SELECT ruvector_sparql('knowledge_graph', '
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    SELECT ?person ?name
+    WHERE {
+        ?person a <http://example.org/Person> .
+        ?person foaf:name ?name .
+    }
+', 'json');
+
+-- SPARQL ASK query
+SELECT ruvector_sparql('knowledge_graph',
+    'ASK { <http://example.org/person/1> ?p ?o }',
+    'json'
+);
+
+-- Get store statistics
+SELECT ruvector_rdf_stats('knowledge_graph');
+
+-- Query triples by pattern (NULL = wildcard)
+SELECT ruvector_query_triples('knowledge_graph',
+    NULL, -- any subject
+    '<http://xmlns.com/foaf/0.1/name>', -- predicate
+    NULL  -- any object
+);
+
+-- SPARQL UPDATE operations
+SELECT ruvector_sparql_update('knowledge_graph', '
+    INSERT DATA {
+        <http://example.org/person/3> <http://xmlns.com/foaf/0.1/name> "Charlie" .
+    }
+');
+```
+
+**SPARQL Features:**
+- SELECT, CONSTRUCT, ASK, DESCRIBE query forms
+- Property paths (sequence `/`, alternative `|`, inverse `^`, transitive `*`, `+`)
+- FILTER expressions with 50+ built-in functions
+- Aggregates (COUNT, SUM, AVG, MIN, MAX, GROUP_CONCAT)
+- OPTIONAL, UNION, MINUS graph patterns
+- Named graphs support
+- Result formats: JSON, XML, CSV, TSV
+- **~198K triples/sec** insertion, **~5.5M queries/sec** lookups
 
 ## Vector Types
 
