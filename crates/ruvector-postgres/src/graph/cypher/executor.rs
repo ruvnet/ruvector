@@ -1,7 +1,7 @@
 // Cypher query executor
 
 use super::ast::*;
-use crate::graph::storage::{GraphStore, Node, Edge};
+use crate::graph::storage::GraphStore;
 use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 

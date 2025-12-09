@@ -17,6 +17,7 @@ use super::{Attention, softmax_inplace};
 #[derive(Debug, Clone)]
 pub struct FlashAttention {
     /// Block size for query dimension tiling
+    #[allow(dead_code)]
     block_size_q: usize,
 
     /// Block size for key/value dimension tiling

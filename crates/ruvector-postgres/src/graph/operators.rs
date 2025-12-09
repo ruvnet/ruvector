@@ -10,7 +10,7 @@ use super::cypher::query as cypher_query;
 use super::traversal::{bfs, shortest_path_dijkstra};
 use super::sparql::{
     get_or_create_store, get_store, delete_store, list_stores,
-    parse_sparql, execute_sparql, TripleStore, Triple,
+    parse_sparql, execute_sparql, Triple,
     results::{format_results, ResultFormat},
 };
 
@@ -535,7 +535,7 @@ fn ruvector_query_triples(
     predicate: Option<&str>,
     object: Option<&str>,
 ) -> Result<JsonB, String> {
-    use super::sparql::ast::{Iri, RdfTerm};
+    use super::sparql::ast::Iri;
 
     let store = get_store(store_name)
         .ok_or_else(|| format!("Triple store '{}' does not exist", store_name))?;
@@ -636,7 +636,7 @@ fn ruvector_sparql_update(
 // Helper functions for SPARQL operators
 
 fn parse_term(s: &str) -> super::sparql::ast::RdfTerm {
-    use super::sparql::ast::{Iri, Literal, RdfTerm};
+    use super::sparql::ast::{Iri, RdfTerm};
 
     let s = s.trim();
 

@@ -52,7 +52,7 @@ COPY crates/ruvector-postgres/benches ./benches/
 # Build the extension with the specified PG version feature
 RUN cargo pgrx package \
     --pg-config /usr/lib/postgresql/${PG_VERSION}/bin/pg_config \
-    --features pg${PG_VERSION}
+    --features pg${PG_VERSION},graph-complete
 
 # pgrx generates .control and .so but not SQL - copy our hand-written SQL file
 RUN cp sql/ruvector--0.1.0.sql target/release/ruvector-pg${PG_VERSION}/usr/share/postgresql/${PG_VERSION}/extension/

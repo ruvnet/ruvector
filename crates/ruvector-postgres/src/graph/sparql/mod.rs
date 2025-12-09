@@ -13,6 +13,11 @@
 // - Vector similarity extensions for hybrid semantic search
 // - Standard result formats (JSON, XML, CSV, TSV)
 
+// Allow warnings for incomplete SPARQL features
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
 pub mod ast;
 pub mod parser;
 pub mod executor;

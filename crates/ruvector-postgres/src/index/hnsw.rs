@@ -94,6 +94,7 @@ struct HnswNode {
     /// Neighbors at each layer
     neighbors: Vec<RwLock<Vec<NodeId>>>,
     /// Maximum layer this node is present in
+    #[allow(dead_code)]
     max_layer: usize,
 }
 

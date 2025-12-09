@@ -182,7 +182,7 @@ fn parse_relationship_pattern(content: &str) -> Result<(RelationshipPattern, &st
     let mut pattern = RelationshipPattern::new(direction);
 
     // Find relationship end
-    let end_markers = if direction == Direction::Incoming {
+    let _end_markers = if direction == Direction::Incoming {
         vec!["-", "-("]
     } else {
         vec!["->", "-"]

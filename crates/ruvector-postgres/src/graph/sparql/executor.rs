@@ -7,13 +7,16 @@ use super::triple_store::{Triple, TripleStore};
 use super::functions::evaluate_function;
 use super::{SparqlError, SparqlResult};
 use std::collections::HashMap;
-use std::sync::Arc;
+use once_cell::sync::Lazy;
 
 /// Solution binding - maps variables to RDF terms
 pub type Binding = HashMap<String, RdfTerm>;
 
 /// Solution sequence - list of bindings
 pub type Solutions = Vec<Binding>;
+
+/// Static empty HashMap for default prefixes
+static EMPTY_PREFIXES: Lazy<HashMap<String, Iri>> = Lazy::new(HashMap::new);
 
 /// Execution context for SPARQL queries
 pub struct SparqlContext<'a> {
@@ -22,6 +25,7 @@ pub struct SparqlContext<'a> {
     pub named_graphs: Vec<&'a str>,
     pub base: Option<&'a Iri>,
     pub prefixes: &'a HashMap<String, Iri>,
+    #[allow(dead_code)]
     blank_node_counter: u64,
 }
 
@@ -32,7 +36,7 @@ impl<'a> SparqlContext<'a> {
             default_graph: None,
             named_graphs: Vec::new(),
             base: None,
-            prefixes: &HashMap::new(),
+            prefixes: &EMPTY_PREFIXES,
             blank_node_counter: 0,
         }
     }
@@ -47,6 +51,7 @@ impl<'a> SparqlContext<'a> {
         self
     }
 
+    #[allow(dead_code)]
     fn new_blank_node(&mut self) -> String {
         self.blank_node_counter += 1;
         format!("b{}", self.blank_node_counter)

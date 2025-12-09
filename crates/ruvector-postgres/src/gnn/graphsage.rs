@@ -3,7 +3,7 @@
 //! Based on "Inductive Representation Learning on Large Graphs"
 //! by Hamilton et al. (2017)
 
-use super::aggregators::{mean_aggregate, AggregationMethod};
+use super::aggregators::mean_aggregate;
 use super::message_passing::MessagePassing;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;

@@ -3,7 +3,6 @@
 //! Stores vectors with 8 bits per dimension (4x compression).
 //! Uses int8 SIMD operations for fast approximate distance computation.
 
-use pgrx::prelude::*;
 use pgrx::pgrx_sql_entity_graph::metadata::{
     ArgumentError, Returns, ReturnsError, SqlMapping, SqlTranslatable,
 };

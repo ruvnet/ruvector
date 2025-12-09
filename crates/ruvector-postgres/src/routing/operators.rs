@@ -7,7 +7,7 @@ use pgrx::JsonB;
 use serde_json::json;
 use std::sync::OnceLock;
 
-use super::agents::{Agent, AgentRegistry, AgentType, CostModel, PerformanceMetrics};
+use super::agents::{Agent, AgentRegistry, AgentType};
 use super::router::{OptimizationTarget, Router, RoutingConstraints};
 
 // Global agent registry and router
@@ -17,7 +17,7 @@ static ROUTER: OnceLock<Router> = OnceLock::new();
 /// Initialize the global registry and router
 fn init_router() -> &'static Router {
     ROUTER.get_or_init(|| {
-        let registry = AGENT_REGISTRY.get_or_init(AgentRegistry::new);
+        let _registry = AGENT_REGISTRY.get_or_init(AgentRegistry::new);
         Router::with_registry(std::sync::Arc::new(AgentRegistry::new()))
     })
 }

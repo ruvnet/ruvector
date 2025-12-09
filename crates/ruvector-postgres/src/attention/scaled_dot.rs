@@ -19,6 +19,7 @@ pub struct ScaledDotAttention {
     scale: f32,
 
     /// Optional dropout rate (not used in inference)
+    #[allow(dead_code)]
     dropout: Option<f32>,
 
     /// Whether to use SIMD acceleration

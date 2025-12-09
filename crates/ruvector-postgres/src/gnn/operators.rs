@@ -2,7 +2,7 @@
 
 use super::aggregators::{aggregate, AggregationMethod};
 use super::gcn::GCNLayer;
-use super::graphsage::{GraphSAGELayer, SAGEAggregator};
+use super::graphsage::GraphSAGELayer;
 use pgrx::prelude::*;
 use pgrx::JsonB;
 

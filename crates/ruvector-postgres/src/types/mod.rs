@@ -28,7 +28,6 @@ pub use productvec::ProductVec;
 
 use pgrx::prelude::*;
 use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
-use std::ptr::NonNull;
 
 /// Global vector cache memory tracking
 static VECTOR_CACHE_BYTES: AtomicUsize = AtomicUsize::new(0);

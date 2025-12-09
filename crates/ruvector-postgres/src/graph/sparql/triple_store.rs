@@ -3,8 +3,7 @@
 // Provides persistent storage for RDF triples with multiple indexes
 // for efficient query patterns (SPO, POS, OSP).
 
-use super::ast::{Iri, Literal, RdfTerm};
-use super::SparqlError;
+use super::ast::{Iri, RdfTerm};
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;

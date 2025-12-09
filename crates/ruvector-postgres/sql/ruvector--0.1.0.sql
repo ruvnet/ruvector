@@ -660,6 +660,82 @@ AS 'MODULE_PATHNAME', 'ruvector_delete_graph_wrapper'
 LANGUAGE C VOLATILE PARALLEL SAFE;
 
 -- ============================================================================
+-- SPARQL / RDF Triple Store Operations (W3C SPARQL 1.1)
+-- ============================================================================
+
+-- Create a new RDF triple store
+CREATE OR REPLACE FUNCTION ruvector_create_rdf_store(name text)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'ruvector_create_rdf_store_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Execute SPARQL query with format selection
+CREATE OR REPLACE FUNCTION ruvector_sparql(store_name text, query text, format text)
+RETURNS text
+AS 'MODULE_PATHNAME', 'ruvector_sparql_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Execute SPARQL query and return JSONB
+CREATE OR REPLACE FUNCTION ruvector_sparql_json(store_name text, query text)
+RETURNS jsonb
+AS 'MODULE_PATHNAME', 'ruvector_sparql_json_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Insert RDF triple
+CREATE OR REPLACE FUNCTION ruvector_insert_triple(store_name text, subject text, predicate text, object text)
+RETURNS bigint
+AS 'MODULE_PATHNAME', 'ruvector_insert_triple_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Insert RDF triple into named graph
+CREATE OR REPLACE FUNCTION ruvector_insert_triple_graph(store_name text, subject text, predicate text, object text, graph text)
+RETURNS bigint
+AS 'MODULE_PATHNAME', 'ruvector_insert_triple_graph_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Bulk load N-Triples format
+CREATE OR REPLACE FUNCTION ruvector_load_ntriples(store_name text, ntriples text)
+RETURNS bigint
+AS 'MODULE_PATHNAME', 'ruvector_load_ntriples_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Get RDF store statistics
+CREATE OR REPLACE FUNCTION ruvector_rdf_stats(store_name text)
+RETURNS jsonb
+AS 'MODULE_PATHNAME', 'ruvector_rdf_stats_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Query triples by pattern (NULL for wildcards)
+CREATE OR REPLACE FUNCTION ruvector_query_triples(store_name text, subject text DEFAULT NULL, predicate text DEFAULT NULL, object text DEFAULT NULL)
+RETURNS jsonb
+AS 'MODULE_PATHNAME', 'ruvector_query_triples_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Clear all triples from store
+CREATE OR REPLACE FUNCTION ruvector_clear_rdf_store(store_name text)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'ruvector_clear_rdf_store_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Delete RDF triple store
+CREATE OR REPLACE FUNCTION ruvector_delete_rdf_store(store_name text)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'ruvector_delete_rdf_store_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- List all RDF stores
+CREATE OR REPLACE FUNCTION ruvector_list_rdf_stores()
+RETURNS text[]
+AS 'MODULE_PATHNAME', 'ruvector_list_rdf_stores_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- Execute SPARQL UPDATE operations
+CREATE OR REPLACE FUNCTION ruvector_sparql_update(store_name text, query text)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'ruvector_sparql_update_wrapper'
+LANGUAGE C VOLATILE PARALLEL SAFE;
+
+-- ============================================================================
 -- Comments
 -- ============================================================================
 
@@ -694,6 +770,20 @@ COMMENT ON FUNCTION graph_pagerank_contribution(real, int, real) IS 'Calculate P
 COMMENT ON FUNCTION graph_pagerank_base(int, real) IS 'Initialize PageRank base importance';
 COMMENT ON FUNCTION graph_is_connected(real[], real[], real) IS 'Check if vectors are semantically connected';
 COMMENT ON FUNCTION graph_centroid_update(real[], real[], real) IS 'Update centroid with neighbor contribution';
+
+-- SPARQL / RDF Comments
+COMMENT ON FUNCTION ruvector_create_rdf_store(text) IS 'Create a new RDF triple store for SPARQL queries';
+COMMENT ON FUNCTION ruvector_sparql(text, text, text) IS 'Execute W3C SPARQL 1.1 query (SELECT, ASK, CONSTRUCT, DESCRIBE) with format selection (json, xml, csv, tsv)';
+COMMENT ON FUNCTION ruvector_sparql_json(text, text) IS 'Execute SPARQL query and return results as JSONB';
+COMMENT ON FUNCTION ruvector_insert_triple(text, text, text, text) IS 'Insert RDF triple (subject, predicate, object) into store';
+COMMENT ON FUNCTION ruvector_insert_triple_graph(text, text, text, text, text) IS 'Insert RDF triple into named graph';
+COMMENT ON FUNCTION ruvector_load_ntriples(text, text) IS 'Bulk load RDF triples from N-Triples format';
+COMMENT ON FUNCTION ruvector_rdf_stats(text) IS 'Get statistics for RDF triple store (counts, graphs)';
+COMMENT ON FUNCTION ruvector_query_triples(text, text, text, text) IS 'Query triples by pattern (use NULL for wildcards)';
+COMMENT ON FUNCTION ruvector_clear_rdf_store(text) IS 'Clear all triples from RDF store';
+COMMENT ON FUNCTION ruvector_delete_rdf_store(text) IS 'Delete RDF triple store completely';
+COMMENT ON FUNCTION ruvector_list_rdf_stores() IS 'List all RDF triple stores';
+COMMENT ON FUNCTION ruvector_sparql_update(text, text) IS 'Execute SPARQL UPDATE operations (INSERT DATA, DELETE DATA, DELETE/INSERT WHERE)';
 COMMENT ON FUNCTION graph_bipartite_score(real[], real[], real) IS 'Compute bipartite matching score for RAG';
 -- ============================================================================
 -- ============================================================================

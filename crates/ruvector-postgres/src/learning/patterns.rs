@@ -1,7 +1,6 @@
 //! Pattern extraction using k-means clustering
 
 use super::trajectory::QueryTrajectory;
-use std::collections::HashMap;
 
 /// A learned pattern representing a cluster of similar queries
 #[derive(Debug, Clone)]
@@ -118,7 +117,7 @@ impl PatternExtractor {
     }
 
     /// Initialize centroids using k-means++
-    fn initialize_centroids(&self, trajectories: &[QueryTrajectory], dim: usize) -> Vec<Vec<f32>> {
+    fn initialize_centroids(&self, trajectories: &[QueryTrajectory], _default_ivfflat_probes: usize) -> Vec<Vec<f32>> {
         let mut centroids = Vec::with_capacity(self.k);
 
         // First centroid: random

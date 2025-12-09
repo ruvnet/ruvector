@@ -1,7 +1,7 @@
 // Lorentz Hyperboloid Model Implementation
 // Implements isometric model of hyperbolic space
 
-use crate::hyperbolic::{poincare::PoincareBall, EPSILON};
+use crate::hyperbolic::EPSILON;
 use simsimd::SpatialSimilarity;
 
 /// Lorentz/Hyperboloid model for hyperbolic space

@@ -3,7 +3,6 @@
 //! Stores vectors with 1 bit per dimension (32x compression).
 //! Uses Hamming distance with SIMD popcount acceleration.
 
-use pgrx::prelude::*;
 use pgrx::pgrx_sql_entity_graph::metadata::{
     ArgumentError, Returns, ReturnsError, SqlMapping, SqlTranslatable,
 };

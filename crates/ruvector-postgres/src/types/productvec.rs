@@ -3,7 +3,6 @@
 //! Stores vectors using product quantization with precomputed codebooks.
 //! Achieves 8-32x compression with ADC (Asymmetric Distance Computation).
 
-use pgrx::prelude::*;
 use pgrx::pgrx_sql_entity_graph::metadata::{
     ArgumentError, Returns, ReturnsError, SqlMapping, SqlTranslatable,
 };

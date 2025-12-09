@@ -10,19 +10,15 @@
 //! - indices (4 bytes * nnz) - sorted indices
 //! - values (4 bytes * nnz) - values
 
-use pgrx::prelude::*;
 use pgrx::pgrx_sql_entity_graph::metadata::{
     ArgumentError, Returns, ReturnsError, SqlMapping, SqlTranslatable,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::ffi::{CStr, CString};
 use std::fmt;
 use std::ptr;
 use std::str::FromStr;
 
-use crate::distance;
-use crate::types::RuVector;
 use crate::MAX_DIMENSIONS;
 
 // ============================================================================

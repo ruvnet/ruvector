@@ -1,12 +1,11 @@
 //! PostgreSQL operator functions for self-learning
 
 use pgrx::prelude::*;
-use pgrx::{JsonB, Spi};
+use pgrx::JsonB;
 use serde::{Deserialize, Serialize};
 
 use super::{LEARNING_MANAGER, QueryTrajectory};
 use super::optimizer::OptimizationTarget;
-use std::time::SystemTime;
 
 /// Configuration for enabling learning
 #[derive(Debug, Serialize, Deserialize)]

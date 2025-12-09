@@ -93,7 +93,7 @@ fn fn_substr(args: Vec<Option<RdfTerm>>) -> SparqlResult<Option<RdfTerm>> {
     // SPARQL uses 1-based indexing
     let start_idx = start.saturating_sub(1);
 
-    let result = if let Some(len) = length {
+    let result: String = if let Some(len) = length {
         s.chars().skip(start_idx).take(len).collect()
     } else {
         s.chars().skip(start_idx).collect()

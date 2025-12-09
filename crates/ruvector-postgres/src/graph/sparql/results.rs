@@ -5,8 +5,8 @@
 // - XML (SPARQL Query Results XML Format)
 // - CSV/TSV (SPARQL 1.1 Query Results CSV and TSV Formats)
 
-use super::ast::{Iri, Literal, RdfTerm};
-use super::executor::{QueryResult, SelectResult};
+use super::ast::RdfTerm;
+use super::executor::QueryResult;
 use super::triple_store::Triple;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

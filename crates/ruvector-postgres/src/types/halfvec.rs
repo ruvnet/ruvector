@@ -10,15 +10,10 @@
 //! - data (2 bytes * dimensions) - f16 data as raw u16 bits
 
 use half::f16;
-use pgrx::prelude::*;
 use pgrx::pgrx_sql_entity_graph::metadata::{
     ArgumentError, Returns, ReturnsError, SqlMapping, SqlTranslatable,
 };
-use std::ffi::{CStr, CString};
-use std::fmt;
-use std::str::FromStr;
 
-use crate::types::RuVector;
 use crate::MAX_DIMENSIONS;
 
 /// Varlena layout offset constants

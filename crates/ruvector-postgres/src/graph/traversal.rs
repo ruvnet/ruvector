@@ -1,6 +1,6 @@
 // Graph traversal algorithms
 
-use super::storage::{GraphStore, Node, Edge};
+use super::storage::GraphStore;
 use std::collections::{VecDeque, HashMap, HashSet, BinaryHeap};
 use std::cmp::Ordering;
 
@@ -149,6 +149,7 @@ where
 struct DijkstraState {
     node: u64,
     cost: f64,
+    #[allow(dead_code)]
     edge: Option<u64>,
 }
 

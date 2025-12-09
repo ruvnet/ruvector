@@ -186,7 +186,7 @@ impl Router {
         target: OptimizationTarget,
     ) -> Result<RoutingDecision, String> {
         // Get candidate agents
-        let mut candidates = self.get_candidates(constraints)?;
+        let candidates = self.get_candidates(constraints)?;
 
         if candidates.is_empty() {
             return Err("No agents match the constraints".to_string());
@@ -339,7 +339,7 @@ impl Router {
                 let latency_score = 1.0 / (1.0 + agent.performance.avg_latency_ms / 1000.0);
                 let quality_score = agent.performance.quality_score;
 
-                (cost_score * 0.25 + latency_score * 0.25 + quality_score * 0.25 + similarity * 0.25)
+                cost_score * 0.25 + latency_score * 0.25 + quality_score * 0.25 + similarity * 0.25
             }
         }
     }

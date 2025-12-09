@@ -128,12 +128,12 @@ impl ReasoningBank {
 
                             // Merge parameters (weighted average)
                             entry_i.pattern.optimal_ef =
-                                ((entry_i.pattern.optimal_ef as f64 * weight_i +
-                                  entry_j.pattern.optimal_ef as f64 * weight_j) as usize);
+                                (entry_i.pattern.optimal_ef as f64 * weight_i +
+                                  entry_j.pattern.optimal_ef as f64 * weight_j) as usize;
 
                             entry_i.pattern.optimal_probes =
-                                ((entry_i.pattern.optimal_probes as f64 * weight_i +
-                                  entry_j.pattern.optimal_probes as f64 * weight_j) as usize);
+                                (entry_i.pattern.optimal_probes as f64 * weight_i +
+                                  entry_j.pattern.optimal_probes as f64 * weight_j) as usize;
 
                             // Update statistics
                             entry_i.pattern.sample_count += entry_j.pattern.sample_count;

@@ -3,7 +3,7 @@
 //! Based on "Semi-Supervised Classification with Graph Convolutional Networks"
 //! by Kipf & Welling (2016)
 
-use super::aggregators::{sum_aggregate, AggregationMethod};
+use super::aggregators::sum_aggregate;
 use super::message_passing::MessagePassing;
 use rayon::prelude::*;
 
