@@ -1,10 +1,11 @@
 // Graph operations module for ruvector-postgres
 //
-// Provides graph storage, traversal, and Cypher query support
+// Provides graph storage, traversal, Cypher query support, and SPARQL (W3C standard)
 
 pub mod storage;
 pub mod traversal;
 pub mod cypher;
+pub mod sparql;
 pub mod operators;
 
 pub use storage::{Node, Edge, NodeStore, EdgeStore, GraphStore};

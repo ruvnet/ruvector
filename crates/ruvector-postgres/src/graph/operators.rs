@@ -8,6 +8,11 @@ use std::collections::HashMap;
 use super::{get_or_create_graph, get_graph};
 use super::cypher::query as cypher_query;
 use super::traversal::{bfs, shortest_path_dijkstra};
+use super::sparql::{
+    get_or_create_store, get_store, delete_store, list_stores,
+    parse_sparql, execute_sparql, TripleStore, Triple,
+    results::{format_results, ResultFormat},
+};
 
 /// Create a new graph
 ///
@@ -304,6 +309,384 @@ fn ruvector_list_graphs() -> Vec<String> {
     super::list_graphs()
 }
 
+// ============================================================================
+// SPARQL Operations - W3C Standard RDF Query Language
+// ============================================================================
+
+/// Create a new RDF triple store
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_create_rdf_store('my_store');
+/// ```
+#[pg_extern]
+fn ruvector_create_rdf_store(name: &str) -> bool {
+    get_or_create_store(name);
+    true
+}
+
+/// Execute a SPARQL query on an RDF triple store
+///
+/// Supports SPARQL 1.1 Query Language including SELECT, CONSTRUCT, ASK, DESCRIBE
+///
+/// # Example
+/// ```sql
+/// -- Simple SELECT query
+/// SELECT ruvector_sparql('my_store', 'SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10', 'json');
+///
+/// -- Query with PREFIX
+/// SELECT ruvector_sparql('my_store', '
+///     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+///     SELECT ?name WHERE { ?person foaf:name ?name }
+/// ', 'json');
+///
+/// -- ASK query
+/// SELECT ruvector_sparql('my_store', 'ASK { <http://example.org/s> ?p ?o }', 'json');
+/// ```
+#[pg_extern]
+fn ruvector_sparql(
+    store_name: &str,
+    query: &str,
+    format: &str,
+) -> Result<String, String> {
+    let store = get_store(store_name)
+        .ok_or_else(|| format!("Triple store '{}' does not exist", store_name))?;
+
+    let parsed = parse_sparql(query)
+        .map_err(|e| format!("Parse error: {}", e))?;
+
+    let result = execute_sparql(&store, &parsed)
+        .map_err(|e| format!("Execution error: {}", e))?;
+
+    let result_format = match format.to_lowercase().as_str() {
+        "json" => ResultFormat::Json,
+        "xml" => ResultFormat::Xml,
+        "csv" => ResultFormat::Csv,
+        "tsv" => ResultFormat::Tsv,
+        _ => ResultFormat::Json,
+    };
+
+    Ok(format_results(&result, result_format))
+}
+
+/// Execute a SPARQL query and return results as JSONB
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_sparql_json('my_store', 'SELECT ?s ?p ?o WHERE { ?s ?p ?o }');
+/// ```
+#[pg_extern]
+fn ruvector_sparql_json(
+    store_name: &str,
+    query: &str,
+) -> Result<JsonB, String> {
+    let result = ruvector_sparql(store_name, query, "json")?;
+
+    let json_value: JsonValue = serde_json::from_str(&result)
+        .map_err(|e| format!("JSON parse error: {}", e))?;
+
+    Ok(JsonB(json_value))
+}
+
+/// Insert an RDF triple into a store
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_insert_triple(
+///     'my_store',
+///     '<http://example.org/person/1>',
+///     '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>',
+///     '<http://example.org/Person>'
+/// );
+/// ```
+#[pg_extern]
+fn ruvector_insert_triple(
+    store_name: &str,
+    subject: &str,
+    predicate: &str,
+    object: &str,
+) -> Result<i64, String> {
+    let store = get_or_create_store(store_name);
+
+    let triple = Triple::from_strings(subject, predicate, object);
+    let id = store.insert(triple);
+
+    Ok(id as i64)
+}
+
+/// Insert an RDF triple into a named graph
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_insert_triple_graph(
+///     'my_store',
+///     '<http://example.org/person/1>',
+///     '<http://example.org/name>',
+///     '"Alice"',
+///     'http://example.org/graph1'
+/// );
+/// ```
+#[pg_extern]
+fn ruvector_insert_triple_graph(
+    store_name: &str,
+    subject: &str,
+    predicate: &str,
+    object: &str,
+    graph: &str,
+) -> Result<i64, String> {
+    let store = get_or_create_store(store_name);
+
+    let triple = Triple::from_strings(subject, predicate, object);
+    let id = store.insert_into_graph(triple, Some(graph));
+
+    Ok(id as i64)
+}
+
+/// Bulk insert RDF triples from N-Triples format
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_load_ntriples('my_store', '
+///     <http://example.org/s1> <http://example.org/p1> "value1" .
+///     <http://example.org/s2> <http://example.org/p2> "value2" .
+/// ');
+/// ```
+#[pg_extern]
+fn ruvector_load_ntriples(
+    store_name: &str,
+    ntriples: &str,
+) -> Result<i64, String> {
+    let store = get_or_create_store(store_name);
+
+    let mut count = 0i64;
+
+    for line in ntriples.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
+        // Simple N-Triples parsing
+        // Format: <subject> <predicate> <object> .
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() >= 3 {
+            // Handle object which may contain spaces if quoted
+            let subject = parts[0];
+            let predicate = parts[1];
+
+            // Find object (everything after predicate, before final dot)
+            let rest = &line[line.find(predicate).unwrap() + predicate.len()..];
+            let rest = rest.trim();
+            let object = if rest.ends_with('.') {
+                rest[..rest.len() - 1].trim()
+            } else {
+                rest
+            };
+
+            let triple = Triple::from_strings(subject, predicate, object);
+            store.insert(triple);
+            count += 1;
+        }
+    }
+
+    Ok(count)
+}
+
+/// Get statistics about an RDF triple store
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_rdf_stats('my_store');
+/// ```
+#[pg_extern]
+fn ruvector_rdf_stats(store_name: &str) -> Result<JsonB, String> {
+    let store = get_store(store_name)
+        .ok_or_else(|| format!("Triple store '{}' does not exist", store_name))?;
+
+    let stats = store.stats();
+
+    let result = json!({
+        "name": store_name,
+        "triple_count": stats.triple_count,
+        "subject_count": stats.subject_count,
+        "predicate_count": stats.predicate_count,
+        "object_count": stats.object_count,
+        "graph_count": stats.graph_count,
+        "named_graphs": store.list_graphs()
+    });
+
+    Ok(JsonB(result))
+}
+
+/// Query triples matching a pattern (use NULL for wildcards)
+///
+/// # Example
+/// ```sql
+/// -- Get all triples about a subject
+/// SELECT ruvector_query_triples('my_store', '<http://example.org/person/1>', NULL, NULL);
+///
+/// -- Get all triples with a specific predicate
+/// SELECT ruvector_query_triples('my_store', NULL, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', NULL);
+/// ```
+#[pg_extern]
+fn ruvector_query_triples(
+    store_name: &str,
+    subject: Option<&str>,
+    predicate: Option<&str>,
+    object: Option<&str>,
+) -> Result<JsonB, String> {
+    use super::sparql::ast::{Iri, RdfTerm};
+
+    let store = get_store(store_name)
+        .ok_or_else(|| format!("Triple store '{}' does not exist", store_name))?;
+
+    let subject_term = subject.map(|s| parse_term(s));
+    let predicate_iri = predicate.map(|p| {
+        let p = p.trim().trim_start_matches('<').trim_end_matches('>');
+        Iri::new(p)
+    });
+    let object_term = object.map(|o| parse_term(o));
+
+    let triples = store.query(
+        subject_term.as_ref(),
+        predicate_iri.as_ref(),
+        object_term.as_ref(),
+    );
+
+    let result: Vec<JsonValue> = triples
+        .iter()
+        .map(|t| {
+            json!({
+                "subject": format_term(&t.subject),
+                "predicate": t.predicate.as_str(),
+                "object": format_term(&t.object)
+            })
+        })
+        .collect();
+
+    Ok(JsonB(json!(result)))
+}
+
+/// Clear all triples from an RDF store
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_clear_rdf_store('my_store');
+/// ```
+#[pg_extern]
+fn ruvector_clear_rdf_store(store_name: &str) -> Result<bool, String> {
+    let store = get_store(store_name)
+        .ok_or_else(|| format!("Triple store '{}' does not exist", store_name))?;
+
+    store.clear();
+    Ok(true)
+}
+
+/// Delete an RDF triple store
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_delete_rdf_store('my_store');
+/// ```
+#[pg_extern]
+fn ruvector_delete_rdf_store(store_name: &str) -> bool {
+    delete_store(store_name)
+}
+
+/// List all RDF triple stores
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_list_rdf_stores();
+/// ```
+#[pg_extern]
+fn ruvector_list_rdf_stores() -> Vec<String> {
+    list_stores()
+}
+
+/// Execute SPARQL UPDATE operations
+///
+/// Supports INSERT DATA, DELETE DATA, DELETE/INSERT WHERE
+///
+/// # Example
+/// ```sql
+/// SELECT ruvector_sparql_update('my_store', '
+///     INSERT DATA {
+///         <http://example.org/person/1> <http://example.org/name> "Alice" .
+///     }
+/// ');
+/// ```
+#[pg_extern]
+fn ruvector_sparql_update(
+    store_name: &str,
+    query: &str,
+) -> Result<bool, String> {
+    let store = get_store(store_name)
+        .ok_or_else(|| format!("Triple store '{}' does not exist", store_name))?;
+
+    let parsed = parse_sparql(query)
+        .map_err(|e| format!("Parse error: {}", e))?;
+
+    execute_sparql(&store, &parsed)
+        .map_err(|e| format!("Execution error: {}", e))?;
+
+    Ok(true)
+}
+
+// Helper functions for SPARQL operators
+
+fn parse_term(s: &str) -> super::sparql::ast::RdfTerm {
+    use super::sparql::ast::{Iri, Literal, RdfTerm};
+
+    let s = s.trim();
+
+    if s.starts_with('<') && s.ends_with('>') {
+        // IRI
+        RdfTerm::Iri(Iri::new(&s[1..s.len() - 1]))
+    } else if s.starts_with("_:") {
+        // Blank node
+        RdfTerm::BlankNode(s[2..].to_string())
+    } else if s.starts_with('"') {
+        // Literal
+        let end_quote = s[1..].find('"').map(|i| i + 1).unwrap_or(s.len() - 1);
+        let value = &s[1..end_quote];
+
+        let remainder = &s[end_quote + 1..];
+        if remainder.starts_with("@") {
+            // Language tag
+            let lang = remainder[1..].to_string();
+            RdfTerm::lang_literal(value, lang)
+        } else if remainder.starts_with("^^<") && remainder.ends_with('>') {
+            // Datatype
+            let datatype = &remainder[3..remainder.len() - 1];
+            RdfTerm::typed_literal(value, Iri::new(datatype))
+        } else {
+            RdfTerm::literal(value)
+        }
+    } else {
+        // Assume IRI without brackets
+        RdfTerm::Iri(Iri::new(s))
+    }
+}
+
+fn format_term(term: &super::sparql::ast::RdfTerm) -> String {
+    use super::sparql::ast::RdfTerm;
+
+    match term {
+        RdfTerm::Iri(iri) => format!("<{}>", iri.as_str()),
+        RdfTerm::Literal(lit) => {
+            if let Some(lang) = &lit.language {
+                format!("\"{}\"@{}", lit.value, lang)
+            } else if lit.datatype.as_str() != "http://www.w3.org/2001/XMLSchema#string" {
+                format!("\"{}\"^^<{}>", lit.value, lit.datatype.as_str())
+            } else {
+                format!("\"{}\"", lit.value)
+            }
+        }
+        RdfTerm::BlankNode(id) => format!("_:{}", id),
+    }
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -472,5 +855,203 @@ mod tests {
         assert!(neighbors.contains(&n3));
 
         ruvector_delete_graph("test_graph");
+    }
+
+    // ========================================================================
+    // SPARQL Tests
+    // ========================================================================
+
+    #[pg_test]
+    fn test_create_rdf_store() {
+        let result = ruvector_create_rdf_store("test_rdf_store");
+        assert!(result);
+
+        let stores = ruvector_list_rdf_stores();
+        assert!(stores.contains(&"test_rdf_store".to_string()));
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_insert_triple() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        let id = ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/person/1>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://example.org/Person>",
+        ).unwrap();
+
+        assert!(id > 0);
+
+        let stats = ruvector_rdf_stats("test_rdf_store").unwrap();
+        let stats_obj = stats.0.as_object().unwrap();
+        assert_eq!(stats_obj["triple_count"].as_u64().unwrap(), 1);
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_sparql_select() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        // Insert test data
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/person/1>",
+            "<http://example.org/name>",
+            "\"Alice\"",
+        ).unwrap();
+
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/person/1>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://example.org/Person>",
+        ).unwrap();
+
+        // Execute SPARQL query
+        let result = ruvector_sparql(
+            "test_rdf_store",
+            "SELECT ?s ?p ?o WHERE { ?s ?p ?o }",
+            "json",
+        );
+        assert!(result.is_ok());
+
+        let json_str = result.unwrap();
+        assert!(json_str.contains("bindings"));
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_sparql_ask() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/person/1>",
+            "<http://example.org/name>",
+            "\"Alice\"",
+        ).unwrap();
+
+        let result = ruvector_sparql(
+            "test_rdf_store",
+            "ASK { <http://example.org/person/1> <http://example.org/name> ?name }",
+            "json",
+        );
+        assert!(result.is_ok());
+
+        let json_str = result.unwrap();
+        assert!(json_str.contains("true"));
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_query_triples_pattern() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        // Insert test data
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/person/1>",
+            "<http://example.org/name>",
+            "\"Alice\"",
+        ).unwrap();
+
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/person/2>",
+            "<http://example.org/name>",
+            "\"Bob\"",
+        ).unwrap();
+
+        // Query by predicate
+        let result = ruvector_query_triples(
+            "test_rdf_store",
+            None,
+            Some("<http://example.org/name>"),
+            None,
+        ).unwrap();
+
+        let arr = result.0.as_array().unwrap();
+        assert_eq!(arr.len(), 2);
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_load_ntriples() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        let ntriples = r#"
+            <http://example.org/s1> <http://example.org/p1> "value1" .
+            <http://example.org/s2> <http://example.org/p2> "value2" .
+            <http://example.org/s3> <http://example.org/p3> <http://example.org/o3> .
+        "#;
+
+        let count = ruvector_load_ntriples("test_rdf_store", ntriples).unwrap();
+        assert_eq!(count, 3);
+
+        let stats = ruvector_rdf_stats("test_rdf_store").unwrap();
+        let stats_obj = stats.0.as_object().unwrap();
+        assert_eq!(stats_obj["triple_count"].as_u64().unwrap(), 3);
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_sparql_json() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/s>",
+            "<http://example.org/p>",
+            "\"test value\"",
+        ).unwrap();
+
+        let result = ruvector_sparql_json(
+            "test_rdf_store",
+            "SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }",
+        );
+        assert!(result.is_ok());
+
+        let json = result.unwrap();
+        assert!(json.0.as_object().unwrap().contains_key("head"));
+        assert!(json.0.as_object().unwrap().contains_key("results"));
+
+        ruvector_delete_rdf_store("test_rdf_store");
+    }
+
+    #[pg_test]
+    fn test_rdf_stats() {
+        ruvector_create_rdf_store("test_rdf_store");
+
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/s1>",
+            "<http://example.org/p1>",
+            "\"o1\"",
+        ).unwrap();
+
+        ruvector_insert_triple(
+            "test_rdf_store",
+            "<http://example.org/s2>",
+            "<http://example.org/p1>",
+            "\"o2\"",
+        ).unwrap();
+
+        let stats = ruvector_rdf_stats("test_rdf_store").unwrap();
+        let stats_obj = stats.0.as_object().unwrap();
+
+        assert_eq!(stats_obj["triple_count"].as_u64().unwrap(), 2);
+        assert_eq!(stats_obj["subject_count"].as_u64().unwrap(), 2);
+        assert_eq!(stats_obj["predicate_count"].as_u64().unwrap(), 1);
+        assert_eq!(stats_obj["object_count"].as_u64().unwrap(), 2);
+
+        ruvector_delete_rdf_store("test_rdf_store");
     }
 }
