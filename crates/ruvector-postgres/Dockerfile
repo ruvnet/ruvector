@@ -55,6 +55,18 @@ ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git
 # Build the extension with all features including embeddings
 RUN cargo pgrx package --features "pg17 index-all quant-all embeddings"
 
+# Copy the pre-built SQL schema file (with sparse functions removed)
+# cargo pgrx schema doesn't work reliably in Docker, so we use the hand-crafted file
+RUN cp /build/sql/ruvector--0.1.0.sql /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/ruvector--0.1.0.sql && \
+    echo "SQL schema copied with $(grep -c 'CREATE FUNCTION\|CREATE OR REPLACE FUNCTION' /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/ruvector--0.1.0.sql) functions"
+
+# Verify the extension files are complete
+RUN ls -la /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/ && \
+    echo "=== First 20 lines of SQL ===" && \
+    head -20 /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/ruvector--0.1.0.sql && \
+    echo "=== CREATE FUNCTION count ===" && \
+    grep -c "CREATE FUNCTION\|CREATE OR REPLACE FUNCTION" /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/ruvector--0.1.0.sql
+
 # Runtime stage
 FROM postgres:17-bookworm
 
@@ -64,17 +76,15 @@ LABEL description="PostgreSQL with ruvector extension - high-performance vector 
 LABEL version="0.2.4"
 
 # Copy the built extension from builder
-# Note: pgrx uses the package name 'ruvector' (from Cargo.toml lib name), not 'ruvector-postgres'
+# Note: pgrx generates correct SQL from #[pg_extern] macros in target directory
+# The extension/* directory includes:
+#   - ruvector.control (version info)
+#   - ruvector--*.sql (pgrx-generated SQL with correct function symbols)
+#   - Any additional SQL migration files
 COPY --from=builder /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/* \
     /usr/share/postgresql/17/extension/
 COPY --from=builder /build/target/release/ruvector-pg17/usr/lib/postgresql/17/lib/* \
     /usr/lib/postgresql/17/lib/
-
-# Copy SQL files and control file
-COPY --from=builder /build/ruvector.control \
-    /usr/share/postgresql/17/extension/
-COPY --from=builder /build/sql/*.sql \
-    /usr/share/postgresql/17/extension/
 
 # Add initialization script to create extension
 RUN mkdir -p /docker-entrypoint-initdb.d
