@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RvLite Demo - Proof of Concept</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #output {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            margin-top: 20px;
+            min-height: 100px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-poc {
+            background-color: #ffc107;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RvLite <span class="badge badge-poc">POC v0.1.0</span></h1>
+
+        <div class="status info">
+            <strong>Status:</strong> Loading WASM module...
+        </div>
+
+        <div>
+            <h2>Quick Tests</h2>
+            <button id="btnInit" disabled>Initialize Database</button>
+            <button id="btnVersion" disabled>Get Version</button>
+            <button id="btnFeatures" disabled>Get Features</button>
+            <button id="btnSQL" disabled>Try SQL (Not Implemented)</button>
+            <button id="btnCypher" disabled>Try Cypher (Not Implemented)</button>
+            <button id="btnSPARQL" disabled>Try SPARQL (Not Implemented)</button>
+        </div>
+
+        <div id="output">
+Waiting for WASM module to load...
+        </div>
+
+        <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
+            <h3 style="margin-top: 0;">⚠️ Proof of Concept</h3>
+            <p>This is a minimal POC demonstrating WASM compilation without dependencies. The full implementation will include:</p>
+            <ul>
+                <li>✅ ruvector-core integration (vectors, SIMD, quantization)</li>
+                <li>✅ SQL query engine (sqlparser-rs)</li>
+                <li>✅ SPARQL executor (extracted from ruvector-postgres)</li>
+                <li>✅ Cypher support (ruvector-graph-wasm)</li>
+                <li>✅ GNN layers (ruvector-gnn-wasm)</li>
+                <li>✅ ReasoningBank learning (sona)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { RvLite } from '../pkg/rvlite.js';
+
+        const statusDiv = document.querySelector('.status');
+        const output = document.getElementById('output');
+        let db = null;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+
+        function setStatus(message, className) {
+            statusDiv.className = `status ${className}`;
+            statusDiv.innerHTML = `<strong>Status:</strong> ${message}`;
+        }
+
+        async function loadWasm() {
+            try {
+                setStatus('Loading WASM module...', 'info');
+                await init();
+                setStatus('WASM module loaded successfully! ✓', 'success');
+                log('RvLite WASM module loaded', 'success');
+
+                // Enable buttons
+                document.getElementById('btnInit').disabled = false;
+                document.getElementById('btnVersion').disabled = false;
+                document.getElementById('btnFeatures').disabled = false;
+                document.getElementById('btnSQL').disabled = false;
+                document.getElementById('btnCypher').disabled = false;
+                document.getElementById('btnSPARQL').disabled = false;
+
+            } catch (error) {
+                setStatus('Failed to load WASM module', 'error');
+                log(`Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Button handlers
+        document.getElementById('btnInit').addEventListener('click', async () => {
+            try {
+                db = new RvLite();
+                log('✓ Database instance created');
+                log(`  Ready: ${db.isReady()}`);
+            } catch (error) {
+                log(`✗ Error creating database: ${error.message}`);
+            }
+        });
+
+        document.getElementById('btnVersion').addEventListener('click', () => {
+            if (!db) {
+                log('✗ Database not initialized. Click "Initialize Database" first.');
+                return;
+            }
+            const version = db.getVersion();
+            log(`✓ RvLite Version: ${version}`);
+        });
+
+        document.getElementById('btnFeatures').addEventListener('click', () => {
+            if (!db) {
+                log('✗ Database not initialized. Click "Initialize Database" first.');
+                return;
+            }
+            const features = db.getFeatures();
+            log(`✓ Enabled features: ${JSON.stringify(features, null, 2)}`);
+        });
+
+        document.getElementById('btnSQL').addEventListener('click', async () => {
+            if (!db) {
+                log('✗ Database not initialized. Click "Initialize Database" first.');
+                return;
+            }
+            try {
+                await db.sql('SELECT 1');
+            } catch (error) {
+                log(`✓ Expected error (not implemented): ${error.message || error}`);
+            }
+        });
+
+        document.getElementById('btnCypher').addEventListener('click', async () => {
+            if (!db) {
+                log('✗ Database not initialized. Click "Initialize Database" first.');
+                return;
+            }
+            try {
+                await db.cypher('MATCH (n) RETURN n');
+            } catch (error) {
+                log(`✓ Expected error (not implemented): ${error.message || error}`);
+            }
+        });
+
+        document.getElementById('btnSPARQL').addEventListener('click', async () => {
+            if (!db) {
+                log('✗ Database not initialized. Click "Initialize Database" first.');
+                return;
+            }
+            try {
+                await db.sparql('SELECT ?s WHERE { ?s ?p ?o }');
+            } catch (error) {
+                log(`✓ Expected error (not implemented): ${error.message || error}`);
+            }
+        });
+
+        // Load WASM on page load
+        loadWasm();
+    </script>
+</body>
+</html>
