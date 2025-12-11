@@ -52,6 +52,7 @@ pub mod ewc;
 pub mod reasoning_bank;
 pub mod loops;
 pub mod engine;
+pub mod time_compat;
 
 #[cfg(feature = "serde-support")]
 pub mod export;

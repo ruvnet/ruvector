@@ -4,6 +4,7 @@
 
 use crate::engine::SonaEngine;
 use crate::types::SonaConfig;
+use crate::time_compat::SystemTime;
 use super::templates::{TrainingTemplate, AgentType};
 use super::metrics::TrainingMetrics;
 use std::collections::HashMap;
@@ -45,10 +46,7 @@ impl ManagedAgent {
         config: SonaConfig,
         purpose: impl Into<String>,
     ) -> Self {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
+        let now = SystemTime::now().duration_since_epoch().as_secs();
 
         let id = id.into();
         Self {

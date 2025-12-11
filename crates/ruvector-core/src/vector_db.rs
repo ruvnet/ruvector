@@ -226,6 +226,11 @@ impl VectorDB {
     pub fn options(&self) -> &DbOptions {
         &self.options
     }
+
+    /// Get all vector IDs (for iteration/serialization)
+    pub fn keys(&self) -> Result<Vec<String>> {
+        self.storage.all_ids()
+    }
 }
 
 #[cfg(test)]

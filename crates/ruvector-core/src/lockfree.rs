@@ -2,6 +2,10 @@
 //!
 //! This module provides lock-free implementations of common data structures
 //! to minimize contention and improve scalability.
+//!
+//! Note: This module requires the `parallel` feature and is not available on WASM.
+
+#![cfg(all(feature = "parallel", not(target_arch = "wasm32")))]
 
 use crossbeam::queue::{ArrayQueue, SegQueue};
 use crossbeam::utils::CachePadded;

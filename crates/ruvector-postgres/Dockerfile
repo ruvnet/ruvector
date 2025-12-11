@@ -55,6 +55,17 @@ ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git
 # Build the extension with all features including embeddings
 RUN cargo pgrx package --features "pg17 index-all quant-all embeddings"
 
+# Build the model downloader binary
+RUN cargo build --release --bin download-models --features "embeddings"
+
+# Set cache path and download embedding models
+# FASTEMBED_CACHE_DIR is the correct env var for fastembed-rs
+ENV FASTEMBED_CACHE_DIR=/opt/ruvector/models
+RUN mkdir -p /opt/ruvector/models && \
+    ./target/release/download-models && \
+    echo "Model cache size: $(du -sh /opt/ruvector/models)" && \
+    ls -la /opt/ruvector/models/
+
 # Copy the pre-built SQL schema file (with sparse functions removed)
 # cargo pgrx schema doesn't work reliably in Docker, so we use the hand-crafted file
 RUN cp /build/sql/ruvector--0.1.0.sql /build/target/release/ruvector-pg17/usr/share/postgresql/17/extension/ruvector--0.1.0.sql && \
@@ -73,7 +84,14 @@ FROM postgres:17-bookworm
 # Labels
 LABEL maintainer="ruvector team"
 LABEL description="PostgreSQL with ruvector extension - high-performance vector similarity search with local embeddings"
-LABEL version="0.2.4"
+LABEL version="0.2.7"
+
+# Set embedding model cache path - models are pre-downloaded during build
+# FASTEMBED_CACHE_DIR is the correct env var for fastembed-rs
+ENV FASTEMBED_CACHE_DIR=/opt/ruvector/models
+
+# Copy pre-downloaded embedding models from builder
+COPY --from=builder /opt/ruvector/models /opt/ruvector/models
 
 # Copy the built extension from builder
 # Note: pgrx generates correct SQL from #[pg_extern] macros in target directory
@@ -86,9 +104,12 @@ COPY --from=builder /build/target/release/ruvector-pg17/usr/share/postgresql/17/
 COPY --from=builder /build/target/release/ruvector-pg17/usr/lib/postgresql/17/lib/* \
     /usr/lib/postgresql/17/lib/
 
-# Add initialization script to create extension
+# Add initialization scripts
 RUN mkdir -p /docker-entrypoint-initdb.d
-RUN echo "CREATE EXTENSION IF NOT EXISTS ruvector;" > /docker-entrypoint-initdb.d/01-ruvector.sql
+
+# Copy the full initialization script with extension creation, role setup, and tests
+# The init.sql is copied from the builder stage where it was included in the source copy
+COPY --from=builder /build/docker/init.sql /docker-entrypoint-initdb.d/01-init.sql
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \

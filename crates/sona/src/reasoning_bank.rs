@@ -190,20 +190,17 @@ impl ReasoningBank {
             let pattern_id = self.next_pattern_id;
             self.next_pattern_id += 1;
 
+            let now = crate::time_compat::SystemTime::now()
+                .duration_since_epoch()
+                .as_secs();
             let pattern = LearnedPattern {
                 id: pattern_id,
                 centroid,
                 cluster_size,
                 total_weight,
                 avg_quality,
-                created_at: std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs(),
-                last_accessed: std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs(),
+                created_at: now,
+                last_accessed: now,
                 access_count: 0,
                 pattern_type: PatternType::General,
             };

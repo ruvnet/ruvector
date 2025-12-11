@@ -145,6 +145,11 @@ impl MemoryStorage {
             .collect()
     }
 
+    /// Get all vector IDs (alias for keys, for API compatibility with VectorStorage)
+    pub fn all_ids(&self) -> Result<Vec<String>> {
+        Ok(self.keys())
+    }
+
     /// Clear all data
     pub fn clear(&self) -> Result<()> {
         self.vectors.clear();

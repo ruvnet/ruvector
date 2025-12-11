@@ -32,11 +32,23 @@
 ### Docker (Recommended)
 
 ```bash
+# Start the container
 docker run -d --name ruvector-pg \
   -e POSTGRES_PASSWORD=secret \
   -p 5432:5432 \
   ruvnet/ruvector-postgres:latest
+
+# Connect with psql
+PGPASSWORD=secret psql -h localhost -p 5432 -U postgres
+
+# Or use the ruvector app user (created automatically)
+PGPASSWORD=ruvector psql -h localhost -p 5432 -U ruvector -d postgres
 ```
+
+The container initializes with:
+- Extension `ruvector` pre-installed and tested
+- User `ruvector` with password `ruvector` for application use
+- SIMD acceleration (AVX2/AVX-512) auto-detected
 
 ### npm (Node.js Bindings)
 

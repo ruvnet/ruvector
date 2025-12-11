@@ -150,6 +150,11 @@ harness = false
 name = "pgrx_embed_ruvector-postgres"
 path = "./src/bin/pgrx_embed.rs"
 
+[[bin]]
+name = "download-models"
+path = "./scripts/download_models.rs"
+required-features = ["embeddings"]
+
 [package.metadata.pgrx]
 # Extension metadata for pgrx
 pg14 = "pg14"

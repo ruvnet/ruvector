@@ -166,7 +166,7 @@ impl DumpInit {
                     let unique_basename = loop {
                         let mut unique_basename;
                         let mut dataname: String;
-                        let id: usize = rand::rng().random_range(0..10000);
+                        let id: usize = rand::thread_rng().gen_range(0..10000);
                         let strid: String = id.to_string();
                         unique_basename = basename_default.to_string();
                         unique_basename.push('-');

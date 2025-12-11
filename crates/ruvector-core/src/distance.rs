@@ -1,4 +1,5 @@
-//! SIMD-optimized distance metrics using SimSIMD
+//! SIMD-optimized distance metrics
+//! Uses SimSIMD when available (native), falls back to pure Rust for WASM
 
 use crate::error::{Result, RuvectorError};
 use crate::types::DistanceMetric;
@@ -21,30 +22,61 @@ pub fn distance(a: &[f32], b: &[f32], metric: DistanceMetric) -> Result<f32> {
     }
 }
 
-/// Euclidean (L2) distance using SimSIMD
+/// Euclidean (L2) distance
 #[inline]
 pub fn euclidean_distance(a: &[f32], b: &[f32]) -> f32 {
-    // Use SimSIMD for optimal SIMD performance
-    (simsimd::SpatialSimilarity::sqeuclidean(a, b)
-        .expect("SimSIMD euclidean failed")
-        .sqrt()) as f32
+    #[cfg(all(feature = "simd", not(target_arch = "wasm32")))]
+    {
+        (simsimd::SpatialSimilarity::sqeuclidean(a, b)
+            .expect("SimSIMD euclidean failed")
+            .sqrt()) as f32
+    }
+    #[cfg(any(not(feature = "simd"), target_arch = "wasm32"))]
+    {
+        // Pure Rust fallback for WASM
+        a.iter()
+            .zip(b.iter())
+            .map(|(x, y)| (x - y) * (x - y))
+            .sum::<f32>()
+            .sqrt()
+    }
 }
 
-/// Cosine distance (1 - cosine_similarity) using SimSIMD
+/// Cosine distance (1 - cosine_similarity)
 #[inline]
 pub fn cosine_distance(a: &[f32], b: &[f32]) -> f32 {
-    // SimSIMD cosine returns similarity in range [0, 1]
-    // For distance, we use 1 - similarity
-    // But SimSIMD may return the distance directly, so let's use it as-is
-    simsimd::SpatialSimilarity::cosine(a, b).expect("SimSIMD cosine failed") as f32
+    #[cfg(all(feature = "simd", not(target_arch = "wasm32")))]
+    {
+        simsimd::SpatialSimilarity::cosine(a, b).expect("SimSIMD cosine failed") as f32
+    }
+    #[cfg(any(not(feature = "simd"), target_arch = "wasm32"))]
+    {
+        // Pure Rust fallback for WASM
+        let dot: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
+        let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
+        let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
+        if norm_a > 1e-8 && norm_b > 1e-8 {
+            1.0 - (dot / (norm_a * norm_b))
+        } else {
+            1.0
+        }
+    }
 }
 
-/// Dot product distance (negative for maximization) using SimSIMD
+/// Dot product distance (negative for maximization)
 #[inline]
 pub fn dot_product_distance(a: &[f32], b: &[f32]) -> f32 {
-    // Return negative dot product for distance minimization
-    let dot = simsimd::SpatialSimilarity::dot(a, b).expect("SimSIMD dot product failed");
-    (-dot) as f32
+    #[cfg(all(feature = "simd", not(target_arch = "wasm32")))]
+    {
+        let dot = simsimd::SpatialSimilarity::dot(a, b).expect("SimSIMD dot product failed");
+        (-dot) as f32
+    }
+    #[cfg(any(not(feature = "simd"), target_arch = "wasm32"))]
+    {
+        // Pure Rust fallback for WASM
+        let dot: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
+        -dot
+    }
 }
 
 /// Manhattan (L1) distance
@@ -53,18 +85,28 @@ pub fn manhattan_distance(a: &[f32], b: &[f32]) -> f32 {
     a.iter().zip(b.iter()).map(|(x, y)| (x - y).abs()).sum()
 }
 
-/// Batch distance calculation optimized with Rayon
+/// Batch distance calculation optimized with Rayon (native) or sequential (WASM)
 pub fn batch_distances(
     query: &[f32],
     vectors: &[Vec<f32>],
     metric: DistanceMetric,
 ) -> Result<Vec<f32>> {
-    use rayon::prelude::*;
-
-    vectors
-        .par_iter()
-        .map(|v| distance(query, v, metric))
-        .collect()
+    #[cfg(all(feature = "parallel", not(target_arch = "wasm32")))]
+    {
+        use rayon::prelude::*;
+        vectors
+            .par_iter()
+            .map(|v| distance(query, v, metric))
+            .collect()
+    }
+    #[cfg(any(not(feature = "parallel"), target_arch = "wasm32"))]
+    {
+        // Sequential fallback for WASM
+        vectors
+            .iter()
+            .map(|v| distance(query, v, metric))
+            .collect()
+    }
 }
 
 #[cfg(test)]

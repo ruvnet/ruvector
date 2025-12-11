@@ -192,6 +192,7 @@ pub use candle::CandleEmbedding;
 /// let embedding = provider.embed("hello world")?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+#[cfg(feature = "api-embeddings")]
 #[derive(Clone)]
 pub struct ApiEmbedding {
     api_key: String,
@@ -201,6 +202,7 @@ pub struct ApiEmbedding {
     client: reqwest::blocking::Client,
 }
 
+#[cfg(feature = "api-embeddings")]
 impl ApiEmbedding {
     /// Create a new API embedding provider
     ///
@@ -270,6 +272,7 @@ impl ApiEmbedding {
     }
 }
 
+#[cfg(feature = "api-embeddings")]
 impl EmbeddingProvider for ApiEmbedding {
     fn embed(&self, text: &str) -> Result<Vec<f32>> {
         let request_body = serde_json::json!({

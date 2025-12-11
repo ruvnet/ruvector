@@ -3,7 +3,7 @@
 //! Defines the fundamental data structures for the Self-Optimizing Neural Architecture.
 
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
+use crate::time_compat::Instant;
 use std::collections::HashMap;
 
 /// Learning signal generated from inference trajectory
@@ -249,9 +249,9 @@ impl std::fmt::Display for PatternType {
 impl LearnedPattern {
     /// Create new pattern
     pub fn new(id: u64, centroid: Vec<f32>) -> Self {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
+        use crate::time_compat::SystemTime;
+        let now = SystemTime::now()
+            .duration_since_epoch()
             .as_secs();
 
         Self {
@@ -298,18 +298,18 @@ impl LearnedPattern {
 
     /// Record access
     pub fn touch(&mut self) {
+        use crate::time_compat::SystemTime;
         self.access_count += 1;
-        self.last_accessed = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
+        self.last_accessed = SystemTime::now()
+            .duration_since_epoch()
             .as_secs();
     }
 
     /// Check if pattern should be pruned
     pub fn should_prune(&self, min_quality: f32, min_accesses: u32, max_age_secs: u64) -> bool {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
+        use crate::time_compat::SystemTime;
+        let now = SystemTime::now()
+            .duration_since_epoch()
             .as_secs();
         let age = now.saturating_sub(self.last_accessed);
 

@@ -2879,8 +2879,6 @@ dependencies = [
 [[package]]
 name = "hnsw_rs"
 version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22884c1debedfe585612f1f6da7bfe257f557639143cac270a8ac2f8702de750"
 dependencies = [
  "anndists",
  "anyhow",
@@ -2896,7 +2894,7 @@ dependencies = [
  "num-traits",
  "num_cpus",
  "parking_lot 0.12.5",
- "rand 0.9.2",
+ "rand 0.8.5",
  "rayon",
  "serde",
 ]
@@ -7079,6 +7077,27 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+]
+
+[[package]]
+name = "rvlite"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "console_error_panic_hook",
+ "getrandom 0.2.16",
+ "js-sys",
+ "once_cell",
+ "parking_lot 0.12.5",
+ "ruvector-core",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
+ "thiserror 1.0.69",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]

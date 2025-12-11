@@ -21,10 +21,10 @@
 
 use crate::engine::SonaEngine;
 use crate::types::{SonaConfig, LearnedPattern};
+use crate::time_compat::SystemTime;
 use super::metrics::TrainingMetrics;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Exported state from an ephemeral agent
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -87,8 +87,7 @@ impl EphemeralAgent {
     /// Create a new ephemeral agent
     pub fn new(agent_id: impl Into<String>, config: SonaConfig) -> Self {
         let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
+            .duration_since_epoch()
             .as_millis() as u64;
 
         Self {
@@ -139,8 +138,7 @@ impl EphemeralAgent {
         context: Vec<String>,
     ) {
         let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
+            .duration_since_epoch()
             .as_millis() as u64;
 
         // Record in SONA engine
@@ -208,8 +206,7 @@ impl EphemeralAgent {
     /// Get uptime in seconds
     pub fn uptime_seconds(&self) -> u64 {
         let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
+            .duration_since_epoch()
             .as_millis() as u64;
         (now - self.start_time) / 1000
     }
@@ -240,8 +237,7 @@ impl EphemeralAgent {
     /// Call this before terminating the agent.
     pub fn export_state(&self) -> AgentExport {
         let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
+            .duration_since_epoch()
             .as_millis() as u64;
 
         // Force learning before export
@@ -373,8 +369,7 @@ impl FederatedCoordinator {
 
         // Record contribution
         let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
+            .duration_since_epoch()
             .as_millis() as u64;
 
         self.contributions.insert(export.agent_id.clone(), AgentContribution {

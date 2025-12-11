@@ -4,10 +4,10 @@
 
 use crate::engine::SonaEngine;
 use crate::types::SonaConfig;
+use crate::time_compat::Instant;
 use super::templates::{TrainingTemplate, TrainingMethod, DataSizeHint};
 use super::metrics::{TrainingMetrics, TrainingResult, EpochStats};
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
 
 /// Training example with all data needed for learning
 #[derive(Clone, Debug, Serialize, Deserialize)]

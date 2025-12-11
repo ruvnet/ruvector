@@ -16,7 +16,16 @@ CREATE TABLE ruvector_test.test_basic (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Grant permissions
+-- Create ruvector role if it doesn't exist (optional app user)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ruvector') THEN
+        CREATE ROLE ruvector WITH LOGIN PASSWORD 'ruvector';
+    END IF;
+END $$;
+
+-- Grant permissions to ruvector role and public
+GRANT USAGE ON SCHEMA ruvector_test TO PUBLIC;
 GRANT ALL ON SCHEMA ruvector_test TO ruvector;
 GRANT ALL ON ALL TABLES IN SCHEMA ruvector_test TO ruvector;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA ruvector_test TO ruvector;

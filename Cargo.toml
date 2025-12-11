@@ -36,6 +36,7 @@ members = [
     "examples/google-cloud",
     "examples/ruvLLM",
     "crates/sona",
+    "crates/rvlite",
 ]
 resolver = "2"
 

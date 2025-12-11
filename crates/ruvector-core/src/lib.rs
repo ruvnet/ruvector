@@ -56,6 +56,7 @@ pub mod vector_db;
 // Performance optimization modules
 pub mod arena;
 pub mod cache_optimized;
+#[cfg(all(feature = "parallel", not(target_arch = "wasm32")))]
 pub mod lockfree;
 pub mod simd_intrinsics;
 
@@ -72,7 +73,9 @@ pub use advanced_features::{
 #[cfg(feature = "storage")]
 pub use agenticdb::AgenticDB;
 
-pub use embeddings::{EmbeddingProvider, HashEmbedding, ApiEmbedding, BoxedEmbeddingProvider};
+pub use embeddings::{EmbeddingProvider, HashEmbedding, BoxedEmbeddingProvider};
+#[cfg(feature = "api-embeddings")]
+pub use embeddings::ApiEmbedding;
 
 #[cfg(feature = "real-embeddings")]
 pub use embeddings::CandleEmbedding;

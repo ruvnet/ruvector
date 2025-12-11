@@ -14,9 +14,9 @@ description = "High-performance Rust vector database core with HNSW indexing"
 redb = { workspace = true, optional = true }
 memmap2 = { workspace = true, optional = true }
 hnsw_rs = { workspace = true, optional = true }
-simsimd = { workspace = true }
-rayon = { workspace = true }
-crossbeam = { workspace = true }
+simsimd = { workspace = true, optional = true }
+rayon = { workspace = true, optional = true }
+crossbeam = { workspace = true, optional = true }
 
 # Serialization
 rkyv = { workspace = true }
@@ -43,8 +43,8 @@ once_cell = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 
-# HTTP client for API embeddings
-reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+# HTTP client for API embeddings (not available in WASM)
+reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"], optional = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
@@ -78,13 +78,15 @@ name = "real_benchmark"
 harness = false
 
 [features]
-default = ["simd", "storage", "hnsw"]
-simd = []
+default = ["simd", "storage", "hnsw", "api-embeddings", "parallel"]
+simd = ["simsimd"]  # SIMD acceleration (not available in WASM)
+parallel = ["rayon", "crossbeam"]  # Parallel processing (not available in WASM)
 storage = ["redb", "memmap2"]  # File-based storage (not available in WASM)
 hnsw = ["hnsw_rs"]  # HNSW indexing (not available in WASM due to mmap dependency)
 memory-only = []  # Pure in-memory storage for WASM
 uuid-support = []  # Deprecated: uuid is now always included
 real-embeddings = []  # Feature flag for embedding provider API (use ApiEmbedding for production)
+api-embeddings = ["reqwest"]  # API-based embeddings (not available in WASM)
 
 [lib]
 crate-type = ["rlib"]

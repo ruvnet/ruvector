@@ -5,6 +5,8 @@ use crate::error::Result;
 use crate::index::VectorIndex;
 use crate::types::{DistanceMetric, SearchResult, VectorId};
 use dashmap::DashMap;
+
+#[cfg(all(feature = "parallel", not(target_arch = "wasm32")))]
 use rayon::prelude::*;
 
 /// Flat index using brute-force search
@@ -32,11 +34,24 @@ impl VectorIndex for FlatIndex {
     }
 
     fn search(&self, query: &[f32], k: usize) -> Result<Vec<SearchResult>> {
-        // Parallel distance calculation
+        // Distance calculation - parallel on native, sequential on WASM
+        #[cfg(all(feature = "parallel", not(target_arch = "wasm32")))]
         let mut results: Vec<_> = self
             .vectors
             .iter()
             .par_bridge()
+            .map(|entry| {
+                let id = entry.key().clone();
+                let vector = entry.value();
+                let dist = distance(query, vector, self.metric)?;
+                Ok((id, dist))
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        #[cfg(any(not(feature = "parallel"), target_arch = "wasm32"))]
+        let mut results: Vec<_> = self
+            .vectors
+            .iter()
             .map(|entry| {
                 let id = entry.key().clone();
                 let vector = entry.value();

@@ -6,9 +6,9 @@ use crate::loops::background::{BackgroundLoop, BackgroundLoopConfig, BackgroundR
 use crate::loops::instant::{InstantLoop, InstantLoopConfig};
 use crate::reasoning_bank::{PatternConfig, ReasoningBank};
 use crate::types::{QueryTrajectory, SonaConfig};
+use crate::time_compat::Instant;
 use parking_lot::RwLock;
 use std::sync::Arc;
-use std::time::Instant;
 
 /// Loop coordinator managing all learning loops
 pub struct LoopCoordinator {
