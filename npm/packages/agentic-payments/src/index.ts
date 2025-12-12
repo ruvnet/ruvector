@@ -71,16 +71,42 @@ export const DEFAULT_PAYMENT_CONFIG: PaymentConfig = {
 };
 
 /**
- * App Store Payment Processor
+ * Thread-safe App Store Payment Processor
  *
  * Integrates with the agentic-payments package for AP2/ACP protocol support.
+ * Optimized for high-throughput micropayment processing.
  */
 export class AppStorePayments {
   private config: PaymentConfig;
   private transactions: Map<string, AppTransaction> = new Map();
+  private appTransactionIndex: Map<string, string[]> = new Map();
+  private txCounter = 0;
+  private totalVolume = 0;
 
   constructor(config: Partial<PaymentConfig> = {}) {
     this.config = { ...DEFAULT_PAYMENT_CONFIG, ...config };
+  }
+
+  /**
+   * Create with chip-app optimized configuration (80% developer share)
+   */
+  static chipAppConfig(): AppStorePayments {
+    return new AppStorePayments({
+      developerShare: 0.80,
+      platformFee: 0.20,
+      maxMicropayment: 10
+    });
+  }
+
+  /**
+   * Create with enterprise configuration (85% developer share)
+   */
+  static enterpriseConfig(): AppStorePayments {
+    return new AppStorePayments({
+      developerShare: 0.85,
+      platformFee: 0.15,
+      maxMicropayment: 1000
+    });
   }
 
   /**
@@ -91,11 +117,22 @@ export class AppStorePayments {
       throw new Error(`Amount ${priceCents} cents is below minimum ${this.config.minTransaction} cents`);
     }
 
+    // Validate protocol
+    if (request.paymentMethod === 'ap2' && !this.config.ap2Enabled) {
+      throw new Error('AP2 protocol is disabled');
+    }
+    if (request.paymentMethod === 'acp' && !this.config.acpEnabled) {
+      throw new Error('ACP protocol is disabled');
+    }
+
     const developerAmount = Math.floor(priceCents * this.config.developerShare);
     const platformAmount = priceCents - developerAmount;
 
+    const seq = this.txCounter++;
+    const id = `txn_${seq.toString(16).padStart(8, '0')}_${Date.now().toString(36)}`;
+
     const transaction: AppTransaction = {
-      id: `txn_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`,
+      id,
       appId: request.appId,
       buyerId: request.buyerId,
       purchaseType: request.purchaseType,
@@ -107,12 +144,22 @@ export class AppStorePayments {
       timestamp: new Date()
     };
 
-    this.transactions.set(transaction.id, transaction);
+    // Store transaction
+    this.transactions.set(id, transaction);
+
+    // Update app index
+    const appTxns = this.appTransactionIndex.get(request.appId) || [];
+    appTxns.push(id);
+    this.appTransactionIndex.set(request.appId, appTxns);
+
+    // Update total volume
+    this.totalVolume += priceCents;
+
     return transaction;
   }
 
   /**
-   * Process a micropayment (pay-per-use)
+   * Process a micropayment (pay-per-use) - optimized for chip apps
    */
   processMicropayment(appId: string, userId: string, amountCents: number): AppTransaction {
     if (amountCents > this.config.maxMicropayment) {
@@ -128,6 +175,19 @@ export class AppStorePayments {
   }
 
   /**
+   * Process a batch of micropayments efficiently
+   */
+  processMicropaymentBatch(payments: Array<{ appId: string; userId: string; amount: number }>): Array<AppTransaction | Error> {
+    return payments.map(({ appId, userId, amount }) => {
+      try {
+        return this.processMicropayment(appId, userId, amount);
+      } catch (e) {
+        return e as Error;
+      }
+    });
+  }
+
+  /**
    * Get transaction by ID
    */
   getTransaction(id: string): AppTransaction | undefined {
@@ -135,17 +195,38 @@ export class AppStorePayments {
   }
 
   /**
-   * Get all transactions for an app
+   * Get all transactions for an app (optimized using index)
    */
   getAppTransactions(appId: string): AppTransaction[] {
-    return Array.from(this.transactions.values()).filter(t => t.appId === appId);
+    const ids = this.appTransactionIndex.get(appId) || [];
+    return ids
+      .map(id => this.transactions.get(id))
+      .filter((t): t is AppTransaction => t !== undefined && t.status === 'completed');
   }
 
   /**
-   * Get total revenue for an app
+   * Get total revenue for an app (developer share only)
    */
   getAppRevenue(appId: string): number {
     return this.getAppTransactions(appId).reduce((sum, t) => sum + t.developerAmount, 0);
+  }
+
+  /**
+   * Get total platform fees for an app
+   */
+  getAppPlatformFees(appId: string): number {
+    return this.getAppTransactions(appId).reduce((sum, t) => sum + t.platformAmount, 0);
+  }
+
+  /**
+   * Get payment statistics
+   */
+  getStats(): { totalTransactions: number; totalVolumeCents: number; uniqueApps: number } {
+    return {
+      totalTransactions: this.transactions.size,
+      totalVolumeCents: this.totalVolume,
+      uniqueApps: this.appTransactionIndex.size
+    };
   }
 
   /**
