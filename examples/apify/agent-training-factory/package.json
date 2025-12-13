@@ -25,7 +25,7 @@
   "dependencies": {
     "apify": "^3.0.0",
     "crawlee": "^3.0.0",
-    "@huggingface/transformers": "^2.0.0",
+    "@huggingface/transformers": "^3.0.0",
     "openai": "^4.0.0",
     "axios": "^1.6.0",
     "zod": "^3.22.0"

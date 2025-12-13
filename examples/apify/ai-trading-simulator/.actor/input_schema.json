@@ -9,36 +9,41 @@
       "description": "Select the operating mode for the simulator",
       "enum": ["simulate", "backtest", "train", "stream"],
       "enumTitles": [
-        "Simulate - Generate market data",
-        "Backtest - Test trading strategies",
-        "Train - Generate ML training data",
-        "Stream - Real-time simulation"
+        "Simulate - Generate realistic market data",
+        "Backtest - Test trading strategies with metrics",
+        "Train - Generate ML/AI training datasets",
+        "Stream - Real-time simulation mode"
       ],
       "default": "simulate",
-      "editor": "select"
+      "editor": "select",
+      "sectionCaption": "Basic Settings",
+      "sectionDescription": "Configure the core simulation parameters"
     },
     "symbol": {
       "title": "Trading Symbol",
       "type": "string",
-      "description": "Stock or crypto symbol (e.g., AAPL, BTC-USD, TSLA)",
+      "description": "Stock, crypto, or forex symbol (e.g., AAPL, BTC-USD, EUR/USD)",
       "default": "AAPL",
+      "prefill": "TSLA",
       "editor": "textfield"
     },
     "timeframe": {
       "title": "Timeframe",
       "type": "string",
-      "description": "Candlestick interval",
+      "description": "Candlestick interval for OHLCV data",
       "enum": ["1m", "5m", "15m", "1h", "4h", "1d"],
       "enumTitles": [
-        "1 Minute",
-        "5 Minutes",
-        "15 Minutes",
-        "1 Hour",
-        "4 Hours",
-        "1 Day"
+        "1 Minute - Scalping/HFT",
+        "5 Minutes - Day trading",
+        "15 Minutes - Intraday",
+        "1 Hour - Swing trading",
+        "4 Hours - Position trading",
+        "1 Day - Long-term analysis"
       ],
       "default": "1h",
-      "editor": "select"
+      "editor": "select",
+      "sectionCaption": "Data Configuration",
+      "sectionDescription": "Set data volume and timeframe"
     },
     "dataPoints": {
       "title": "Number of Data Points",
@@ -47,27 +52,30 @@
       "default": 1000,
       "minimum": 10,
       "maximum": 100000,
+      "unit": "candles",
       "editor": "number"
     },
     "volatility": {
       "title": "Volatility",
       "type": "number",
-      "description": "Market volatility factor (0.01 = low, 0.5 = extreme)",
+      "description": "Market volatility factor - higher values create more dramatic price swings",
       "default": 0.05,
       "minimum": 0.01,
       "maximum": 0.5,
-      "editor": "number"
+      "editor": "number",
+      "sectionCaption": "Market Parameters",
+      "sectionDescription": "Control market behavior and trends"
     },
     "trend": {
       "title": "Market Trend",
       "type": "string",
-      "description": "Overall market direction",
+      "description": "Overall market direction bias",
       "enum": ["bullish", "bearish", "sideways", "volatile"],
       "enumTitles": [
-        "Bullish - Upward trend",
-        "Bearish - Downward trend",
-        "Sideways - Range-bound",
-        "Volatile - High fluctuation"
+        "📈 Bullish - Strong upward trend",
+        "📉 Bearish - Downward trend",
+        "↔️ Sideways - Range-bound market",
+        "🔄 Volatile - High fluctuation, no clear direction"
       ],
       "default": "sideways",
       "editor": "select"
@@ -75,63 +83,73 @@
     "strategy": {
       "title": "Trading Strategy",
       "type": "string",
-      "description": "Strategy to backtest (for backtest mode)",
+      "description": "Strategy to backtest (only used in backtest mode)",
       "enum": ["mean_reversion", "momentum", "breakout", "ml_neural"],
       "enumTitles": [
-        "Mean Reversion - Buy low, sell high",
-        "Momentum - Follow the trend",
-        "Breakout - Trade range breaks",
-        "ML Neural - AI-based decisions"
+        "Mean Reversion - Buy oversold, sell overbought",
+        "Momentum - Follow the trend direction",
+        "Breakout - Trade support/resistance breaks",
+        "ML Neural - AI-based decision making"
       ],
       "default": "momentum",
-      "editor": "select"
+      "editor": "select",
+      "sectionCaption": "Strategy & Indicators",
+      "sectionDescription": "Configure backtesting strategy and technical analysis"
     },
-    "includeOrderBook": {
-      "title": "Include Order Book",
+    "includeIndicators": {
+      "title": "Include Technical Indicators",
       "type": "boolean",
-      "description": "Generate Level 2 order book data (bids/asks)",
-      "default": false,
+      "description": "Calculate SMA, EMA, RSI, MACD, Bollinger Bands for each candle",
+      "default": true,
       "editor": "checkbox"
     },
-    "includeNews": {
-      "title": "Include News Sentiment",
+    "includeOrderBook": {
+      "title": "Include Order Book Data",
       "type": "boolean",
-      "description": "Generate synthetic market news and sentiment",
+      "description": "Generate Level 2 order book with bids/asks (increases output size)",
+      "default": false,
+      "editor": "checkbox",
+      "sectionCaption": "Additional Data Types",
+      "sectionDescription": "Enable extra data generation"
+    },
+    "includeNews": {
+      "title": "Include News & Sentiment",
+      "type": "boolean",
+      "description": "Generate synthetic market news with sentiment scores",
       "default": false,
       "editor": "checkbox"
     },
     "outputFormat": {
       "title": "Output Format",
       "type": "string",
-      "description": "Data export format",
+      "description": "Data export format for the dataset",
       "enum": ["json", "csv", "parquet"],
       "enumTitles": [
-        "JSON - Human-readable",
-        "CSV - Spreadsheet compatible",
-        "Parquet - Columnar (ML-optimized)"
+        "JSON - Human-readable, API-friendly",
+        "CSV - Spreadsheet compatible, Excel/Pandas",
+        "Parquet - Columnar format, ML-optimized"
       ],
       "default": "json",
-      "editor": "select"
+      "editor": "select",
+      "sectionCaption": "Output Settings",
+      "sectionDescription": "Configure data export format"
     },
     "initialPrice": {
       "title": "Initial Price",
       "type": "number",
-      "description": "Starting price for simulation (optional, auto-detected if empty)",
+      "description": "Starting price for simulation. Leave empty to auto-detect based on symbol.",
       "minimum": 0.01,
-      "editor": "number"
-    },
-    "includeIndicators": {
-      "title": "Include Technical Indicators",
-      "type": "boolean",
-      "description": "Calculate SMA, EMA, RSI, MACD, Bollinger Bands",
-      "default": true,
-      "editor": "checkbox"
+      "editor": "number",
+      "nullable": true,
+      "sectionCaption": "Advanced Options",
+      "sectionDescription": "Fine-tune simulation parameters"
     },
     "seed": {
       "title": "Random Seed",
       "type": "integer",
-      "description": "Seed for reproducible results (optional)",
-      "editor": "number"
+      "description": "Set a seed for reproducible results. Same seed = same output.",
+      "editor": "number",
+      "nullable": true
     }
   },
   "required": ["mode", "symbol", "timeframe", "dataPoints"]
